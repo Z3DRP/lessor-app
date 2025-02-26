@@ -1,36 +1,33 @@
 import { PropertyStatus } from "../enums/enums";
 
 export type Address = {
-  Street: string;
-  City: string;
-  County: string;
-  State: string;
-  Country: string;
-  Zipcode: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipcode: string;
 };
 
 export const NewAddress = (
   str: string,
   cty: string,
-  county: string,
   sta: string,
   cntry: string,
   zip: string
 ): Address => {
   return {
-    Street: str,
-    City: cty,
-    County: county,
-    State: sta,
-    Country: cntry,
-    Zipcode: zip,
+    street: str,
+    city: cty,
+    state: sta,
+    country: cntry,
+    zipcode: zip,
   };
 };
 
 export interface Property {
   id?: number;
-  pid?: number;
-  alessorId?: number;
+  pid?: string;
+  alessorId?: string;
   address: Address;
   bedrooms: number;
   baths: number;

@@ -1,66 +1,25 @@
 import React, { useState } from "react";
-import styled from "@emotion/styled";
 import { NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import {
   Avatar,
-  Breadcrumbs as MuiBreadcrumbs,
   Button,
-  Card as MuiCard,
   CardActions,
-  CardContent as MuiCardContent,
-  CardMedia as MuiCardMedia,
-  Chip as MuiChip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider as MuiDivider,
   Grid2 as Grid,
   IconButton,
   Link,
-  TextField,
-  Typography as MuiTypography,
 } from "@mui/material";
-import { AvatarGroup as MuiAvatarGroup } from "@mui/material";
-import { spacing, SpacingProps } from "@mui/system";
 import { Eye, Pencil, TrashIcon } from "lucide-react";
 import { Add as AddIcon } from "@mui/icons-material";
-
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
-
-const Card = styled(MuiCard)(spacing);
-
-const CardContent = styled(MuiCardContent)`
-  border-bottom: 1px solid ${(props) => props.theme.palette.grey[300]};
-`;
-
-const CardMedia = styled(MuiCardMedia)`
-  height: 220px;
-`;
-
-const Divider = styled(MuiDivider)(spacing);
-
-interface TypographyProps extends SpacingProps {
-  component?: string;
-}
-const Typography = styled(MuiTypography)<TypographyProps>(spacing);
-
-const Chip = styled(MuiChip)<{ color?: string }>`
-  height: 20px;
-  padding: 4px 0;
-  font-size: 85%;
-  background-color: ${(props) =>
-    props.theme.palette[props.color ? props.color : "primary"].light};
-  color: ${(props) => props.theme.palette.common.white};
-  margin-bottom: ${(props) => props.theme.spacing(4)};
-`;
-
-const AvatarGroup = styled(MuiAvatarGroup)`
-  margin-left: ${(props) => props.theme.spacing(2)};
-`;
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Card, CardContent, CardMedia, Divider } from "@/components/ui/Card";
+import { Typography } from "@/components/ui/Typography";
+import { AvatarGroup } from "@/components/ui/AvatarGroup";
+import Chip from "@/components/ui/Chips";
+import { Property } from "@/types/property";
+import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDialog";
+import useAuth from "@/hooks/useAuth";
 
 type PropertyProps = {
   image?: string;
@@ -110,8 +69,10 @@ const Property: React.FC<PropertyProps> = ({
 };
 
 function Properties() {
+  const { user } = useAuth();
   const [openNewDialog, setOpenNewDialog] = useState<boolean>(false);
   const handleCreateProperty = () => setOpenNewDialog(true);
+  const [properties, setProperties] = useState<Property[]>();
 
   return (
     <React.Fragment>
@@ -256,43 +217,11 @@ function Properties() {
         </Grid>
       </Grid>
 
-      {openNewDialog && (
-        <Dialog
-          open={openNewDialog}
-          onClose={() => setOpenNewDialog(false)}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">
-            <Typography variant="h3">Create</Typography>
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              To subscribe to this website, please enter your email address
-              here. We will send updates occasionally.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="P"
-              type="text"
-              fullWidth
-            />
-          </DialogContent>
-          <DialogActions sx={{ m: 2 }}>
-            <Button onClick={() => setOpenNewDialog(false)} color="warning">
-              Cancel
-            </Button>
-            <Button
-              onClick={() => setOpenNewDialog(false)}
-              color="primary"
-              variant="contained"
-            >
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+      <NewPropertyDialog
+        lessorId={user?.uid ?? "[invalid-id]"}
+        open={openNewDialog}
+        openSetter={setOpenNewDialog}
+      />
     </React.Fragment>
   );
 }

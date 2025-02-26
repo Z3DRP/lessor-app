@@ -1,18 +1,15 @@
 import axiosInstance from "@/utils/axios";
 import { ProfileType } from "unions/unions";
 
-const URL = import.meta.env.VITE_API_BASE_URL;
 const userEP = import.meta.env.VITE_USER_EP;
 
 export const userApi = {
   async getUser(uid: string) {
-    try {
-      const res = await axiosInstance.get(`${URL}/${userEP}/${uid}`);
-      return res?.data;
-    } catch (err) {
+    const res = await axiosInstance.get(`${userEP}/${uid}`).catch((err) => {
       console.error("Error fetching user ", err);
       throw err;
-    }
+    });
+    return res?.data;
   },
 
   async signupUser(

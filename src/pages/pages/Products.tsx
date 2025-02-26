@@ -5,7 +5,6 @@ import { Helmet } from "react-helmet-async";
 
 import {
   Box,
-  Breadcrumbs as MuiBreadcrumbs,
   Button,
   Checkbox,
   Divider as MuiDivider,
@@ -34,10 +33,11 @@ import {
   Star as StarIcon,
 } from "@mui/icons-material";
 import { spacing } from "@mui/system";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 
 const Divider = styled(MuiDivider)(spacing);
 
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
+//const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
 const Paper = styled(MuiPaper)(spacing);
 

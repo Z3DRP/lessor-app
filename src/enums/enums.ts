@@ -1,29 +1,29 @@
 export enum CommunicationPreference {
-  "email",
-  "phone",
-  "text",
+  Email = "email",
+  Phone = "phone",
+  Text = "text",
 }
 
 export enum PaymentStatus {
-  "accepted",
-  "rejected",
+  Accepted = "accepted",
+  Rejecte = "rejected",
 }
 
 export enum PropertyStatus {
-  "pending",
-  "in-progress",
-  "completed",
-  "unknown",
-  "paused",
+  Pending = "pending",
+  InProgress = "in-progress",
+  Completed = "completed",
+  Unknown = "unknown",
+  Paused = "paused",
 }
 
 export enum MethodOfPayment {
-  "check",
-  "cash",
+  Check = "check",
+  Cash = "cash",
 }
 
 export enum PeriodType {
-  "weekly",
-  "bi-weekly",
-  "monthly",
+  Weekly = "weekly",
+  BiWeekly = "bi-weekly",
+  Monthly = "monthly",
 }
