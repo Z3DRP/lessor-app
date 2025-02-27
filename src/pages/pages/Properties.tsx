@@ -17,9 +17,14 @@ import { Card, CardContent, CardMedia, Divider } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { AvatarGroup } from "@/components/ui/AvatarGroup";
 import Chip from "@/components/ui/Chips";
-import { Property } from "@/types/property";
+import { Address, Property } from "@/types/property";
 import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDialog";
 import useAuth from "@/hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { createProperty, fetchProperties } from "@/redux/slices/properties";
+import { PropertyStatus } from "enums/enums";
+import { useSnackbar } from "notistack";
 
 type PropertyProps = {
   image?: string;
@@ -70,9 +75,48 @@ const Property: React.FC<PropertyProps> = ({
 
 function Properties() {
   const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const { unqueueSnackbar } = useSnackbar();
   const [openNewDialog, setOpenNewDialog] = useState<boolean>(false);
-  const handleCreateProperty = () => setOpenNewDialog(true);
-  const [properties, setProperties] = useState<Property[]>();
+  const handleOpenNewDialog = () => setOpenNewDialog(true);
+  //const [properties, setProperties] = useState<Property[]>();
+  const handleGetProperties = () => {
+    dispatch(fetchProperties(user?.alessorId ?? "[invalid-id]"));
+  };
+
+  const handleCreateProperty = async (
+    alsrId: string,
+    addrs: Address,
+    beds: number,
+    baths: number,
+    sqFt: number | undefined,
+    available: boolean,
+    status: PropertyStatus | undefined,
+    notes: string | undefined,
+    taxDue: number | undefined,
+    txRate: number | undefined,
+    occupancy: number | undefined
+  ) => {
+    const property = {
+      alessorId: alsrId,
+      address: addrs,
+      bedrooms: beds,
+      baths: baths,
+      ...(sqFt != undefined && { squareFootage: sqFt }),
+      ...(available != undefined && { isAvailable: available }),
+      ...(status != undefined && { status }),
+      ...(notes != undefined && { notes }),
+      ...(taxDue != undefined && { taxAmountDue: taxDue }),
+      ...(txRate != undefined && { taxRate: txRate }),
+      ...(occupancy != undefined && { maxOccupancy: occupancy }),
+    };
+    try {
+      const res = await dispatch(createProperty({ data: property })).unwrap();
+      return { success: true, data: res };
+    } catch (err) {
+      return { success: false, err };
+    }
+  };
 
   return (
     <React.Fragment>
@@ -97,7 +141,7 @@ function Properties() {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleCreateProperty}
+              onClick={handleOpenNewDialog}
             >
               <AddIcon />
               New Property

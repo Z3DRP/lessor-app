@@ -43,7 +43,10 @@ export const createProperty = createAsyncThunk(
 export const updateProperty = createAsyncThunk(
   "properties/updateProperty",
   async (
-    { id, updatedData }: { id: string; updatedData: Partial<Property> },
+    {
+      id,
+      updatedData,
+    }: { id: string; updatedData: Partial<Property> | Property },
     { rejectWithValue }
   ) => {
     try {
