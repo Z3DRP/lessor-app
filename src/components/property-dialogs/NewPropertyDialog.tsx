@@ -23,15 +23,42 @@ import { Address, Property } from "@/types/property";
 import { propertyApi } from "api/properties";
 import { enqueueSnackbar, useSnackbar } from "notistack";
 import { PropertyStatus } from "enums/enums";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
-import { spacing } from "@mui/system";
+import { spacing, SpacingProps } from "@mui/system";
+import { countryData } from "../../data/countryData";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
+interface ButtonProps extends SpacingProps {
+  component?: string;
+}
 const Button = styled(MuiButton)<ButtonProps>(spacing);
 const TextField = styled(MuiTextField)<{ my?: number }>(spacing);
+const supportedCountries = [
+  "United States",
+  "Canada",
+  "United Kingdom",
+  "Mexico",
+];
+
+type countryOption = {
+  countryName: string;
+  regions:
+    | {
+        name: string;
+        shortCode: string;
+      }
+    | { name: string; shortCode?: string | undefined }[];
+  countryShortCode: string;
+};
+
+type regionOption = {
+  countryName: string;
+  regionName: string;
+  code?: string | undefined;
+};
 
 type NewPropertyDialogProps = {
   lessorId: string;
@@ -47,6 +74,37 @@ export function NewPropertyDialog({
 }: NewPropertyDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [error, setError] = useState<string | undefined>();
+  const [countries, setCountries] = useState<countryOption[]>();
+  const [regionsByCountry, setRegionsByCountry] =
+    useState<Map<string, regionOption[]>>();
+  const [regions, setRegions] = useState<regionOption[]>();
+
+  useEffect(() => {
+    const cData = countryData
+      .filter((c) => supportedCountries.includes(c.countryName))
+      .map((c) => c);
+
+    setCountries(cData);
+
+    const rData: regionOption[] = cData.flatMap((c) =>
+      c.regions.map((r) => ({
+        countryName: c.countryName,
+        regionName: r.name,
+        code: r.shortCode,
+      }))
+    );
+
+    const cRegions = new Map<string, regionOption[]>();
+    rData.forEach((r) => {
+      if (cRegions.has(r.countryName)) {
+        cRegions.get(r.countryName)?.push(r);
+        return;
+      }
+
+      cRegions.set(r.countryName, [r]);
+    });
+    setRegionsByCountry(cRegions);
+  });
 
   const newPropertyHandler = async (
     alsrId: string,
@@ -193,6 +251,7 @@ export function NewPropertyDialog({
             handleBlur,
             handleChange,
             isSubmitting,
+            setFieldValue,
             touched,
             values,
           }) => (
@@ -244,12 +303,80 @@ export function NewPropertyDialog({
                       </Grid>
                     </Grid>
 
-                    <Grid>
-                      <Grid container size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
+                      <Grid
+                        container
+                        size={{ xs: 12 }}
+                        spacing={2}
+                        justifyContent="center"
+                      >
                         <Grid size={{ xs: 12, md: 4 }}>
                           <FormControl fullWidth>
                             <InputLabel id="country-field">Country</InputLabel>
+                            <Select
+                              fullWidth
+                              name="country"
+                              labelId="country-field"
+                              value={values.country}
+                              onChange={(e: any) => {
+                                const selectedRegion = regionsByCountry?.get(
+                                  e.target.value
+                                );
+                                setRegions(selectedRegion ?? []);
+                                setFieldValue("country", e.target.value);
+                              }}
+                              onBlur={handleBlur}
+                              error={Boolean(touched.country && errors.country)}
+                              variant="outlined"
+                              sx={{ my: 2 }}
+                            >
+                              {countries?.map((c) => (
+                                <MenuItem
+                                  key={c.countryShortCode}
+                                  value={c.countryName}
+                                >
+                                  <Typography variant="body2">
+                                    {c.countryShortCode}
+                                  </Typography>
+                                </MenuItem>
+                              ))}
+                            </Select>
                           </FormControl>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <FormControl fullWidth>
+                            <InputLabel id="region-field">State</InputLabel>
+                            <Select
+                              fullWidth
+                              name="state"
+                              labelId="region-field"
+                              value={values.state}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(touched.state && errors.state)}
+                              variant="outlined"
+                              sx={{ my: 2 }}
+                            >
+                              {regions?.map((r) => (
+                                <MenuItem key={r.code} value={r.countryName}>
+                                  {r.code}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <TextField
+                            name="zipcode"
+                            label="Zipcode"
+                            value={values.zipcode}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(touched.zipcode && errors.zipcode)}
+                            helperText={touched.zipcode && errors.zipcode}
+                            variant="outlined"
+                            my={2}
+                          />
                         </Grid>
                       </Grid>
                     </Grid>
@@ -260,7 +387,7 @@ export function NewPropertyDialog({
           )}
         </Formik>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ mb: 2, mr: 2 }}>
         <Button onClick={() => openSetter(false)} color="warning">
           Cancel
         </Button>

@@ -84,34 +84,11 @@ function Properties() {
     dispatch(fetchProperties(user?.alessorId ?? "[invalid-id]"));
   };
 
-  const handleCreateProperty = async (
-    alsrId: string,
-    addrs: Address,
-    beds: number,
-    baths: number,
-    sqFt: number | undefined,
-    available: boolean,
-    status: PropertyStatus | undefined,
-    notes: string | undefined,
-    taxDue: number | undefined,
-    txRate: number | undefined,
-    occupancy: number | undefined
-  ) => {
-    const property = {
-      alessorId: alsrId,
-      address: addrs,
-      bedrooms: beds,
-      baths: baths,
-      ...(sqFt != undefined && { squareFootage: sqFt }),
-      ...(available != undefined && { isAvailable: available }),
-      ...(status != undefined && { status }),
-      ...(notes != undefined && { notes }),
-      ...(taxDue != undefined && { taxAmountDue: taxDue }),
-      ...(txRate != undefined && { taxRate: txRate }),
-      ...(occupancy != undefined && { maxOccupancy: occupancy }),
-    };
+  const handleCreateProperty = async (data: Partial<Property>) => {
     try {
-      const res = await dispatch(createProperty({ data: property })).unwrap();
+      const res = await dispatch(
+        createProperty({ data: { ...data } })
+      ).unwrap();
       return { success: true, data: res };
     } catch (err) {
       return { success: false, err };
@@ -265,6 +242,7 @@ function Properties() {
         lessorId={user?.uid ?? "[invalid-id]"}
         open={openNewDialog}
         openSetter={setOpenNewDialog}
+        createPropertyHandler={handleCreateProperty}
       />
     </React.Fragment>
   );

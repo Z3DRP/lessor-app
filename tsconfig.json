@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -15,12 +19,21 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-    "typeRoots": ["src/types", "node_modules/@types", "node_modules"],
-    "types": ["vite/client"],
+    "typeRoots": [
+      "src/types",
+      "node_modules/@types",
+      "node_modules"
+    ],
+    "types": [
+      "vite/client"
+    ],
     "noFallthroughCasesInSwitch": true,
     "baseUrl": "src/",
     "paths": {
       // Folders
+      "@/data/*": [
+        "data/*"
+      ],
       "@/components/*": [
         "components/*"
       ],
@@ -72,5 +85,7 @@
       ]
     },
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
