@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import {
   Box as MuiBox,
   Button as MuiButton,
@@ -9,20 +10,23 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
+  FormHelperText,
   Grid2 as Grid,
   InputLabel,
   MenuItem,
   Select,
   SelectProps,
+  Switch,
   TextField as MuiTextField,
 } from "@mui/material";
 import { Typography } from "../ui/Typography";
-import { Formik } from "formik";
+import { FieldHookConfig, Formik, useField } from "formik";
 import * as Yup from "yup";
 import { Address, Property } from "@/types/property";
 import { propertyApi } from "api/properties";
 import { enqueueSnackbar, useSnackbar } from "notistack";
-import { PropertyStatus } from "enums/enums";
+import { PropertyStatus, propertyStatuses } from "enums/enums";
 import { useEffect, useState } from "react";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
@@ -113,7 +117,7 @@ export function NewPropertyDialog({
     baths: number,
     sqFt: number | undefined,
     available: boolean,
-    status: PropertyStatus | undefined,
+    status: PropertyStatus,
     notes: string | undefined,
     taxDue: number | undefined,
     txRate: number | undefined,
@@ -163,18 +167,21 @@ export function NewPropertyDialog({
     zipcode: "",
     bedrooms: 0,
     baths: 0,
-    squareFootage: 0.0,
+    squareFootage: 0,
     isAvailable: false,
-    status: PropertyStatus.Unknown,
+    status: "",
     notes: "",
-    taxRate: 0.0,
+    taxRate: 0.1,
     taxAmountDue: 0.0,
     maxOccupancy: 1,
   };
 
   const validationSchema = Yup.object().shape({
     street: Yup.string().min(2).max(150).required("Street is required"),
-    city: Yup.string().min(2).max(150).required("City is required"),
+    city: Yup.string()
+      .min(2, "City must be more than 2 characters")
+      .max(150, "City cannot be more than 150 characters")
+      .required("City is required"),
     state: Yup.string().min(2).max(75).required("State is required"),
     country: Yup.string().min(2).max(75).required("Country is required"),
     zipcode: Yup.string().min(5).max(5).required("Zipcode is required"),
@@ -191,7 +198,7 @@ export function NewPropertyDialog({
       .oneOf(Object.values(PropertyStatus))
       .required("Status is required"),
     notes: Yup.string().optional(),
-    taxRate: Yup.number().min(0.01).max(1).optional(),
+    taxRate: Yup.number().min(0).max(1).optional(),
     taxAmountDue: Yup.number().min(0).optional(),
     maxOccupancy: Yup.number().min(1).optional(),
   });
@@ -229,7 +236,7 @@ export function NewPropertyDialog({
               values.baths,
               values.squareFootage,
               values.isAvailable,
-              values?.status,
+              values?.status as PropertyStatus,
               values?.notes,
               values?.taxRate,
               values?.taxAmountDue,
@@ -271,6 +278,20 @@ export function NewPropertyDialog({
                 ) : (
                   <Grid container spacing={1}>
                     <Grid size={{ xs: 12 }}>
+                      <FormControlLabel
+                        label="Available"
+                        control={
+                          <Switch
+                            name="isAvailable"
+                            onChange={(e) =>
+                              setFieldValue("isAvailable", e.target.value)
+                            }
+                            onBlur={handleBlur}
+                          />
+                        }
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
                       <Grid container direction="row" spacing={2}>
                         <Grid size={{ xs: 12, md: 6 }}>
                           <TextField
@@ -311,69 +332,239 @@ export function NewPropertyDialog({
                         justifyContent="center"
                       >
                         <Grid size={{ xs: 12, md: 4 }}>
-                          <FormControl fullWidth>
-                            <InputLabel id="country-field">Country</InputLabel>
-                            <Select
-                              fullWidth
-                              name="country"
-                              labelId="country-field"
-                              value={values.country}
-                              onChange={(e: any) => {
-                                const selectedRegion = regionsByCountry?.get(
-                                  e.target.value
-                                );
-                                setRegions(selectedRegion ?? []);
-                                setFieldValue("country", e.target.value);
-                              }}
-                              onBlur={handleBlur}
-                              error={Boolean(touched.country && errors.country)}
-                              variant="outlined"
-                              sx={{ my: 2 }}
-                            >
-                              {countries?.map((c) => (
-                                <MenuItem
-                                  key={c.countryShortCode}
-                                  value={c.countryName}
-                                >
-                                  <Typography variant="body2">
-                                    {c.countryShortCode}
-                                  </Typography>
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <TextField
+                            select
+                            fullWidth
+                            name="country"
+                            label={values.country === "" ? "" : "Country"}
+                            onChange={(e: any) => {
+                              const selectedRegion = regionsByCountry?.get(
+                                e.target.value
+                              );
+                              setRegions(selectedRegion ?? []);
+                              setFieldValue("country", e.target.value);
+                            }}
+                            onBlur={handleBlur}
+                            defaultValue=""
+                            error={Boolean(touched.country && errors.country)}
+                            helperText={touched.country && errors.country}
+                            my={2}
+                            slotProps={{
+                              select: {
+                                native: true,
+                                displayEmpty: true,
+                              },
+                            }}
+                          >
+                            <option value="">Select Country</option>
+                            {countries?.map((c) => (
+                              <option
+                                key={c.countryShortCode}
+                                value={c.countryName}
+                              >
+                                {c.countryShortCode}
+                              </option>
+                            ))}
+                          </TextField>
                         </Grid>
                         <Grid size={{ xs: 12, md: 4 }}>
-                          <FormControl fullWidth>
-                            <InputLabel id="region-field">State</InputLabel>
-                            <Select
-                              fullWidth
-                              name="state"
-                              labelId="region-field"
-                              value={values.state}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              error={Boolean(touched.state && errors.state)}
-                              variant="outlined"
-                              sx={{ my: 2 }}
-                            >
-                              {regions?.map((r) => (
-                                <MenuItem key={r.code} value={r.countryName}>
-                                  {r.code}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <TextField
+                            select
+                            fullWidth
+                            name="state"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={values.state === "" ? "" : "State"}
+                            defaultValue=""
+                            error={Boolean(touched.state && errors.state)}
+                            helperText={touched.state && errors.state}
+                            slotProps={{
+                              select: {
+                                native: true,
+                                displayEmpty: true,
+                              },
+                            }}
+                            my={2}
+                          >
+                            <option value="">Select State</option>
+                            {regions?.map((r) => (
+                              <option key={r.code} value={r.regionName}>
+                                {r.code}
+                              </option>
+                            ))}
+                          </TextField>
                         </Grid>
                         <Grid size={{ xs: 12, md: 4 }}>
                           <TextField
                             name="zipcode"
                             label="Zipcode"
+                            fullWidth
                             value={values.zipcode}
                             onChange={handleChange}
                             onBlur={handleBlur}
                             error={Boolean(touched.zipcode && errors.zipcode)}
                             helperText={touched.zipcode && errors.zipcode}
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                      <Grid
+                        container
+                        size={{ xs: 12 }}
+                        justifyContent="center"
+                        spacing={2}
+                      >
+                        <Grid size={{ xs: 12, md: 3 }}>
+                          <TextField
+                            fullWidth
+                            name="bedrooms"
+                            label="Bedrooms"
+                            value={values.bedrooms}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(touched.bedrooms && errors.bedrooms)}
+                            helperText={touched.bedrooms && errors.bedrooms}
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 3 }}>
+                          <TextField
+                            fullWidth
+                            name="baths"
+                            label="Baths"
+                            value={values.baths}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(touched.baths && errors.baths)}
+                            helperText={touched.baths && errors.baths}
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 3 }}>
+                          <TextField
+                            fullWidth
+                            name="squareFootage"
+                            label="Square Footage"
+                            value={values.squareFootage}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(
+                              touched.squareFootage && errors.squareFootage
+                            )}
+                            helperText={
+                              touched.squareFootage && errors.squareFootage
+                            }
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 3 }}>
+                          <TextField
+                            fullWidth
+                            name="maxOccupancy"
+                            label="Max Occupancy"
+                            value={values.maxOccupancy}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(
+                              touched.maxOccupancy && errors.maxOccupancy
+                            )}
+                            helperText={
+                              touched.maxOccupancy && errors.maxOccupancy
+                            }
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Grid
+                        container
+                        size={{ xs: 12 }}
+                        spacing={2}
+                        justifyContent="flex-start"
+                        justifyItems="center"
+                      >
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <TextField
+                            fullWidth
+                            name="taxRate"
+                            label="Tax Rate"
+                            value={values.taxRate}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(touched.taxRate && errors.taxRate)}
+                            helperText={touched.taxRate && errors.taxRate}
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <TextField
+                            fullWidth
+                            name="taxAmountDue"
+                            label="Tax Due"
+                            value={values.taxAmountDue}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(
+                              touched.taxAmountDue && errors.taxAmountDue
+                            )}
+                            helperText={
+                              touched.taxAmountDue && errors.taxAmountDue
+                            }
+                            variant="outlined"
+                            my={2}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <TextField
+                            select
+                            fullWidth
+                            name="status"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={values.status === "" ? "" : "Status"}
+                            defaultValue=""
+                            error={Boolean(touched.status && errors.status)}
+                            helperText={touched.status && errors.status}
+                            my={2}
+                            slotProps={{
+                              select: {
+                                native: true,
+                                displayEmpty: true,
+                              },
+                            }}
+                          >
+                            <option value="">Select Status</option>
+                            {Object.values(PropertyStatus).map(
+                              (ps: PropertyStatus) => (
+                                <option key={ps} value={ps}>
+                                  {ps}
+                                </option>
+                              )
+                            )}
+                          </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                          <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            name="notes"
+                            label="Notes"
+                            value={values.notes}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={Boolean(touched.notes && errors.notes)}
+                            helperText={touched.notes && errors.notes}
                             variant="outlined"
                             my={2}
                           />

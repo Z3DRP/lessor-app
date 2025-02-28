@@ -27,3 +27,11 @@ export enum PeriodType {
   BiWeekly = "bi-weekly",
   Monthly = "monthly",
 }
+
+export const propertyStatuses = [
+  "pending",
+  "in-progress",
+  "completed",
+  "unknown",
+  "paused",
+];
