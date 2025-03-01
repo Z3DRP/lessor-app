@@ -65,7 +65,7 @@ function SignIn() {
           // needs to be changed to correct path
           navigate("/private");
         } catch (error: any) {
-          const message = error.message || "Something went wrong";
+          const message = error.error || "Something went wrong";
 
           setStatus({ success: false });
           setErrors({ submit: message });
@@ -83,10 +83,6 @@ function SignIn() {
         values,
       }) => (
         <form noValidate onSubmit={handleSubmit}>
-          <Alert mt={3} mb={3} severity="info">
-            Use <strong>demo@bootlab.io</strong> and{" "}
-            <strong>unsafepassword</strong> to sign in
-          </Alert>
           {errors.submit && (
             <Alert mt={2} mb={3} severity="warning">
               {errors.submit}

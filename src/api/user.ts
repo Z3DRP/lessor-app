@@ -48,20 +48,25 @@ export const userApi = {
     }
   },
 
-  async signinUser(email: string, password: string) {
-    try {
-      const signinEP = import.meta.env.VITE_SIGN_IN;
-      const res = await axiosInstance
-        .post(signinEP, { email, password })
-        .catch((err) => {
-          console.log(err);
-          throw err;
-        });
+  // validates jwt claims
+  async getUserDetails() {
+    const claimsEP = import.meta.env.VITE_CLAIMS_EP;
+    const res = await axiosInstance.get(claimsEP).catch((err) => {
+      console.log(err.error);
+    });
 
-      return res?.data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
+    return res?.data;
+  },
+
+  async signinUser(email: string, password: string) {
+    const signinEP = import.meta.env.VITE_SIGN_IN;
+    const res = await axiosInstance
+      .post(signinEP, { email, password })
+      .catch((err) => {
+        console.log(err.error);
+        throw err;
+      });
+
+    return res?.data;
   },
 };

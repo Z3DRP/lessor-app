@@ -10,12 +10,14 @@ export const propertyApi = {
       console.log("error fetching property: ", err);
       throw err;
     });
-    return res?.data;
+    return res;
   },
 
-  async getProperties(alsrId: string) {
+  async getProperties(alsrId: string, page: number) {
     const res = await axiosInstance
-      .get(`${propertyEp}/${alsrId}`)
+      .get(`${propertyEp}/${alsrId}`, {
+        params: page,
+      })
       .catch((err) => {
         console.log("eror fetching properties: ", err);
         throw err;
@@ -66,7 +68,7 @@ export const propertyApi = {
       console.log("api error: ", err);
       throw err;
     });
-    return res?.data;
+    return res;
   },
 
   async updateProperty(pid: string, data: Partial<Property>) {

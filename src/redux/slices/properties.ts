@@ -16,13 +16,16 @@ const initialState: PropertyState = {
 
 export const fetchProperties = createAsyncThunk(
   "properties/fetchProperties",
-  async (alsrId: string, { rejectWithValue }) => {
+  async (
+    { alsrId, page }: { alsrId: string; page: number | undefined },
+    { rejectWithValue }
+  ) => {
     try {
-      const properties = await propertyApi.getProperties(alsrId);
+      const properties = await propertyApi.getProperties(alsrId, page ?? 1);
       return properties;
-    } catch (err) {
-      console.log("error fetching property state: ", err);
-      return rejectWithValue(`state error: ${err}`);
+    } catch (err: any) {
+      console.log("error fetching property state: ", err.error);
+      return rejectWithValue(`state error: ${err.error}`);
     }
   }
 );
@@ -33,9 +36,9 @@ export const createProperty = createAsyncThunk(
     try {
       const nwProperty = await propertyApi.addProperty(data);
       return nwProperty;
-    } catch (err) {
-      console.log("error updating property state");
-      return rejectWithValue(`state error: ${err}`);
+    } catch (err: any) {
+      console.log("error updating property state: ");
+      return rejectWithValue(`state error: ${err.error}`);
     }
   }
 );
@@ -52,9 +55,9 @@ export const updateProperty = createAsyncThunk(
     try {
       const updatedProperty = await propertyApi.updateProperty(id, updatedData);
       return updatedProperty;
-    } catch (err) {
-      console.log(`error updating property state: `, err);
-      return rejectWithValue(`state error: ${err}`);
+    } catch (err: any) {
+      console.log(`error updating property state: `, err.error);
+      return rejectWithValue(`state error: ${err.error}`);
     }
   }
 );
@@ -65,9 +68,9 @@ export const deleteProperty = createAsyncThunk(
     try {
       await propertyApi.deleteProeprty(id);
       return id;
-    } catch (err) {
-      console.log("error deleting property state: ", err);
-      return rejectWithValue(`state error: ${err}`);
+    } catch (err: any) {
+      console.log("error deleting property state: ", err.error);
+      return rejectWithValue(`state error: ${err.error}`);
     }
   }
 );

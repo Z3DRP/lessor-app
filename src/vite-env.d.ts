@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_USER_EP: string;
   readonly VITE_SIGN_IN: string;
   readonly VITE_SIGN_UP: string;
+  readonly VITE_CLAIMS_EP: string;
   readonly VITE_AUTH_ENABLED?: string;
   readonly VITE_DEV_JWT?: string;
   readonly VITE_ENVIRONMENT?: string;

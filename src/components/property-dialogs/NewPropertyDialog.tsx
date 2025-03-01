@@ -9,24 +9,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormControlLabel,
-  FormHelperText,
   Grid2 as Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectProps,
   Switch,
   TextField as MuiTextField,
 } from "@mui/material";
 import { Typography } from "../ui/Typography";
-import { FieldHookConfig, Formik, useField } from "formik";
+import { Formik } from "formik";
 import * as Yup from "yup";
 import { Address, Property } from "@/types/property";
-import { propertyApi } from "api/properties";
 import { enqueueSnackbar, useSnackbar } from "notistack";
-import { PropertyStatus, propertyStatuses } from "enums/enums";
+import { PropertyStatus } from "enums/enums";
 import { useEffect, useState } from "react";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
@@ -108,7 +101,46 @@ export function NewPropertyDialog({
       cRegions.set(r.countryName, [r]);
     });
     setRegionsByCountry(cRegions);
-  });
+  }, []);
+
+  const handleSubmit = async (
+    values: any,
+    { resetForm, setSubmitting }: any
+  ) => {
+    console.log("begin submit");
+    setSubmitting(true);
+
+    const address: Address = {
+      street: values.street,
+      city: values.city,
+      state: values.state,
+      country: values.country,
+      zipcode: values.zipcode,
+    };
+
+    const success = await newPropertyHandler(
+      lessorId,
+      address,
+      values.bedrooms,
+      values.baths,
+      values.squareFootage,
+      values.isAvailable,
+      values?.status as PropertyStatus,
+      values?.notes,
+      values?.taxRate,
+      values?.taxAmountDue,
+      values?.maxOccupancy
+    );
+
+    if (!success) {
+      setSubmitting(false);
+      resetForm();
+      return;
+    }
+
+    setSubmitting(false);
+    openSetter(false);
+  };
 
   const newPropertyHandler = async (
     alsrId: string,
@@ -126,18 +158,21 @@ export function NewPropertyDialog({
     const property = {
       alessorId: alsrId,
       address: addrs,
-      bedrooms: beds,
-      baths: baths,
-      ...(sqFt != undefined && { squareFootage: sqFt }),
+      bedrooms: Number(beds),
+      baths: Number(baths),
+      ...(sqFt != undefined && { squareFootage: Number(sqFt) }),
       ...(available != undefined && { isAvailable: available }),
       ...(status != undefined && { status }),
       ...(notes != undefined && { notes }),
-      ...(taxDue != undefined && { taxAmountDue: taxDue }),
-      ...(txRate != undefined && { taxRate: txRate }),
-      ...(occupancy != undefined && { maxOccupancy: occupancy }),
+      ...(taxDue != undefined && { taxAmountDue: Number(taxDue) }),
+      ...(txRate != undefined && { taxRate: Number(txRate) }),
+      ...(occupancy != undefined && { maxOccupancy: Number(occupancy) }),
     };
 
+    console.log("using alsr id : ", alsrId);
+
     try {
+      console.log("property handler");
       const result = await createPropertyHandler(property);
 
       if (!result.successe) {
@@ -186,14 +221,13 @@ export function NewPropertyDialog({
     country: Yup.string().min(2).max(75).required("Country is required"),
     zipcode: Yup.string().min(5).max(5).required("Zipcode is required"),
     bedrooms: Yup.number()
+      .transform((value, ogValue) => (ogValue ? Number(ogValue) : undefined))
       .min(1)
       .max(20)
       .required("Number of rooms is required"),
     baths: Yup.number().min(1).max(20).required("Number of baths is required"),
     squareFootage: Yup.number().min(1).optional(),
-    isAvailable: Yup.boolean().required(
-      "Must specifiy if property is available"
-    ),
+    isAvailable: Yup.boolean().optional(),
     status: Yup.string()
       .oneOf(Object.values(PropertyStatus))
       .required("Status is required"),
@@ -204,392 +238,366 @@ export function NewPropertyDialog({
   });
 
   return (
-    <Dialog
-      open={open}
-      onClose={() => openSetter(false)}
-      aria-labelledby="form-dialog-title"
-      fullWidth
-      maxWidth="md"
+    <Formik
+      initialValues={initValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
     >
-      <DialogTitle id="form-dialog-title">
-        <Typography variant="h3">Create</Typography>
-      </DialogTitle>
-      <DialogContent>
-        <Formik
-          initialValues={initValues}
-          validationSchema={validationSchema}
-          onSubmit={async (values, { setSubmitting, resetForm }) => {
-            setSubmitting(true);
-
-            const address: Address = {
-              street: values.street,
-              city: values.city,
-              state: values.state,
-              country: values.country,
-              zipcode: values.zipcode,
-            };
-
-            const success = await newPropertyHandler(
-              lessorId,
-              address,
-              values.bedrooms,
-              values.baths,
-              values.squareFootage,
-              values.isAvailable,
-              values?.status as PropertyStatus,
-              values?.notes,
-              values?.taxRate,
-              values?.taxAmountDue,
-              values?.maxOccupancy
-            );
-
-            if (!success) {
-              setSubmitting(false);
-              resetForm();
-              return;
-            }
-
-            setSubmitting(false);
-            openSetter(false);
-          }}
+      {({
+        errors,
+        handleBlur,
+        handleChange,
+        handleSubmit,
+        isSubmitting,
+        setFieldValue,
+        touched,
+        values,
+      }) => (
+        <Dialog
+          open={open}
+          onClose={() => openSetter(false)}
+          aria-labelledby="form-dialog-title"
+          fullWidth
+          maxWidth="md"
         >
-          {({
-            errors,
-            handleBlur,
-            handleChange,
-            isSubmitting,
-            setFieldValue,
-            touched,
-            values,
-          }) => (
-            <Card mb={6}>
-              <CardContent>
-                <TransitionAlert
-                  isOpen={error != undefined}
-                  variant="error"
-                  message={error ?? ""}
-                  closeHandler={() => setError(undefined)}
-                />
+          <DialogTitle id="form-dialog-title">
+            <Typography variant="h3">Create</Typography>
+          </DialogTitle>
+          <form onSubmit={handleSubmit}>
+            <DialogContent>
+              <Card mb={6}>
+                <CardContent>
+                  <TransitionAlert
+                    isOpen={error != undefined}
+                    variant="error"
+                    message={error ?? ""}
+                    closeHandler={() => setError(undefined)}
+                  />
 
-                {isSubmitting ? (
-                  <Box display="flex" justifyContent="center" my={6}>
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <Grid container spacing={1}>
-                    <Grid size={{ xs: 12 }}>
-                      <FormControlLabel
-                        label="Available"
-                        control={
-                          <Switch
-                            name="isAvailable"
-                            onChange={(e) =>
-                              setFieldValue("isAvailable", e.target.value)
-                            }
-                            onBlur={handleBlur}
-                          />
-                        }
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Grid container direction="row" spacing={2}>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            name="street"
-                            label="Street Address"
-                            value={values.street}
-                            error={Boolean(touched.street && errors.street)}
-                            fullWidth
-                            helperText={touched.street && errors.street}
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            name="city"
-                            label="City"
-                            value={values.city}
-                            error={Boolean(touched.city && errors.city)}
-                            fullWidth
-                            helperText={touched.city && errors.city}
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            variant="outlined"
-                            my={2}
-                          />
+                  {isSubmitting ? (
+                    <Box display="flex" justifyContent="center" my={6}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <Grid container spacing={1}>
+                      <Grid size={{ xs: 12 }}>
+                        <FormControlLabel
+                          label="Available"
+                          control={
+                            <Switch
+                              name="isAvailable"
+                              onChange={(e) =>
+                                setFieldValue("isAvailable", e.target.value)
+                              }
+                              onBlur={handleBlur}
+                            />
+                          }
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <Grid container direction="row" spacing={2}>
+                          <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField
+                              name="street"
+                              label="Street Address"
+                              value={values.street}
+                              error={Boolean(touched.street && errors.street)}
+                              fullWidth
+                              helperText={touched.street && errors.street}
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField
+                              name="city"
+                              label="City"
+                              value={values.city}
+                              error={Boolean(touched.city && errors.city)}
+                              fullWidth
+                              helperText={touched.city && errors.city}
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
                         </Grid>
                       </Grid>
-                    </Grid>
 
-                    <Grid size={{ xs: 12 }}>
-                      <Grid
-                        container
-                        size={{ xs: 12 }}
-                        spacing={2}
-                        justifyContent="center"
-                      >
-                        <Grid size={{ xs: 12, md: 4 }}>
-                          <TextField
-                            select
-                            fullWidth
-                            name="country"
-                            label={values.country === "" ? "" : "Country"}
-                            onChange={(e: any) => {
-                              const selectedRegion = regionsByCountry?.get(
-                                e.target.value
-                              );
-                              setRegions(selectedRegion ?? []);
-                              setFieldValue("country", e.target.value);
-                            }}
-                            onBlur={handleBlur}
-                            defaultValue=""
-                            error={Boolean(touched.country && errors.country)}
-                            helperText={touched.country && errors.country}
-                            my={2}
-                            slotProps={{
-                              select: {
-                                native: true,
-                                displayEmpty: true,
-                              },
-                            }}
-                          >
-                            <option value="">Select Country</option>
-                            {countries?.map((c) => (
-                              <option
-                                key={c.countryShortCode}
-                                value={c.countryName}
-                              >
-                                {c.countryShortCode}
-                              </option>
-                            ))}
-                          </TextField>
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 4 }}>
-                          <TextField
-                            select
-                            fullWidth
-                            name="state"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={values.state === "" ? "" : "State"}
-                            defaultValue=""
-                            error={Boolean(touched.state && errors.state)}
-                            helperText={touched.state && errors.state}
-                            slotProps={{
-                              select: {
-                                native: true,
-                                displayEmpty: true,
-                              },
-                            }}
-                            my={2}
-                          >
-                            <option value="">Select State</option>
-                            {regions?.map((r) => (
-                              <option key={r.code} value={r.regionName}>
-                                {r.code}
-                              </option>
-                            ))}
-                          </TextField>
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 4 }}>
-                          <TextField
-                            name="zipcode"
-                            label="Zipcode"
-                            fullWidth
-                            value={values.zipcode}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.zipcode && errors.zipcode)}
-                            helperText={touched.zipcode && errors.zipcode}
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                      </Grid>
-                    </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                      <Grid
-                        container
-                        size={{ xs: 12 }}
-                        justifyContent="center"
-                        spacing={2}
-                      >
-                        <Grid size={{ xs: 12, md: 3 }}>
-                          <TextField
-                            fullWidth
-                            name="bedrooms"
-                            label="Bedrooms"
-                            value={values.bedrooms}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.bedrooms && errors.bedrooms)}
-                            helperText={touched.bedrooms && errors.bedrooms}
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 3 }}>
-                          <TextField
-                            fullWidth
-                            name="baths"
-                            label="Baths"
-                            value={values.baths}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.baths && errors.baths)}
-                            helperText={touched.baths && errors.baths}
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 3 }}>
-                          <TextField
-                            fullWidth
-                            name="squareFootage"
-                            label="Square Footage"
-                            value={values.squareFootage}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(
-                              touched.squareFootage && errors.squareFootage
-                            )}
-                            helperText={
-                              touched.squareFootage && errors.squareFootage
-                            }
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 3 }}>
-                          <TextField
-                            fullWidth
-                            name="maxOccupancy"
-                            label="Max Occupancy"
-                            value={values.maxOccupancy}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(
-                              touched.maxOccupancy && errors.maxOccupancy
-                            )}
-                            helperText={
-                              touched.maxOccupancy && errors.maxOccupancy
-                            }
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Grid
-                        container
-                        size={{ xs: 12 }}
-                        spacing={2}
-                        justifyContent="flex-start"
-                        justifyItems="center"
-                      >
-                        <Grid size={{ xs: 12, md: 4 }}>
-                          <TextField
-                            fullWidth
-                            name="taxRate"
-                            label="Tax Rate"
-                            value={values.taxRate}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.taxRate && errors.taxRate)}
-                            helperText={touched.taxRate && errors.taxRate}
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 4 }}>
-                          <TextField
-                            fullWidth
-                            name="taxAmountDue"
-                            label="Tax Due"
-                            value={values.taxAmountDue}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(
-                              touched.taxAmountDue && errors.taxAmountDue
-                            )}
-                            helperText={
-                              touched.taxAmountDue && errors.taxAmountDue
-                            }
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 4 }}>
-                          <TextField
-                            select
-                            fullWidth
-                            name="status"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={values.status === "" ? "" : "Status"}
-                            defaultValue=""
-                            error={Boolean(touched.status && errors.status)}
-                            helperText={touched.status && errors.status}
-                            my={2}
-                            slotProps={{
-                              select: {
-                                native: true,
-                                displayEmpty: true,
-                              },
-                            }}
-                          >
-                            <option value="">Select Status</option>
-                            {Object.values(PropertyStatus).map(
-                              (ps: PropertyStatus) => (
-                                <option key={ps} value={ps}>
-                                  {ps}
+                      <Grid size={{ xs: 12 }}>
+                        <Grid
+                          container
+                          size={{ xs: 12 }}
+                          spacing={2}
+                          justifyContent="center"
+                        >
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                              select
+                              fullWidth
+                              name="country"
+                              label={values.country === "" ? "" : "Country"}
+                              onChange={(e: any) => {
+                                const selectedRegion = regionsByCountry?.get(
+                                  e.target.value
+                                );
+                                setRegions(selectedRegion ?? []);
+                                setFieldValue("country", e.target.value);
+                              }}
+                              onBlur={handleBlur}
+                              defaultValue=""
+                              error={Boolean(touched.country && errors.country)}
+                              helperText={touched.country && errors.country}
+                              my={2}
+                              slotProps={{
+                                select: {
+                                  native: true,
+                                  displayEmpty: true,
+                                },
+                              }}
+                            >
+                              <option value="">Select Country</option>
+                              {countries?.map((c) => (
+                                <option
+                                  key={c.countryShortCode}
+                                  value={c.countryName}
+                                >
+                                  {c.countryShortCode}
                                 </option>
-                              )
-                            )}
-                          </TextField>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                              select
+                              fullWidth
+                              name="state"
+                              onChange={handleChange}
+                              // onChange={(e: any) => {
+                              //   setFieldValue("state", e.target.value);
+                              // }}
+                              onBlur={handleBlur}
+                              label={values.state === "" ? "" : "State"}
+                              defaultValue=""
+                              error={Boolean(touched.state && errors.state)}
+                              helperText={touched.state && errors.state}
+                              slotProps={{
+                                select: {
+                                  native: true,
+                                  displayEmpty: true,
+                                },
+                              }}
+                              my={2}
+                            >
+                              <option value="">Select State</option>
+                              {regions?.map((r) => (
+                                <option key={r.code} value={r.regionName}>
+                                  {r.code}
+                                </option>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                              name="zipcode"
+                              label="Zipcode"
+                              fullWidth
+                              value={values.zipcode}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(touched.zipcode && errors.zipcode)}
+                              helperText={touched.zipcode && errors.zipcode}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
                         </Grid>
-                        <Grid size={{ xs: 12 }}>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={4}
-                            name="notes"
-                            label="Notes"
-                            value={values.notes}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.notes && errors.notes)}
-                            helperText={touched.notes && errors.notes}
-                            variant="outlined"
-                            my={2}
-                          />
+                      </Grid>
+
+                      <Grid size={{ xs: 12 }}>
+                        <Grid
+                          container
+                          size={{ xs: 12 }}
+                          justifyContent="center"
+                          spacing={2}
+                        >
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <TextField
+                              fullWidth
+                              name="bedrooms"
+                              label="Bedrooms"
+                              value={values.bedrooms}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(
+                                touched.bedrooms && errors.bedrooms
+                              )}
+                              helperText={touched.bedrooms && errors.bedrooms}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <TextField
+                              fullWidth
+                              name="baths"
+                              label="Baths"
+                              value={values.baths}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(touched.baths && errors.baths)}
+                              helperText={touched.baths && errors.baths}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <TextField
+                              fullWidth
+                              name="squareFootage"
+                              label="Square Footage"
+                              value={values.squareFootage}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(
+                                touched.squareFootage && errors.squareFootage
+                              )}
+                              helperText={
+                                touched.squareFootage && errors.squareFootage
+                              }
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <TextField
+                              fullWidth
+                              name="maxOccupancy"
+                              label="Max Occupancy"
+                              value={values.maxOccupancy}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(
+                                touched.maxOccupancy && errors.maxOccupancy
+                              )}
+                              helperText={
+                                touched.maxOccupancy && errors.maxOccupancy
+                              }
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <Grid
+                          container
+                          size={{ xs: 12 }}
+                          spacing={2}
+                          justifyContent="flex-start"
+                          justifyItems="center"
+                        >
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                              fullWidth
+                              name="taxRate"
+                              label="Tax Rate"
+                              value={values.taxRate}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(touched.taxRate && errors.taxRate)}
+                              helperText={touched.taxRate && errors.taxRate}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                              fullWidth
+                              name="taxAmountDue"
+                              label="Tax Due"
+                              value={values.taxAmountDue}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(
+                                touched.taxAmountDue && errors.taxAmountDue
+                              )}
+                              helperText={
+                                touched.taxAmountDue && errors.taxAmountDue
+                              }
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                              select
+                              fullWidth
+                              name="status"
+                              onChange={handleChange}
+                              // onChange={(e: any) => {
+                              //   setFieldValue("status", e.target.value);
+                              // }}
+                              onBlur={handleBlur}
+                              label={values.status === "" ? "" : "Status"}
+                              defaultValue=""
+                              error={Boolean(touched.status && errors.status)}
+                              helperText={touched.status && errors.status}
+                              my={2}
+                              slotProps={{
+                                select: {
+                                  native: true,
+                                  displayEmpty: true,
+                                },
+                              }}
+                            >
+                              <option value="">Select Status</option>
+                              {Object.values(PropertyStatus).map(
+                                (ps: PropertyStatus) => (
+                                  <option key={ps} value={ps}>
+                                    {ps}
+                                  </option>
+                                )
+                              )}
+                            </TextField>
+                          </Grid>
+                          <Grid size={{ xs: 12 }}>
+                            <TextField
+                              fullWidth
+                              multiline
+                              rows={4}
+                              name="notes"
+                              label="Notes"
+                              value={values.notes}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={Boolean(touched.notes && errors.notes)}
+                              helperText={touched.notes && errors.notes}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
                         </Grid>
                       </Grid>
                     </Grid>
-                  </Grid>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </Formik>
-      </DialogContent>
-      <DialogActions sx={{ mb: 2, mr: 2 }}>
-        <Button onClick={() => openSetter(false)} color="warning">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => openSetter(false)}
-          color="primary"
-          variant="contained"
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+                  )}
+                </CardContent>
+              </Card>
+            </DialogContent>
+            <DialogActions sx={{ mb: 2, mr: 2 }}>
+              <Button onClick={() => openSetter(false)} color="warning">
+                Cancel
+              </Button>
+              <Button type="submit" color="primary" variant="contained">
+                Save
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+      )}
+    </Formik>
   );
 }

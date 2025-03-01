@@ -100,8 +100,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response: any = await axios.get("/api/auth/my-account");
-          const { user } = response;
+          const response = await userApi.getUserDetails();
+          const { user }: { user: any } = response;
 
           dispatch({
             type: INITIALIZE,
@@ -161,12 +161,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     profileType: ProfileType
   ) => {
-    // const response = await axios.post("/api/auth/sign-up", {
-    //   email,
-    //   password,
-    //   firstName,
-    //   lastName,
-    // });
     const response = await userApi.signupUser(
       firstName,
       lastName,
