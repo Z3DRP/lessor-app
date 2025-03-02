@@ -115,10 +115,8 @@ export function NewPropertyDialog({
     setRegionsByCountry(cRegions);
   }, []);
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
+  const handleFileChange = async (f: FileList) => {
+    const file = f[0];
     if (!file) return;
 
     setSelectedFile(file);
@@ -198,7 +196,7 @@ export function NewPropertyDialog({
         createProperty({ data: property, file: selectedFile ?? undefined })
       ).unwrap();
 
-      if (!result.successe) {
+      if (!result.success) {
         enqueueSnackbar("an error occurred while saving property", {
           variant: "error",
         });
