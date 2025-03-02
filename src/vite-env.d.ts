@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_ALESSOR_EP: string;
   readonly VITE_WORKER_EP: string;
   readonly VITE_PROPERTY_EP: string;
+  readonly VITE_TEMP_PROPERTIES_EP: string;
   readonly VITE_TASK_EP: string;
   readonly VITE_USER_EP: string;
   readonly VITE_SIGN_IN: string;

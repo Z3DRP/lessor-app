@@ -17,15 +17,13 @@ import { Card, CardContent, CardMedia, Divider } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { AvatarGroup } from "@/components/ui/AvatarGroup";
 import Chip from "@/components/ui/Chips";
-import { Address, Property } from "@/types/property";
+import { Property } from "@/types/property";
 import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDialog";
 import useAuth from "@/hooks/useAuth";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import { createProperty, fetchProperties } from "@/redux/slices/properties";
-import { PropertyStatus } from "enums/enums";
 import { enqueueSnackbar, useSnackbar } from "notistack";
-import { TransitionAlert } from "@/components/ui/CustomAlerts";
 import { LinearQuery } from "@/components/ui/Loaders";
 
 type PropertyProps = {
@@ -45,7 +43,7 @@ const Property: React.FC<PropertyProps> = ({
       {image ? <CardMedia image={image} title="Contemplative Reptile" /> : null}
       <CardContent>
         <Typography gutterBottom variant="h5" component="h2">
-          {title} bs
+          {title}
         </Typography>
 
         {chip}
@@ -84,6 +82,10 @@ function Properties() {
   const [isLoading, setIsLoading] = useState<boolean>();
   const handleOpenNewDialog = () => setOpenNewDialog(true);
   //const [properties, setProperties] = useState<Property[]>();
+  const { properties } = useSelector(
+    (state: RootState) => state.property.properties
+  );
+
   const handleCreateProperty = async (data: Partial<Property>) => {
     try {
       const res = await dispatch(
@@ -99,17 +101,19 @@ function Properties() {
     const handleFetch = async () => {
       try {
         setIsLoading(true);
-        const res = await dispatch(
-          fetchProperties({ alsrId: user?.Uid, page: 1 })
-        ).unwrap();
+        if (user) {
+          const res = await dispatch(
+            fetchProperties({ alsrId: user.Uid, page: 1 })
+          ).unwrap();
 
-        if (!res) {
-          enqueueSnackbar("an error occurred while loading properties", {
-            variant: "error",
-          });
-          setError("unexpected error could not load data");
+          if (!res) {
+            enqueueSnackbar("an error occurred while loading properties", {
+              variant: "error",
+            });
+            setError("unexpected error could not load data");
 
-          return;
+            return;
+          }
         }
       } catch (err: any) {
         enqueueSnackbar(
@@ -276,12 +280,14 @@ function Properties() {
             </Grid>
           </Grid>
 
-          <NewPropertyDialog
-            lessorId={user?.uid ?? "[invalid-id]"}
-            open={openNewDialog}
-            openSetter={setOpenNewDialog}
-            createPropertyHandler={handleCreateProperty}
-          />
+          {user && (
+            <NewPropertyDialog
+              lessorId={user?.Uid || "[invalid-id]"}
+              open={openNewDialog}
+              openSetter={setOpenNewDialog}
+              createPropertyHandler={handleCreateProperty}
+            />
+          )}
         </>
       )}
     </React.Fragment>

@@ -1,8 +1,10 @@
 import axiosInstance from "@/utils/axios";
 import { Address, Property } from "@/types/property";
 import { PropertyStatus } from "enums/enums";
+import { formatDate } from "@fullcalendar/core";
 
 const propertyEp = import.meta.env.VITE_PROPERTY_EP;
+const tempPropertiesEP = import.meta.env.VITE_TEMP_PROPERTIES_EP;
 
 export const propertyApi = {
   async getProperty(pid: string) {
@@ -10,13 +12,13 @@ export const propertyApi = {
       console.log("error fetching property: ", err);
       throw err;
     });
-    return res;
+    return res?.data;
   },
 
   async getProperties(alsrId: string, page: number) {
     const res = await axiosInstance
-      .get(`${propertyEp}/${alsrId}`, {
-        params: page,
+      .get(`${tempPropertiesEP}/${alsrId}`, {
+        params: { page },
       })
       .catch((err) => {
         console.log("eror fetching properties: ", err);
@@ -63,12 +65,44 @@ export const propertyApi = {
     return res?.data;
   },
 
+  async createPropertyWithImage(data: Partial<Property>, file?: File) {
+    if (file) {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (value != null) {
+          formData.append(key, value.toString());
+        }
+      });
+
+      try {
+        const res = await axiosInstance.post(propertyEp, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        return res?.data;
+      } catch (err) {
+        console.log("error uploding property");
+      }
+    }
+
+    const res = await axiosInstance.post(propertyEp, data).catch((err) => {
+      console.log("api err: ", err);
+      throw err;
+    });
+
+    return res?.data;
+  },
+
   async addProperty(data: Partial<Property>) {
     const res = await axiosInstance.post(propertyEp, data).catch((err) => {
       console.log("api error: ", err);
       throw err;
     });
-    return res;
+    return res?.data;
   },
 
   async updateProperty(pid: string, data: Partial<Property>) {

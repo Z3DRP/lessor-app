@@ -96,7 +96,11 @@ const routes = [
     children: [
       {
         path: "",
-        element: <Properties />,
+        element: (
+          <AuthGuard>
+            <Properties />
+          </AuthGuard>
+        ),
       },
     ],
   },

@@ -9,8 +9,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   FormControlLabel,
+  FormHelperText,
   Grid2 as Grid,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
   Switch,
   TextField as MuiTextField,
 } from "@mui/material";
@@ -25,6 +30,11 @@ import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
+import { LinearQuery } from "../ui/Loaders";
+import { createProperty } from "@/redux/slices/properties";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import InputFileUploader from "../ui/FileUploader";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -75,6 +85,8 @@ export function NewPropertyDialog({
   const [regionsByCountry, setRegionsByCountry] =
     useState<Map<string, regionOption[]>>();
   const [regions, setRegions] = useState<regionOption[]>();
+  const [selectedFile, setSelectedFile] = useState<any>();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const cData = countryData
@@ -102,6 +114,15 @@ export function NewPropertyDialog({
     });
     setRegionsByCountry(cRegions);
   }, []);
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+  };
 
   const handleSubmit = async (
     values: any,
@@ -173,7 +194,9 @@ export function NewPropertyDialog({
 
     try {
       console.log("property handler");
-      const result = await createPropertyHandler(property);
+      const result = await dispatch(
+        createProperty({ data: property, file: selectedFile ?? undefined })
+      ).unwrap();
 
       if (!result.successe) {
         enqueueSnackbar("an error occurred while saving property", {
@@ -198,7 +221,7 @@ export function NewPropertyDialog({
     street: "",
     city: "",
     state: "",
-    country: "",
+    country: "default-country",
     zipcode: "",
     bedrooms: 0,
     baths: 0,
@@ -221,7 +244,6 @@ export function NewPropertyDialog({
     country: Yup.string().min(2).max(75).required("Country is required"),
     zipcode: Yup.string().min(5).max(5).required("Zipcode is required"),
     bedrooms: Yup.number()
-      .transform((value, ogValue) => (ogValue ? Number(ogValue) : undefined))
       .min(1)
       .max(20)
       .required("Number of rooms is required"),
@@ -276,7 +298,7 @@ export function NewPropertyDialog({
 
                   {isSubmitting ? (
                     <Box display="flex" justifyContent="center" my={6}>
-                      <CircularProgress />
+                      <LinearQuery />
                     </Box>
                   ) : (
                     <Grid container spacing={1}>
@@ -335,70 +357,86 @@ export function NewPropertyDialog({
                           justifyContent="center"
                         >
                           <Grid size={{ xs: 12, md: 4 }}>
-                            <TextField
-                              select
+                            <FormControl
+                              variant="outlined"
+                              sx={{ my: 2 }}
                               fullWidth
-                              name="country"
-                              label={values.country === "" ? "" : "Country"}
-                              onChange={(e: any) => {
-                                const selectedRegion = regionsByCountry?.get(
-                                  e.target.value
-                                );
-                                setRegions(selectedRegion ?? []);
-                                setFieldValue("country", e.target.value);
-                              }}
-                              onBlur={handleBlur}
-                              defaultValue=""
-                              error={Boolean(touched.country && errors.country)}
-                              helperText={touched.country && errors.country}
-                              my={2}
-                              slotProps={{
-                                select: {
-                                  native: true,
-                                  displayEmpty: true,
-                                },
-                              }}
                             >
-                              <option value="">Select Country</option>
-                              {countries?.map((c) => (
-                                <option
-                                  key={c.countryShortCode}
-                                  value={c.countryName}
-                                >
-                                  {c.countryShortCode}
+                              <InputLabel id="country-id">Country</InputLabel>
+                              <Select
+                                name="country"
+                                fullWidth
+                                labelId="country-id"
+                                label="Country"
+                                defaultValue="default-country"
+                                native
+                                onBlur={handleBlur}
+                                error={Boolean(
+                                  touched.country && errors.country
+                                )}
+                                onChange={(e: any) => {
+                                  const selectedRegion = regionsByCountry?.get(
+                                    e.target.value
+                                  );
+                                  setRegions(selectedRegion ?? []);
+                                  setFieldValue("country", e.target.value);
+                                }}
+                              >
+                                <option value="default-country" disabled>
+                                  Select Country
                                 </option>
-                              ))}
-                            </TextField>
+                                {countries?.map((c) => (
+                                  <option
+                                    key={c.countryShortCode}
+                                    value={c.countryName}
+                                  >
+                                    {c.countryName}
+                                  </option>
+                                ))}
+                              </Select>
+                              {touched.country && errors.country && (
+                                <FormHelperText error>
+                                  {errors.country}
+                                </FormHelperText>
+                              )}
+                            </FormControl>
                           </Grid>
                           <Grid size={{ xs: 12, md: 4 }}>
-                            <TextField
-                              select
+                            <FormControl
+                              variant="outlined"
+                              sx={{ my: 2 }}
                               fullWidth
-                              name="state"
-                              onChange={handleChange}
-                              // onChange={(e: any) => {
-                              //   setFieldValue("state", e.target.value);
-                              // }}
-                              onBlur={handleBlur}
-                              label={values.state === "" ? "" : "State"}
-                              defaultValue=""
-                              error={Boolean(touched.state && errors.state)}
-                              helperText={touched.state && errors.state}
-                              slotProps={{
-                                select: {
-                                  native: true,
-                                  displayEmpty: true,
-                                },
-                              }}
-                              my={2}
                             >
-                              <option value="">Select State</option>
-                              {regions?.map((r) => (
-                                <option key={r.code} value={r.regionName}>
-                                  {r.code}
+                              <InputLabel id="state-id">State</InputLabel>
+                              <Select
+                                name="state"
+                                native
+                                fullWidth
+                                defaultValue="default-state"
+                                labelId="state-id"
+                                id="state-id"
+                                label="State"
+                                onBlur={handleBlur}
+                                error={Boolean(touched.state && errors.state)}
+                                onChange={(e: any) =>
+                                  setFieldValue("state", e.target.value)
+                                }
+                              >
+                                <option value="default-state">
+                                  Select State
                                 </option>
-                              ))}
-                            </TextField>
+                                {regions?.map((r) => (
+                                  <option key={r.code} value={r.regionName}>
+                                    {r.code}
+                                  </option>
+                                ))}
+                              </Select>
+                              {touched.state && errors.state && (
+                                <FormHelperText error>
+                                  {errors.state}
+                                </FormHelperText>
+                              )}
+                            </FormControl>
                           </Grid>
                           <Grid size={{ xs: 12, md: 4 }}>
                             <TextField
@@ -533,36 +571,35 @@ export function NewPropertyDialog({
                             />
                           </Grid>
                           <Grid size={{ xs: 12, md: 4 }}>
-                            <TextField
-                              select
-                              fullWidth
-                              name="status"
-                              onChange={handleChange}
-                              // onChange={(e: any) => {
-                              //   setFieldValue("status", e.target.value);
-                              // }}
-                              onBlur={handleBlur}
-                              label={values.status === "" ? "" : "Status"}
-                              defaultValue=""
-                              error={Boolean(touched.status && errors.status)}
-                              helperText={touched.status && errors.status}
-                              my={2}
-                              slotProps={{
-                                select: {
-                                  native: true,
-                                  displayEmpty: true,
-                                },
-                              }}
-                            >
-                              <option value="">Select Status</option>
-                              {Object.values(PropertyStatus).map(
-                                (ps: PropertyStatus) => (
+                            <FormControl variant="outlined" fullWidth>
+                              <InputLabel id="status-id">Status</InputLabel>
+                              <Select
+                                name="status"
+                                labelId="status-id"
+                                label="Status"
+                                defaultValue="default-status"
+                                native
+                                onBlur={handleBlur}
+                                error={Boolean(touched.status && errors.status)}
+                                onChange={(e: any) =>
+                                  setFieldValue("status", e.target.value)
+                                }
+                              >
+                                <option value="default-status">
+                                  Select Status
+                                </option>
+                                {Object.values(PropertyStatus).map((ps) => (
                                   <option key={ps} value={ps}>
                                     {ps}
                                   </option>
-                                )
+                                ))}
+                              </Select>
+                              {touched.status && errors.status && (
+                                <FormHelperText error>
+                                  {errors.status}
+                                </FormHelperText>
                               )}
-                            </TextField>
+                            </FormControl>
                           </Grid>
                           <Grid size={{ xs: 12 }}>
                             <TextField
@@ -581,6 +618,10 @@ export function NewPropertyDialog({
                             />
                           </Grid>
                         </Grid>
+                      </Grid>
+
+                      <Grid size={{ xs: 12 }}>
+                        <InputFileUploader onUpload={handleFileChange} />
                       </Grid>
                     </Grid>
                   )}

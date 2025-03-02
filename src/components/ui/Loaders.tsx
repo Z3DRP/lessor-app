@@ -23,9 +23,6 @@ export function CircularIndeterminate() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Circular Indeterminate
-        </Typography>
         <Paper mt={3}>
           <CircularProgress m={2} />
           <CircularProgress m={2} color="secondary" />
@@ -53,9 +50,6 @@ export function CircularDeterminate() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Circular Determinate
-        </Typography>
         <Paper mt={3}>
           <CircularProgress variant="determinate" value={progress} />
         </Paper>
@@ -68,9 +62,6 @@ export function CircularStatic() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Circular Static
-        </Typography>
         <Paper mt={3}>
           <CircularProgress m={2} variant="determinate" value={5} />
           <CircularProgress m={2} variant="determinate" value={25} />
@@ -87,9 +78,6 @@ export function LinearIndeterminate() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Linear Indeterminate
-        </Typography>
         <Paper mt={3}>
           <LinearProgress my={2} />
           <LinearProgress my={2} color="secondary" />
@@ -131,9 +119,6 @@ export function LinearBuffer() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Linear Buffer
-        </Typography>
         <Paper mt={3}>
           <LinearProgress
             my={2}
@@ -176,9 +161,6 @@ export function LinearDeterminate() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Linear Determinate
-        </Typography>
         <Paper mt={3}>
           <LinearProgress my={2} variant="determinate" value={progress} />
           <LinearProgress
@@ -197,9 +179,6 @@ export function LinearQuery() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Linear Query
-        </Typography>
         <Paper mt={3}>
           <LinearProgress my={2} variant="query" />
           <LinearProgress my={2} variant="query" color="secondary" />

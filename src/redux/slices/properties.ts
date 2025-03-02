@@ -22,9 +22,13 @@ export const fetchProperties = createAsyncThunk(
   ) => {
     try {
       const properties = await propertyApi.getProperties(alsrId, page ?? 1);
+      if (properties?.length > 0) {
+        return [];
+      }
+
       return properties;
     } catch (err: any) {
-      console.log("error fetching property state: ", err.error);
+      console.log("error fetching property state: ", err);
       return rejectWithValue(`state error: ${err.error}`);
     }
   }
@@ -32,12 +36,16 @@ export const fetchProperties = createAsyncThunk(
 
 export const createProperty = createAsyncThunk(
   "properties/createProperty",
-  async ({ data }: { data: Partial<Property> }, { rejectWithValue }) => {
+  async (
+    { data, file }: { data: Partial<Property>; file?: File },
+    { rejectWithValue }
+  ) => {
     try {
-      const nwProperty = await propertyApi.addProperty(data);
+      //const nwProperty = await propertyApi.addProperty(data);
+      const nwProperty = await propertyApi.createPropertyWithImage(data, file);
       return nwProperty;
     } catch (err: any) {
-      console.log("error updating property state: ");
+      console.log("error updating property state: ", err);
       return rejectWithValue(`state error: ${err.error}`);
     }
   }
@@ -56,7 +64,7 @@ export const updateProperty = createAsyncThunk(
       const updatedProperty = await propertyApi.updateProperty(id, updatedData);
       return updatedProperty;
     } catch (err: any) {
-      console.log(`error updating property state: `, err.error);
+      console.log(`error updating property state: `, err);
       return rejectWithValue(`state error: ${err.error}`);
     }
   }
@@ -69,7 +77,7 @@ export const deleteProperty = createAsyncThunk(
       await propertyApi.deleteProeprty(id);
       return id;
     } catch (err: any) {
-      console.log("error deleting property state: ", err.error);
+      console.log("error deleting property state: ", err);
       return rejectWithValue(`state error: ${err.error}`);
     }
   }
@@ -96,6 +104,18 @@ export const propertySlice = createSlice({
         }
       )
       .addCase(fetchProperties.rejected, (state, action) => {
+        (state.status = "failed"), (state.error = action.payload as string);
+      })
+      .addCase(createProperty.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(
+        createProperty.fulfilled,
+        (state, action: PayloadAction<Property>) => {
+          (state.status = "idle"), state.properties.push(action.payload);
+        }
+      )
+      .addCase(createProperty.rejected, (state, action) => {
         (state.status = "failed"), (state.error = action.payload as string);
       })
       .addCase(updateProperty.fulfilled, (state, action) => {
