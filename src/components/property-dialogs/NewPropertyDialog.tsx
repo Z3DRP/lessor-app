@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   FormHelperText,
   Grid2 as Grid,
+  InputAdornment,
   InputLabel,
   Select,
   SelectChangeEvent,
@@ -20,7 +21,7 @@ import {
   TextField as MuiTextField,
 } from "@mui/material";
 import { Typography } from "../ui/Typography";
-import { Formik } from "formik";
+import { Form, Formik } from "formik";
 import * as Yup from "yup";
 import { Address, Property } from "@/types/property";
 import { enqueueSnackbar, useSnackbar } from "notistack";
@@ -35,6 +36,9 @@ import { createProperty } from "@/redux/slices/properties";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
+import { nanoid } from "nanoid";
+import { Money, Percent } from "@mui/icons-material";
+import { DollarSign, DollarSignIcon, LucideDollarSign } from "lucide-react";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -114,13 +118,6 @@ export function NewPropertyDialog({
     });
     setRegionsByCountry(cRegions);
   }, []);
-
-  const handleFileChange = async (f: FileList) => {
-    const file = f[0];
-    if (!file) return;
-
-    setSelectedFile(file);
-  };
 
   const handleSubmit = async (
     values: any,
@@ -227,9 +224,10 @@ export function NewPropertyDialog({
     isAvailable: false,
     status: "",
     notes: "",
-    taxRate: 0.1,
+    taxRate: 0.01,
     taxAmountDue: 0.0,
     maxOccupancy: 1,
+    fileKey: "",
   };
 
   const validationSchema = Yup.object().shape({
@@ -252,15 +250,18 @@ export function NewPropertyDialog({
       .oneOf(Object.values(PropertyStatus))
       .required("Status is required"),
     notes: Yup.string().optional(),
-    taxRate: Yup.number().min(0).max(1).optional(),
-    taxAmountDue: Yup.number().min(0).optional(),
+    taxRate: Yup.number().min(0.01).max(1).optional(),
+    taxAmountDue: Yup.number().min(0.0).optional(),
     maxOccupancy: Yup.number().min(1).optional(),
+    fileKey: Yup.string().required(),
   });
 
+  // NOTE IF THERE IS AN ERROR I DID CHANGE form to FORM
   return (
     <Formik
       initialValues={initValues}
       validationSchema={validationSchema}
+      validateOnMount
       onSubmit={handleSubmit}
     >
       {({
@@ -269,6 +270,7 @@ export function NewPropertyDialog({
         handleChange,
         handleSubmit,
         isSubmitting,
+        isValid,
         setFieldValue,
         touched,
         values,
@@ -283,7 +285,7 @@ export function NewPropertyDialog({
           <DialogTitle id="form-dialog-title">
             <Typography variant="h3">Create</Typography>
           </DialogTitle>
-          <form onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit}>
             <DialogContent>
               <Card mb={6}>
                 <CardContent>
@@ -548,6 +550,13 @@ export function NewPropertyDialog({
                               helperText={touched.taxRate && errors.taxRate}
                               variant="outlined"
                               my={2}
+                              InputProps={{
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <Percent fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              }}
                             />
                           </Grid>
                           <Grid size={{ xs: 12, md: 4 }}>
@@ -566,6 +575,13 @@ export function NewPropertyDialog({
                               }
                               variant="outlined"
                               my={2}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <LucideDollarSign fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              }}
                             />
                           </Grid>
                           <Grid size={{ xs: 12, md: 4 }}>
@@ -619,7 +635,18 @@ export function NewPropertyDialog({
                       </Grid>
 
                       <Grid size={{ xs: 12 }}>
-                        <InputFileUploader onUpload={handleFileChange} />
+                        <InputFileUploader
+                          onUpload={async (files) => {
+                            if (!files || files.length === 0) return;
+
+                            const file = files[0];
+                            setSelectedFile(file);
+                            setFieldValue(
+                              "fileKey",
+                              `${file.name}-${nanoid(5)}`
+                            );
+                          }}
+                        />
                       </Grid>
                     </Grid>
                   )}
@@ -630,11 +657,16 @@ export function NewPropertyDialog({
               <Button onClick={() => openSetter(false)} color="warning">
                 Cancel
               </Button>
-              <Button type="submit" color="primary" variant="contained">
+              <Button
+                type="submit"
+                disabled={!selectedFile || !isValid || isSubmitting}
+                color="primary"
+                variant="contained"
+              >
                 Save
               </Button>
             </DialogActions>
-          </form>
+          </Form>
         </Dialog>
       )}
     </Formik>

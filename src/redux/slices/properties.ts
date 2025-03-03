@@ -22,7 +22,7 @@ export const fetchProperties = createAsyncThunk(
   ) => {
     try {
       const properties = await propertyApi.getProperties(alsrId, page ?? 1);
-      if (properties?.length > 0) {
+      if (properties?.length === 0) {
         return [];
       }
 

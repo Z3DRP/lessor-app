@@ -25,7 +25,15 @@ export const propertyApi = {
         throw err;
       });
 
-    return res?.data;
+    if (res?.data == undefined) {
+      throw new Error("fetch properties response was undefined");
+    }
+
+    const { properties, success } = res.data;
+    if (!success) {
+      throw new Error("unexpeted error");
+    }
+    return properties?.length > 0 ? properties : [];
   },
 
   async createProperty(
