@@ -37,8 +37,8 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
-import { Money, Percent } from "@mui/icons-material";
-import { DollarSign, DollarSignIcon, LucideDollarSign } from "lucide-react";
+import { Percent } from "@mui/icons-material";
+import { LucideDollarSign } from "lucide-react";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -75,13 +75,11 @@ type NewPropertyDialogProps = {
   lessorId: string;
   open: boolean;
   openSetter: (isOpen: boolean) => void;
-  createPropertyHandler: (data: Partial<Property>) => Promise<any>;
 };
 export function NewPropertyDialog({
   lessorId,
   open,
   openSetter,
-  createPropertyHandler,
 }: NewPropertyDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [error, setError] = useState<string | undefined>();
@@ -143,13 +141,15 @@ export function NewPropertyDialog({
       values.isAvailable,
       values?.status as PropertyStatus,
       values?.notes,
-      values?.taxRate,
       values?.taxAmountDue,
-      values?.maxOccupancy
+      values?.taxRate,
+      values?.maxOccupancy,
+      values?.fileKey
     );
 
     if (!success) {
       setSubmitting(false);
+      setSelectedFile(null);
       resetForm();
       return;
     }
@@ -169,11 +169,11 @@ export function NewPropertyDialog({
     notes: string | undefined,
     taxDue: number | undefined,
     txRate: number | undefined,
-    occupancy: number | undefined
+    occupancy: number | undefined,
+    fileName: string
   ): Promise<boolean> => {
     const property = {
       alessorId: alsrId,
-      address: addrs,
       bedrooms: Number(beds),
       baths: Number(baths),
       ...(sqFt != undefined && { squareFootage: Number(sqFt) }),
@@ -183,6 +183,7 @@ export function NewPropertyDialog({
       ...(taxDue != undefined && { taxAmountDue: Number(taxDue) }),
       ...(txRate != undefined && { taxRate: Number(txRate) }),
       ...(occupancy != undefined && { maxOccupancy: Number(occupancy) }),
+      image: fileName,
     };
 
     console.log("using alsr id : ", alsrId);
@@ -190,7 +191,11 @@ export function NewPropertyDialog({
     try {
       console.log("property handler");
       const result = await dispatch(
-        createProperty({ data: property, file: selectedFile ?? undefined })
+        createProperty({
+          data: property,
+          address: addrs,
+          file: selectedFile ?? undefined,
+        })
       ).unwrap();
 
       if (!result.success) {
@@ -253,7 +258,7 @@ export function NewPropertyDialog({
     taxRate: Yup.number().min(0.01).max(1).optional(),
     taxAmountDue: Yup.number().min(0.0).optional(),
     maxOccupancy: Yup.number().min(1).optional(),
-    fileKey: Yup.string().required(),
+    fileKey: Yup.string().optional(),
   });
 
   // NOTE IF THERE IS AN ERROR I DID CHANGE form to FORM
@@ -303,18 +308,25 @@ export function NewPropertyDialog({
                   ) : (
                     <Grid container spacing={1}>
                       <Grid size={{ xs: 12 }}>
-                        <FormControlLabel
-                          label="Available"
-                          control={
-                            <Switch
-                              name="isAvailable"
-                              onChange={(e) =>
-                                setFieldValue("isAvailable", e.target.value)
-                              }
-                              onBlur={handleBlur}
-                            />
-                          }
-                        />
+                        <FormControl fullWidth sx={{ my: 2 }}>
+                          <FormControlLabel
+                            label="Available"
+                            control={
+                              <Switch
+                                name="isAvailable"
+                                onChange={(e) =>
+                                  setFieldValue("isAvailable", e.target.checked)
+                                }
+                                onBlur={handleBlur}
+                              />
+                            }
+                          />
+                          {errors.isAvailable && (
+                            <FormHelperText error>
+                              {errors.isAvailable}
+                            </FormHelperText>
+                          )}
+                        </FormControl>
                       </Grid>
                       <Grid size={{ xs: 12 }}>
                         <Grid container direction="row" spacing={2}>
@@ -585,7 +597,11 @@ export function NewPropertyDialog({
                             />
                           </Grid>
                           <Grid size={{ xs: 12, md: 4 }}>
-                            <FormControl variant="outlined" fullWidth>
+                            <FormControl
+                              variant="outlined"
+                              fullWidth
+                              sx={{ my: 2 }}
+                            >
                               <InputLabel id="status-id">Status</InputLabel>
                               <Select
                                 name="status"
@@ -635,18 +651,18 @@ export function NewPropertyDialog({
                       </Grid>
 
                       <Grid size={{ xs: 12 }}>
-                        <InputFileUploader
-                          onUpload={async (files) => {
-                            if (!files || files.length === 0) return;
+                        <FormControl fullWidth sx={{ my: 2 }}>
+                          <InputFileUploader
+                            onUpload={async (files) => {
+                              if (!files || files.length === 0) return;
 
-                            const file = files[0];
-                            setSelectedFile(file);
-                            setFieldValue(
-                              "fileKey",
-                              `${file.name}-${nanoid(5)}`
-                            );
-                          }}
-                        />
+                              const file = files[0];
+
+                              setSelectedFile(file);
+                              setFieldValue("fileKey", `${nanoid(9)}`);
+                            }}
+                          />
+                        </FormControl>
                       </Grid>
                     </Grid>
                   )}
@@ -659,7 +675,7 @@ export function NewPropertyDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={!selectedFile || !isValid || isSubmitting}
+                disabled={!selectedFile}
                 color="primary"
                 variant="contained"
               >

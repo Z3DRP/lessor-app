@@ -73,7 +73,11 @@ export const propertyApi = {
     return res?.data;
   },
 
-  async createPropertyWithImage(data: Partial<Property>, file?: File) {
+  async createPropertyWithImage(
+    data: Partial<Property>,
+    addrs: Address,
+    file?: File
+  ) {
     if (file) {
       const formData = new FormData();
       formData.append("image", file);
@@ -84,25 +88,29 @@ export const propertyApi = {
         }
       });
 
+      formData.append("address", JSON.stringify(addrs));
+
       try {
         const res = await axiosInstance.post(propertyEp, formData, {
           headers: {
-            "Content-Type": "multipart/form-data",
+            // set it to undefined bc axios will pickup its formdata
+            "Content-Type": undefined,
           },
         });
 
         return res?.data;
       } catch (err) {
-        console.log("error uploding property");
+        console.log("api error uploding property");
+        throw err;
       }
     }
 
-    const res = await axiosInstance.post(propertyEp, data).catch((err) => {
-      console.log("api err: ", err);
-      throw err;
-    });
+    // const res = await axiosInstance.post(propertyEp, data).catch((err) => {
+    //   console.log("api err: ", err);
+    //   throw err;
+    // });
 
-    return res?.data;
+    // return res?.data;
   },
 
   async addProperty(data: Partial<Property>) {

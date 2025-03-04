@@ -25,37 +25,33 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { createProperty, fetchProperties } from "@/redux/slices/properties";
 import { enqueueSnackbar, useSnackbar } from "notistack";
 import { LinearQuery } from "@/components/ui/Loaders";
+import EmptyCard from "@/components/ui/EmptyCard";
 
 type PropertyProps = {
   image?: string;
-  title: string;
-  description: string;
+  property: Property;
   chip: JSX.Element;
 };
-const Property: React.FC<PropertyProps> = ({
-  image,
-  title,
-  description,
-  chip,
-}) => {
+const Property: React.FC<PropertyProps> = ({ image, property, chip }) => {
   return (
     <Card>
-      {image ? <CardMedia image={image} title="Contemplative Reptile" /> : null}
+      {image ? <CardMedia image={image} title="lessor-property-image" /> : null}
       <CardContent>
         <Typography gutterBottom variant="h5" component="h2">
-          {title}
+          {property.address.street}, {property.address.city},{" "}
+          {property.address.state}
         </Typography>
 
         {chip}
 
         <Typography mb={4} color="textSecondary" component="p">
-          {description}
+          {property.squareFootage}
         </Typography>
 
         <AvatarGroup max={3}>
-          <Avatar alt="Avatar" src="/static/img/avatars/avatar-1.jpg" />
-          <Avatar alt="Avatar" src="/static/img/avatars/avatar-2.jpg" />
-          <Avatar alt="Avatar" src="/static/img/avatars/avatar-3.jpg" />
+          <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
+          <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
+          <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
         </AvatarGroup>
       </CardContent>
       <CardActions>
@@ -82,20 +78,9 @@ function Properties() {
   const [isLoading, setIsLoading] = useState<boolean>();
   const handleOpenNewDialog = () => setOpenNewDialog(true);
   //const [properties, setProperties] = useState<Property[]>();
-  const { properties } = useSelector(
+  const properties = useSelector(
     (state: RootState) => state.property.properties
   );
-
-  const handleCreateProperty = async (data: Partial<Property>) => {
-    try {
-      const res = await dispatch(
-        createProperty({ data: { ...data } })
-      ).unwrap();
-      return { success: true, data: res, err: undefined };
-    } catch (err) {
-      return { success: false, data: undefined, err };
-    }
-  };
 
   useEffect(() => {
     const handleFetch = async () => {
@@ -169,123 +154,27 @@ function Properties() {
         <LinearQuery />
       ) : (
         <>
-          <Grid container spacing={6}>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Landing page redesign"
-                description="Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum."
-                chip={<Chip label="Finished" color="success" />}
-              />
+          {properties.length > 0 ? (
+            <Grid container spacing={6}>
+              {properties &&
+                properties.map((p: Property) => (
+                  <Grid key={p.pid} size={{ xs: 12, lg: 6, xl: 3 }}>
+                    <Property property={p} chip={<Chip label={p.status} />} />
+                  </Grid>
+                ))}
             </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Company posters"
-                description="Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Maecenas malesuada. Praesent congue erat at massa."
-                chip={<Chip label="In progress" color="warning" />}
-              />
-            </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Product page design"
-                description="Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum."
-                chip={<Chip label="Finished" color="success" />}
-              />
-            </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Upgrade CRM software"
-                description="Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum. Sed aliquam ultrices mauris."
-                chip={<Chip label="In progress" color="warning" />}
-              />
-            </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Fix form validation"
-                description="Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum. Sed aliquam ultrices mauris."
-                chip={<Chip label="In progress" color="warning" />}
-                image="/static/img/unsplash/unsplash-1.jpg"
-              />
-            </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="New company logo"
-                description="Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum."
-                chip={<Chip label="Paused" color="error" />}
-                image="/static/img/unsplash/unsplash-2.jpg"
-              />
-            </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Upgrade to latest Maps API"
-                description="Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum. Sed aliquam ultrices mauris."
-                chip={<Chip label="Finished" color="success" />}
-                image="/static/img/unsplash/unsplash-3.jpg"
-              />
-            </Grid>
-            <Grid
-              size={{
-                xs: 12,
-                lg: 6,
-                xl: 3,
-              }}
-            >
-              <Property
-                title="Refactor backend templates"
-                description="Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Maecenas malesuada. Praesent congue erat at massa."
-                chip={<Chip label="Paused" color="error" />}
-                image="/static/img/unsplash/unsplash-4.jpg"
-              />
-            </Grid>
-          </Grid>
+          ) : (
+            <EmptyCard
+              title="No Properties"
+              body="you have not created any properties yet"
+            />
+          )}
 
           {user && (
             <NewPropertyDialog
               lessorId={user?.Uid || "[invalid-id]"}
               open={openNewDialog}
               openSetter={setOpenNewDialog}
-              createPropertyHandler={handleCreateProperty}
             />
           )}
         </>

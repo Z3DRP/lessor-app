@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/redux/store";
-import { Property } from "@/types/property";
+import { Address, Property } from "@/types/property";
 import { propertyApi } from "api/properties";
 
 interface PropertyState {
@@ -37,12 +37,20 @@ export const fetchProperties = createAsyncThunk(
 export const createProperty = createAsyncThunk(
   "properties/createProperty",
   async (
-    { data, file }: { data: Partial<Property>; file?: File },
+    {
+      data,
+      address,
+      file,
+    }: { data: Partial<Property>; address: Address; file?: File },
     { rejectWithValue }
   ) => {
     try {
       //const nwProperty = await propertyApi.addProperty(data);
-      const nwProperty = await propertyApi.createPropertyWithImage(data, file);
+      const nwProperty = await propertyApi.createPropertyWithImage(
+        data,
+        address,
+        file
+      );
       return nwProperty;
     } catch (err: any) {
       console.log("error updating property state: ", err);
