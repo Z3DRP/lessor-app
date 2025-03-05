@@ -1,7 +1,7 @@
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Box } from "@mui/material";
 
@@ -80,12 +80,20 @@ function Dropzone(props: { required?: boolean; name: string }) {
 }
 
 export type InputFileUploaderProps = {
+  imageUrl?: string;
   onUpload: (e: any) => Promise<void>;
 };
 
 export default function InputFileUploader({
+  imageUrl,
   onUpload,
 }: InputFileUploaderProps) {
+  useEffect(() => {
+    if (imageUrl) {
+      setPreview(imageUrl);
+    }
+  }, [imageUrl]);
+
   const [preview, setPreview] = useState<string | null>(null);
 
   const { getRootProps, getInputProps, open } = useDropzone({

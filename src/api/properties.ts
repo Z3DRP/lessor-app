@@ -1,7 +1,6 @@
 import axiosInstance from "@/utils/axios";
 import { Address, Property } from "@/types/property";
 import { PropertyStatus } from "enums/enums";
-import { formatDate } from "@fullcalendar/core";
 
 const propertyEp = import.meta.env.VITE_PROPERTY_EP;
 const tempPropertiesEP = import.meta.env.VITE_TEMP_PROPERTIES_EP;
@@ -31,9 +30,10 @@ export const propertyApi = {
 
     const { properties, success } = res.data;
     if (!success) {
-      throw new Error("unexpeted error");
+      throw new Error("unknown error fetching properties");
     }
-    return properties?.length > 0 ? properties : [];
+
+    return properties;
   },
 
   async createProperty(
@@ -78,31 +78,31 @@ export const propertyApi = {
     addrs: Address,
     file?: File
   ) {
+    const formData = new FormData();
     if (file) {
-      const formData = new FormData();
       formData.append("image", file);
+    }
 
-      Object.entries(data).forEach(([key, value]) => {
-        if (value != null) {
-          formData.append(key, value.toString());
-        }
+    Object.entries(data).forEach(([key, value]) => {
+      if (value != null) {
+        formData.append(key, value.toString());
+      }
+    });
+
+    formData.append("address", JSON.stringify(addrs));
+
+    try {
+      const res = await axiosInstance.post(propertyEp, formData, {
+        headers: {
+          // set it to undefined bc axios will pickup its formdata
+          "Content-Type": undefined,
+        },
       });
 
-      formData.append("address", JSON.stringify(addrs));
-
-      try {
-        const res = await axiosInstance.post(propertyEp, formData, {
-          headers: {
-            // set it to undefined bc axios will pickup its formdata
-            "Content-Type": undefined,
-          },
-        });
-
-        return res?.data;
-      } catch (err) {
-        console.log("api error uploding property");
-        throw err;
-      }
+      return res?.data;
+    } catch (err) {
+      console.log("api error uploding property");
+      throw err;
     }
 
     // const res = await axiosInstance.post(propertyEp, data).catch((err) => {
@@ -112,24 +112,54 @@ export const propertyApi = {
 
     // return res?.data;
   },
+  async updateProperty(data: Partial<Property>, file?: File | undefined) {
+    const formData = new FormData();
+    if (file) {
+      formData.append("image", file);
+    }
 
-  async addProperty(data: Partial<Property>) {
-    const res = await axiosInstance.post(propertyEp, data).catch((err) => {
-      console.log("api error: ", err);
-      throw err;
+    Object.entries(data).forEach(([key, value]) => {
+      if (value != null) {
+        formData.append(key, value.toString());
+      }
     });
-    return res?.data;
-  },
 
-  async updateProperty(pid: string, data: Partial<Property>) {
-    const res = await axiosInstance
-      .put(`${propertyEp}/${pid}`, data)
-      .catch((err) => {
-        console.log("error updating property: ", err);
-        throw err;
-      });
+    try {
+      const res = await axiosInstance.post(
+        `${propertyEp}/${data.alessorId}`,
+        formData,
+        {
+          headers: {
+            // set it to undefined to remove application/json headers from other requests
+            "Content-Type": undefined,
+          },
+        }
+      );
 
-    return res?.data;
+      if (res?.data == undefined) {
+        throw new Error("unexpected error");
+      }
+
+      const { property } = res.data;
+      return property;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+    // const res = await axiosInstance
+    //   .put(`${propertyEp}/${data.alessorId}`, data)
+    //   .catch((err) => {
+    //     console.log("error updating property: ", err);
+    //     throw err;
+    //   });
+
+    // if (res?.data == undefined) {
+    //   throw new Error("an unexpected error occurred updating property");
+    // }
+
+    // const { property, success } = res.data;
+
+    // return { property, success };
   },
 
   async deleteProeprty(pid: string) {

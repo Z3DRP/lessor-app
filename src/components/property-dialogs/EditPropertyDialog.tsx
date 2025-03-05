@@ -20,7 +20,7 @@ import {
 import { Typography } from "../ui/Typography";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
-import { Address } from "@/types/property";
+import { Address, Property } from "@/types/property";
 import { useSnackbar } from "notistack";
 import { PropertyStatus } from "enums/enums";
 import { useEffect, useState } from "react";
@@ -29,7 +29,7 @@ import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
 import { LinearQuery } from "../ui/Loaders";
-import { createProperty } from "@/redux/slices/properties";
+import { createProperty, updateProperty } from "@/redux/slices/properties";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
@@ -69,12 +69,12 @@ type regionOption = {
 };
 
 type NewPropertyDialogProps = {
-  lessorId: string;
+  property: Property;
   open: boolean;
   openSetter: (isOpen: boolean) => void;
 };
-export function NewPropertyDialog({
-  lessorId,
+export function EditPropertyDialog({
+  property,
   open,
   openSetter,
 }: NewPropertyDialogProps) {
@@ -129,61 +129,47 @@ export function NewPropertyDialog({
       zipcode: values.zipcode,
     };
 
-    const success = await newPropertyHandler(
-      lessorId,
-      address,
-      values.bedrooms,
-      values.baths,
-      values.squareFootage,
-      values.isAvailable,
-      values?.status as PropertyStatus,
-      values?.notes,
-      values?.taxAmountDue,
-      values?.taxRate,
-      values?.maxOccupancy,
-      values?.fileKey
+    const uProperty = {
+      alessorId: property.alessorId,
+      bedrooms: Number(values?.beds),
+      baths: Number(values?.baths),
+      ...(values?.squareFootage != undefined && {
+        squareFootage: Number(values?.squareFootage),
+      }),
+      ...(values?.available != undefined && { isAvailable: values?.available }),
+      ...(values?.status != undefined && { status: values?.status }),
+      ...(values?.notes != undefined && { notes: values?.notes }),
+      ...(values?.taxDue != undefined && {
+        taxAmountDue: Number(values?.taxDue),
+      }),
+      ...(values?.taxRate != undefined && { taxRate: Number(values?.taxRate) }),
+      ...(values?.occupancy != undefined && {
+        maxOccupancy: Number(values?.occupancy),
+      }),
+      ...(values?.fileKey != undefined && { image: values?.fileKey }),
+    };
+
+    const updatedProperty = dispatch(
+      updateProperty({ updatedData: uProperty })
     );
 
-    if (!success) {
+    if (!updatedProperty) {
       setSubmitting(false);
       setSelectedFile(null);
       resetForm();
+      enqueueSnackbar("failed to save changes", { variant: "error" });
       return;
     }
 
     setSubmitting(false);
-    enqueueSnackbar("property successfully created", { variant: "success" });
     openSetter(false);
+    enqueueSnackbar("changes successfully saved", { variant: "success" });
   };
 
   const newPropertyHandler = async (
     alsrId: string,
-    addrs: Address,
-    beds: number,
-    baths: number,
-    sqFt: number | undefined,
-    available: boolean,
-    status: PropertyStatus,
-    notes: string | undefined,
-    taxDue: number | undefined,
-    txRate: number | undefined,
-    occupancy: number | undefined,
-    fileName: string
+    addrs: Address
   ): Promise<boolean> => {
-    const property = {
-      alessorId: alsrId,
-      bedrooms: Number(beds),
-      baths: Number(baths),
-      ...(sqFt != undefined && { squareFootage: Number(sqFt) }),
-      ...(available != undefined && { isAvailable: available }),
-      ...(status != undefined && { status }),
-      ...(notes != undefined && { notes }),
-      ...(taxDue != undefined && { taxAmountDue: Number(taxDue) }),
-      ...(txRate != undefined && { taxRate: Number(txRate) }),
-      ...(occupancy != undefined && { maxOccupancy: Number(occupancy) }),
-      image: fileName,
-    };
-
     console.log("using alsr id : ", alsrId);
 
     try {
@@ -216,21 +202,21 @@ export function NewPropertyDialog({
   };
 
   const initValues = {
-    street: "",
-    city: "",
-    state: "",
-    country: "default-country",
-    zipcode: "",
-    bedrooms: 0,
-    baths: 0,
-    squareFootage: 0,
-    isAvailable: false,
-    status: "",
-    notes: "",
-    taxRate: 0.01,
-    taxAmountDue: 0.0,
-    maxOccupancy: 1,
-    fileKey: "",
+    street: property?.address.street || "",
+    city: property?.address.city || "",
+    state: property?.address.state || "",
+    country: property?.address.country || "default-country",
+    zipcode: property?.address.zipcode || "",
+    bedrooms: property?.bedrooms || 0,
+    baths: property?.baths || 0,
+    squareFootage: property?.squareFootage || 0,
+    isAvailable: property?.isAvailable || false,
+    status: property?.status || "",
+    notes: property?.notes || "",
+    taxRate: property?.taxRate || 0.01,
+    taxAmountDue: property?.taxAmountDue || 0.0,
+    maxOccupancy: property?.maxOccupancy || 1,
+    fileKey: property?.image || "",
   };
 
   const validationSchema = Yup.object().shape({
@@ -285,7 +271,7 @@ export function NewPropertyDialog({
           maxWidth="md"
         >
           <DialogTitle id="form-dialog-title">
-            <Typography variant="h3">Create</Typography>
+            <Typography variant="h3">Edit</Typography>
           </DialogTitle>
           <Form onSubmit={handleSubmit}>
             <DialogContent>
@@ -650,6 +636,7 @@ export function NewPropertyDialog({
                       <Grid size={{ xs: 12 }}>
                         <FormControl fullWidth sx={{ my: 2 }}>
                           <InputFileUploader
+                            imageUrl={property.imageUrl}
                             onUpload={async (files) => {
                               if (!files || files.length === 0) return;
 

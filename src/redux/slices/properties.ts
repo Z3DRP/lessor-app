@@ -63,14 +63,20 @@ export const updateProperty = createAsyncThunk(
   "properties/updateProperty",
   async (
     {
-      id,
       updatedData,
-    }: { id: string; updatedData: Partial<Property> | Property },
+      file,
+    }: { updatedData: Partial<Property> | Property; file?: File },
     { rejectWithValue }
   ) => {
     try {
-      const updatedProperty = await propertyApi.updateProperty(id, updatedData);
-      return updatedProperty;
+      const { property, success } = await propertyApi.updateProperty(
+        updatedData,
+        file
+      );
+      if (!success) {
+        throw new Error("update property request failed");
+      }
+      return property;
     } catch (err: any) {
       console.log(`error updating property state: `, err);
       return rejectWithValue(`state error: ${err.error}`);
@@ -128,7 +134,7 @@ export const propertySlice = createSlice({
       })
       .addCase(updateProperty.fulfilled, (state, action) => {
         const index = state.properties.findIndex(
-          (p) => p.pid === action.payload.pid
+          (p) => p.pid === action.payload.property.alessorId
         );
         if (index !== -1) {
           state.properties[index] = action.payload;

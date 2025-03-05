@@ -16,36 +16,60 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Card, CardContent, CardMedia, Divider } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { AvatarGroup } from "@/components/ui/AvatarGroup";
-import Chip from "@/components/ui/Chips";
+import StatusChip from "@/components/ui/PropertyStatusChip";
 import { Property } from "@/types/property";
 import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDialog";
 import useAuth from "@/hooks/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { createProperty, fetchProperties } from "@/redux/slices/properties";
+import { fetchProperties } from "@/redux/slices/properties";
 import { enqueueSnackbar, useSnackbar } from "notistack";
 import { LinearQuery } from "@/components/ui/Loaders";
 import EmptyCard from "@/components/ui/EmptyCard";
+import { PropertyStatus } from "enums/enums";
+import { EditPropertyDialog } from "@/components/property-dialogs/EditPropertyDialog";
+
+const propertyStatusColors = new Map<
+  PropertyStatus,
+  "info" | "primary" | "success" | "warning" | "error"
+>([
+  [PropertyStatus.Pending, "info"],
+  [PropertyStatus.InProgress, "primary"],
+  [PropertyStatus.Completed, "success"],
+  [PropertyStatus.Paused, "warning"],
+  [PropertyStatus.Unknown, "error"],
+]);
 
 type PropertyProps = {
-  image?: string;
+  //image?: string;
   property: Property;
   chip: JSX.Element;
+  selectedPropertySetter: (value: Property) => void;
 };
-const Property: React.FC<PropertyProps> = ({ image, property, chip }) => {
+
+const Property: React.FC<PropertyProps> = ({
+  property,
+  chip,
+  selectedPropertySetter,
+}) => {
+  useEffect(() => console.log(property));
   return (
     <Card>
-      {image ? <CardMedia image={image} title="lessor-property-image" /> : null}
+      {property?.imageUrl ? (
+        <CardMedia image={property.imageUrl} title="lessor-property-image" />
+      ) : null}
       <CardContent>
         <Typography gutterBottom variant="h5" component="h2">
-          {property.address.street}, {property.address.city},{" "}
-          {property.address.state}
+          {property?.address?.street}, {property?.address?.city},{" "}
+          {property?.address?.state}
         </Typography>
 
         {chip}
 
         <Typography mb={4} color="textSecondary" component="p">
-          {property.squareFootage}
+          {property?.notes == null || property?.notes === ""
+            ? "No notes available"
+            : property?.notes}
         </Typography>
 
         <AvatarGroup max={3}>
@@ -55,7 +79,11 @@ const Property: React.FC<PropertyProps> = ({ image, property, chip }) => {
         </AvatarGroup>
       </CardContent>
       <CardActions>
-        <IconButton size="small" color="primary">
+        <IconButton
+          size="small"
+          color="primary"
+          onClick={() => selectedPropertySetter(property)}
+        >
           <Pencil size={16} />
         </IconButton>
         <IconButton size="small" color="primary">
@@ -74,13 +102,16 @@ function Properties() {
   const dispatch = useDispatch<AppDispatch>();
   const { enqueueSnackbar } = useSnackbar();
   const [openNewDialog, setOpenNewDialog] = useState<boolean>(false);
+  const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>();
+  const [selectedProperty, setSelectedProperty] = useState<Property>();
   const handleOpenNewDialog = () => setOpenNewDialog(true);
-  //const [properties, setProperties] = useState<Property[]>();
   const properties = useSelector(
     (state: RootState) => state.property.properties
   );
+  const editPropertyHandler = (property: Property) => {};
+  const deletePropertyHandler = (propertyId: string) => {};
 
   useEffect(() => {
     const handleFetch = async () => {
@@ -159,7 +190,20 @@ function Properties() {
               {properties &&
                 properties.map((p: Property) => (
                   <Grid key={p.pid} size={{ xs: 12, lg: 6, xl: 3 }}>
-                    <Property property={p} chip={<Chip label={p.status} />} />
+                    <Property
+                      property={p}
+                      chip={
+                        <StatusChip
+                          label={p.status}
+                          color={
+                            propertyStatusColors.get(
+                              p.status ?? PropertyStatus.Pending
+                            ) ?? "primary"
+                          }
+                        />
+                      }
+                      selectedPropertySetter={setSelectedProperty}
+                    />
                   </Grid>
                 ))}
             </Grid>
@@ -175,6 +219,14 @@ function Properties() {
               lessorId={user?.Uid || "[invalid-id]"}
               open={openNewDialog}
               openSetter={setOpenNewDialog}
+            />
+          )}
+
+          {user && selectedProperty && (
+            <EditPropertyDialog
+              property={selectedProperty}
+              open={openEditDialog}
+              openSetter={setOpenEditDialog}
             />
           )}
         </>

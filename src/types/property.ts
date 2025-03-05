@@ -38,6 +38,8 @@ export interface Property {
   taxRate?: number;
   taxAmountDue?: number;
   maxOccupancy?: number;
+  image?: string;
+  imageUrl?: string;
 }
 
 export const NewProperty = (
