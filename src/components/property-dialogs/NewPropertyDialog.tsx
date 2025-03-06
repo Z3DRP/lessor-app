@@ -29,7 +29,7 @@ import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
 import { LinearQuery } from "../ui/Loaders";
-import { createProperty } from "@/redux/slices/properties";
+import { createProperty } from "@/redux/slices/propertiesSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
@@ -672,9 +672,9 @@ export function NewPropertyDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={!selectedFile}
                 color="primary"
                 variant="contained"
+                disabled={isSubmitting}
               >
                 Save
               </Button>

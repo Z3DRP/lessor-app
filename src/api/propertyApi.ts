@@ -36,39 +36,11 @@ export const propertyApi = {
     return properties;
   },
 
-  async createProperty(
-    alsrId: string,
-    address: Address,
-    beds: number,
-    baths: number,
-    sqFt: number,
-    isAvailable: boolean,
-    status: PropertyStatus = PropertyStatus.Unknown,
-    notes: string | undefined,
-    txRate: number | undefined,
-    taxAmountDue: number | undefined,
-    maxOccupancy: number | undefined
-  ) {
-    const nwProperty: Property = {
-      alessorId: alsrId,
-      address: address,
-      bedrooms: beds,
-      baths: baths,
-      squareFootage: sqFt,
-      isAvailable,
-      ...(status !== undefined && { status }),
-      ...(notes !== undefined && { notes }),
-      ...(taxAmountDue !== undefined && { taxAmountDue }),
-      ...(txRate !== undefined && { taxRate: txRate }),
-      ...(maxOccupancy !== undefined && { maxOccupancy }),
-    };
-
-    const res = await axiosInstance
-      .post(propertyEp, nwProperty)
-      .catch((err) => {
-        console.log("error saving property: ", err);
-        throw err;
-      });
+  async createProperty(data: Partial<Property>) {
+    const res = await axiosInstance.post(propertyEp, data).catch((err) => {
+      console.log("error saving property: ", err);
+      throw err;
+    });
 
     return res?.data;
   },
@@ -104,14 +76,8 @@ export const propertyApi = {
       console.log("api error uploding property");
       throw err;
     }
-
-    // const res = await axiosInstance.post(propertyEp, data).catch((err) => {
-    //   console.log("api err: ", err);
-    //   throw err;
-    // });
-
-    // return res?.data;
   },
+
   async updateProperty(data: Partial<Property>, file?: File | undefined) {
     const formData = new FormData();
     if (file) {

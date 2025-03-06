@@ -2,10 +2,9 @@ import React, { createContext, ReactNode, useEffect, useReducer } from "react";
 
 import { JWTContextType, ActionMap, AuthState, AuthUser } from "@/types/auth";
 
-import axios from "@/utils/axios";
 import { isValidToken, setSession } from "@/utils/jwt";
 import { ProfileType } from "unions/unions";
-import { userApi } from "api/user";
+import { userApi } from "api/userApi";
 
 // Note: If you're trying to connect JWT to your own backend, don't forget
 // to remove the Axios mocks in the `/src/index.tsx` file.

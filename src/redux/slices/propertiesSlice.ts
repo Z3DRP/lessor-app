@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/redux/store";
 import { Address, Property } from "@/types/property";
-import { propertyApi } from "api/properties";
+import { propertyApi } from "api/propertyApi";
 
 interface PropertyState {
   properties: Property[];
@@ -15,7 +15,7 @@ const initialState: PropertyState = {
 };
 
 export const fetchProperties = createAsyncThunk(
-  "properties/fetchProperties",
+  "properties/fetchAll",
   async (
     { alsrId, page }: { alsrId: string; page: number | undefined },
     { rejectWithValue }
@@ -35,7 +35,7 @@ export const fetchProperties = createAsyncThunk(
 );
 
 export const createProperty = createAsyncThunk(
-  "properties/createProperty",
+  "properties/create",
   async (
     {
       data,
@@ -45,7 +45,11 @@ export const createProperty = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      //const nwProperty = await propertyApi.addProperty(data);
+      if (file == null) {
+        const nwProperty = await propertyApi.createProperty(data);
+        return nwProperty;
+      }
+
       const nwProperty = await propertyApi.createPropertyWithImage(
         data,
         address,
@@ -60,7 +64,7 @@ export const createProperty = createAsyncThunk(
 );
 
 export const updateProperty = createAsyncThunk(
-  "properties/updateProperty",
+  "properties/update",
   async (
     {
       updatedData,
@@ -85,8 +89,8 @@ export const updateProperty = createAsyncThunk(
 );
 
 export const deleteProperty = createAsyncThunk(
-  "property/deleteProperty",
-  async (id: string, { rejectWithValue }) => {
+  "property/delete",
+  async ({ id }: { id: string }, { rejectWithValue }) => {
     try {
       await propertyApi.deleteProeprty(id);
       return id;
@@ -134,7 +138,7 @@ export const propertySlice = createSlice({
       })
       .addCase(updateProperty.fulfilled, (state, action) => {
         const index = state.properties.findIndex(
-          (p) => p.pid === action.payload.property.alessorId
+          (p) => p.pid === action.payload.property.pid
         );
         if (index !== -1) {
           state.properties[index] = action.payload;

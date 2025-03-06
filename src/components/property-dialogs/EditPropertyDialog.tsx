@@ -29,7 +29,7 @@ import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
 import { LinearQuery } from "../ui/Loaders";
-import { createProperty, updateProperty } from "@/redux/slices/properties";
+import { createProperty, updateProperty } from "@/redux/slices/propertiesSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
@@ -68,7 +68,7 @@ type regionOption = {
   code?: string | undefined;
 };
 
-type NewPropertyDialogProps = {
+type EditPropertyDialogProps = {
   property: Property;
   open: boolean;
   openSetter: (isOpen: boolean) => void;
@@ -77,7 +77,7 @@ export function EditPropertyDialog({
   property,
   open,
   openSetter,
-}: NewPropertyDialogProps) {
+}: EditPropertyDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [error, setError] = useState<string | undefined>();
   const [countries, setCountries] = useState<countryOption[]>();
@@ -112,7 +112,8 @@ export function EditPropertyDialog({
       cRegions.set(r.countryName, [r]);
     });
     setRegionsByCountry(cRegions);
-  }, []);
+    setRegions(cRegions.get(property.address.country));
+  }, [property.address.country]);
 
   const handleSubmit = async (
     values: any,
@@ -204,14 +205,14 @@ export function EditPropertyDialog({
   const initValues = {
     street: property?.address.street || "",
     city: property?.address.city || "",
-    state: property?.address.state || "",
+    state: property?.address.state || "default-state",
     country: property?.address.country || "default-country",
     zipcode: property?.address.zipcode || "",
     bedrooms: property?.bedrooms || 0,
     baths: property?.baths || 0,
     squareFootage: property?.squareFootage || 0,
     isAvailable: property?.isAvailable || false,
-    status: property?.status || "",
+    status: property?.status || "default-status",
     notes: property?.notes || "",
     taxRate: property?.taxRate || 0.01,
     taxAmountDue: property?.taxAmountDue || 0.0,
@@ -363,7 +364,9 @@ export function EditPropertyDialog({
                                 fullWidth
                                 labelId="country-id"
                                 label="Country"
-                                defaultValue="default-country"
+                                defaultValue={
+                                  values?.country || "default-country"
+                                }
                                 native
                                 onBlur={handleBlur}
                                 error={Boolean(
@@ -407,7 +410,7 @@ export function EditPropertyDialog({
                                 name="state"
                                 native
                                 fullWidth
-                                defaultValue="default-state"
+                                defaultValue={values?.state}
                                 labelId="state-id"
                                 id="state-id"
                                 label="State"
@@ -590,7 +593,9 @@ export function EditPropertyDialog({
                                 name="status"
                                 labelId="status-id"
                                 label="Status"
-                                defaultValue="default-status"
+                                defaultValue={
+                                  values?.status || "default-status"
+                                }
                                 native
                                 onBlur={handleBlur}
                                 error={Boolean(touched.status && errors.status)}

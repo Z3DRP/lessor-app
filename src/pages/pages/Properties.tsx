@@ -6,9 +6,13 @@ import {
   Avatar,
   Button,
   CardActions,
+  Chip,
+  Collapse,
   Grid2 as Grid,
   IconButton,
+  IconButtonProps,
   Link,
+  styled,
 } from "@mui/material";
 import { Eye, Pencil, TrashIcon } from "lucide-react";
 import { Add as AddIcon } from "@mui/icons-material";
@@ -22,12 +26,15 @@ import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDial
 import useAuth from "@/hooks/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { fetchProperties } from "@/redux/slices/properties";
-import { enqueueSnackbar, useSnackbar } from "notistack";
+import { fetchProperties } from "@/redux/slices/propertiesSlice";
+import { useSnackbar } from "notistack";
 import { LinearQuery } from "@/components/ui/Loaders";
 import EmptyCard from "@/components/ui/EmptyCard";
 import { PropertyStatus } from "enums/enums";
 import { EditPropertyDialog } from "@/components/property-dialogs/EditPropertyDialog";
+import PropertyViewAccordian from "@/components/property/PropertyViewAccordion";
+import { ExpandMore } from "@/components/ui/ExpandMore";
+import { Stack } from "@mui/system";
 
 const propertyStatusColors = new Map<
   PropertyStatus,
@@ -41,18 +48,20 @@ const propertyStatusColors = new Map<
 ]);
 
 type PropertyProps = {
-  //image?: string;
   property: Property;
   chip: JSX.Element;
-  selectedPropertySetter: (value: Property) => void;
+  onEdit: (selectedProperty: Property) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 };
 
 const Property: React.FC<PropertyProps> = ({
   property,
   chip,
-  selectedPropertySetter,
+  onEdit,
+  onDelete,
 }) => {
-  useEffect(() => console.log(property));
+  const [expanded, setExpanded] = useState<boolean>(false);
+
   return (
     <Card>
       {property?.imageUrl ? (
@@ -66,11 +75,26 @@ const Property: React.FC<PropertyProps> = ({
 
         {chip}
 
-        <Typography mb={4} color="textSecondary" component="p">
-          {property?.notes == null || property?.notes === ""
-            ? "No notes available"
-            : property?.notes}
-        </Typography>
+        <Stack spacing={0.5}>
+          <Typography variant="body2" fontSize={16}>
+            Baths:
+          </Typography>
+          <Typography variant="body2" color="textSecondary" fontSize={16}>
+            {property.baths}
+          </Typography>
+          <Typography variant="body2" fontSize={16}>
+            Beds:
+          </Typography>
+          <Typography variant="body2" color="textSecondary" fontSize={16}>
+            {property.bedrooms}
+          </Typography>
+          <Typography variant="body2" fontSize={16}>
+            Available:{" "}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" fontSize={16}>
+            {property?.isAvailable ? "Yes" : "No"}
+          </Typography>
+        </Stack>
 
         <AvatarGroup max={3}>
           <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
@@ -82,17 +106,72 @@ const Property: React.FC<PropertyProps> = ({
         <IconButton
           size="small"
           color="primary"
-          onClick={() => selectedPropertySetter(property)}
+          onClick={() => onEdit(property)}
         >
-          <Pencil size={16} />
+          <Pencil />
         </IconButton>
-        <IconButton size="small" color="primary">
-          <TrashIcon size={16} />
+        <IconButton
+          size="small"
+          color="primary"
+          onClick={() => onDelete(property.pid!)}
+        >
+          <TrashIcon />
         </IconButton>
-        <IconButton size="small" color="primary">
+
+        <ExpandMore
+          expand={expanded}
+          onClick={() => setExpanded(!expanded)}
+          color="primary"
+          aria-expanded={expanded}
+          aria-label="show more"
+        >
           <Eye />
-        </IconButton>
+        </ExpandMore>
       </CardActions>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <CardContent>
+          <Grid container direction="row" rowSpacing={2}>
+            <Grid container size={{ xs: 12 }} spacing={1}>
+              <Grid>
+                <Typography sx={{ mb: 2 }}>SqFt:</Typography>{" "}
+              </Grid>
+              <Grid>
+                <Typography color="textSecondary" sx={{ mb: 2 }}>
+                  {property?.squareFootage}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container size={{ xs: 12 }} spacing={1}>
+              <Grid>
+                <Typography sx={{ mb: 2 }}>Tax Rate:</Typography>{" "}
+              </Grid>
+              <Grid>
+                <Typography color="textSecondary">
+                  {property?.taxRate}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container size={{ xs: 12 }} spacing={1}>
+              <Grid>
+                <Typography sx={{ mb: 2 }}>Tax Due:</Typography>{" "}
+              </Grid>
+              <Grid>
+                <Typography color="textSecondary" sx={{ mb: 2 }}>
+                  {property?.taxAmountDue}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Typography sx={{ mb: 2 }}>Notes:</Typography>
+              <Typography mb={4} color="textSecondary" component="p">
+                {property?.notes == null || property?.notes === ""
+                  ? "No notes available"
+                  : property?.notes}
+              </Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Collapse>
     </Card>
   );
 };
@@ -110,7 +189,12 @@ function Properties() {
   const properties = useSelector(
     (state: RootState) => state.property.properties
   );
-  const editPropertyHandler = (property: Property) => {};
+
+  const editPropertyHandler = (property: Property) => {
+    setSelectedProperty(property);
+    setOpenEditDialog(true);
+  };
+
   const deletePropertyHandler = (propertyId: string) => {};
 
   useEffect(() => {
@@ -202,7 +286,7 @@ function Properties() {
                           }
                         />
                       }
-                      selectedPropertySetter={setSelectedProperty}
+                      onEdit={editPropertyHandler}
                     />
                   </Grid>
                 ))}
@@ -224,7 +308,7 @@ function Properties() {
 
           {user && selectedProperty && (
             <EditPropertyDialog
-              property={selectedProperty}
+              property={selectedProperty ?? null}
               open={openEditDialog}
               openSetter={setOpenEditDialog}
             />
