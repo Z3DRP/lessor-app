@@ -1,6 +1,7 @@
 import axiosInstance from "@/utils/axios";
 import { Address, Property } from "@/types/property";
 import { PropertyStatus } from "enums/enums";
+import { updatePropertyImage } from "@/redux/slices/propertiesSlice";
 
 const propertyEp = import.meta.env.VITE_PROPERTY_EP;
 const tempPropertiesEP = import.meta.env.VITE_TEMP_PROPERTIES_EP;
@@ -106,7 +107,11 @@ export const propertyApi = {
         throw new Error("unexpected error");
       }
 
-      const { property } = res.data;
+      const { property, success } = res.data;
+      if (!success) {
+        throw new Error("unexpected error occurred while updating property");
+      }
+
       return property;
     } catch (err) {
       console.log(err);
@@ -126,6 +131,37 @@ export const propertyApi = {
     // const { property, success } = res.data;
 
     // return { property, success };
+  },
+
+  async updatePropertyImage(id: string, file: File) {
+    const formData = new FormData();
+    if (file) {
+      formData.append("image", file);
+    }
+
+    try {
+      const res = await axiosInstance.post(
+        `${propertyEp}/img/${id}`,
+        formData,
+        {
+          headers: {
+            // set it to undefined to remove application/json headers from other requests
+            "Content-Type": undefined,
+          },
+        }
+      );
+
+      if (res?.data == undefined) {
+        throw new Error("unexpected error");
+      }
+
+      const { success } = res.data;
+
+      return success;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   },
 
   async deleteProeprty(pid: string) {

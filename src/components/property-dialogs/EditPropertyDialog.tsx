@@ -29,9 +29,6 @@ import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
 import { LinearQuery } from "../ui/Loaders";
-import { createProperty, updateProperty } from "@/redux/slices/propertiesSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
 import { Percent } from "@mui/icons-material";
@@ -72,11 +69,16 @@ type EditPropertyDialogProps = {
   property: Property;
   open: boolean;
   openSetter: (isOpen: boolean) => void;
+  handleEdit: (property?: Property, file?: File) => Promise<any>;
+  refreshSetter: () => void;
 };
+
 export function EditPropertyDialog({
   property,
   open,
   openSetter,
+  handleEdit,
+  refreshSetter,
 }: EditPropertyDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [error, setError] = useState<string | undefined>();
@@ -85,7 +87,10 @@ export function EditPropertyDialog({
     useState<Map<string, regionOption[]>>();
   const [regions, setRegions] = useState<regionOption[]>();
   const [selectedFile, setSelectedFile] = useState<any>();
-  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    console.log("selected proeprty: ", property);
+  });
 
   useEffect(() => {
     const cData = countryData
@@ -132,6 +137,7 @@ export function EditPropertyDialog({
 
     const uProperty = {
       alessorId: property.alessorId,
+      address: address,
       bedrooms: Number(values?.beds),
       baths: Number(values?.baths),
       ...(values?.squareFootage != undefined && {
@@ -150,55 +156,21 @@ export function EditPropertyDialog({
       ...(values?.fileKey != undefined && { image: values?.fileKey }),
     };
 
-    const updatedProperty = dispatch(
-      updateProperty({ updatedData: uProperty })
-    );
-
-    if (!updatedProperty) {
-      setSubmitting(false);
-      setSelectedFile(null);
-      resetForm();
-      enqueueSnackbar("failed to save changes", { variant: "error" });
-      return;
-    }
-
-    setSubmitting(false);
-    openSetter(false);
-    enqueueSnackbar("changes successfully saved", { variant: "success" });
-  };
-
-  const newPropertyHandler = async (
-    alsrId: string,
-    addrs: Address
-  ): Promise<boolean> => {
-    console.log("using alsr id : ", alsrId);
-
     try {
-      console.log("property handler");
-      const result = await dispatch(
-        createProperty({
-          data: property,
-          address: addrs,
-          file: selectedFile ?? undefined,
-        })
-      ).unwrap();
-
-      if (!result.success) {
-        enqueueSnackbar("an error occurred while saving property", {
-          variant: "error",
-        });
-        setError(result.err);
-        return false;
+      const updatedProperty = await handleEdit(uProperty, selectedFile);
+      if (updatedProperty) {
+        openSetter(false);
+        enqueueSnackbar("changes successfully saved", { variant: "success" });
+        refreshSetter();
+        return;
       }
 
-      enqueueSnackbar("property saved successfully", { variant: "success" });
-      return true;
-    } catch (err) {
-      enqueueSnackbar("an unexpected error occurred while saving property", {
-        variant: "error",
-      });
-      setError(`${err}`);
-      return false;
+      enqueueSnackbar("something went wrong");
+    } catch (err: any) {
+      setError(`${err.error ?? err.message ?? "something went wrong"}`);
+    } finally {
+      setSubmitting(false);
+      resetForm();
     }
   };
 
@@ -246,10 +218,10 @@ export function EditPropertyDialog({
     fileKey: Yup.string().optional(),
   });
 
-  // NOTE IF THERE IS AN ERROR I DID CHANGE form to FORM
   return (
     <Formik
       initialValues={initValues}
+      enableReinitialize
       validationSchema={validationSchema}
       validateOnMount
       onSubmit={handleSubmit}
@@ -662,12 +634,7 @@ export function EditPropertyDialog({
               <Button onClick={() => openSetter(false)} color="warning">
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={!selectedFile}
-                color="primary"
-                variant="contained"
-              >
+              <Button type="submit" color="primary" variant="contained">
                 Save
               </Button>
             </DialogActions>

@@ -21,12 +21,16 @@ import { Card, CardContent, CardMedia, Divider } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { AvatarGroup } from "@/components/ui/AvatarGroup";
 import StatusChip from "@/components/ui/PropertyStatusChip";
-import { Property } from "@/types/property";
+import { formattedAddress, Property } from "@/types/property";
 import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDialog";
 import useAuth from "@/hooks/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { fetchProperties } from "@/redux/slices/propertiesSlice";
+import {
+  deleteProperty,
+  fetchProperties,
+  updateProperty,
+} from "@/redux/slices/propertiesSlice";
 import { useSnackbar } from "notistack";
 import { LinearQuery } from "@/components/ui/Loaders";
 import EmptyCard from "@/components/ui/EmptyCard";
@@ -35,6 +39,7 @@ import { EditPropertyDialog } from "@/components/property-dialogs/EditPropertyDi
 import PropertyViewAccordian from "@/components/property/PropertyViewAccordion";
 import { ExpandMore } from "@/components/ui/ExpandMore";
 import { Stack } from "@mui/system";
+import DeletePropertyDialog from "@/components/property-dialogs/DeletePropertyDialog";
 
 const propertyStatusColors = new Map<
   PropertyStatus,
@@ -47,25 +52,37 @@ const propertyStatusColors = new Map<
   [PropertyStatus.Unknown, "error"],
 ]);
 
-type PropertyProps = {
+type LessorPropertyProps = {
   property: Property;
+  image: string | null;
   chip: JSX.Element;
   onEdit: (selectedProperty: Property) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (selectedProperty: Property) => Promise<void>;
 };
 
-const Property: React.FC<PropertyProps> = ({
+const LessorProperty: React.FC<LessorPropertyProps> = ({
   property,
+  image,
   chip,
   onEdit,
   onDelete,
 }) => {
   const [expanded, setExpanded] = useState<boolean>(false);
 
+  const getOccupancyAvatars = (occupancy: number) => {
+    const avatars = [];
+    for (let i = 0; i < occupancy; i++) {
+      avatars.push(
+        <Avatar key={i} alt="Avatar" src="/static/img/avatars/default.png" />
+      );
+    }
+    return avatars;
+  };
+
   return (
     <Card>
       {property?.imageUrl ? (
-        <CardMedia image={property.imageUrl} title="lessor-property-image" />
+        <CardMedia image={property?.imageUrl} title="lessor-property-image" />
       ) : null}
       <CardContent>
         <Typography gutterBottom variant="h5" component="h2">
@@ -97,23 +114,25 @@ const Property: React.FC<PropertyProps> = ({
         </Stack>
 
         <AvatarGroup max={3}>
-          <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
-          <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
-          <Avatar alt="Avatar" src="/static/img/avatars/default.png" />
+          {getOccupancyAvatars(property?.maxOccupancy ?? 1)}
         </AvatarGroup>
       </CardContent>
       <CardActions>
         <IconButton
           size="small"
           color="primary"
-          onClick={() => onEdit(property)}
+          onClick={() => {
+            onEdit(property);
+          }}
         >
           <Pencil />
         </IconButton>
         <IconButton
           size="small"
           color="primary"
-          onClick={() => onDelete(property.pid!)}
+          onClick={() => {
+            onDelete(property);
+          }}
         >
           <TrashIcon />
         </IconButton>
@@ -182,20 +201,62 @@ function Properties() {
   const { enqueueSnackbar } = useSnackbar();
   const [openNewDialog, setOpenNewDialog] = useState<boolean>(false);
   const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>();
-  const [selectedProperty, setSelectedProperty] = useState<Property>();
+  const [propertyToEdit, setPropertyToEdit] = useState<Property | undefined>();
+  const [propertyToDelete, setPropertyToDelete] = useState<
+    Property | undefined
+  >();
+  const [refreshPage, setRefreshPage] = useState<boolean>(true);
   const handleOpenNewDialog = () => setOpenNewDialog(true);
   const properties = useSelector(
     (state: RootState) => state.property.properties
   );
 
-  const editPropertyHandler = (property: Property) => {
-    setSelectedProperty(property);
+  const handleEditClick = async (property: Property) => {
+    setPropertyToEdit(property);
     setOpenEditDialog(true);
   };
 
-  const deletePropertyHandler = (propertyId: string) => {};
+  const handleEdit = async (property?: Property, file?: File) => {
+    try {
+      let updatedProperty;
+      if (property) {
+        updatedProperty = await dispatch(
+          updateProperty({ updatedData: property, file: file })
+        );
+      }
+
+      // if (!property && file) {
+      //   result = dispatch(
+      //     updatePropertyImage({ id: property?.pid, file: file })
+      //   );
+      // }
+      console.log(updatedProperty);
+
+      return { success: true, msg: undefined };
+    } catch (err: any) {
+      return { success: false, msg: err.error ?? err.message };
+    }
+  };
+
+  const handleDeleteClick = async (property: Property) => {
+    setPropertyToDelete(property);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDelete = async (propertyId: string) => {
+    try {
+      await dispatch(deleteProperty({ id: propertyId }));
+      return { success: true, msg: "" };
+    } catch (err: any) {
+      return {
+        success: false,
+        msg: err.error ?? err.message ?? "something went wrong",
+      };
+    }
+  };
 
   useEffect(() => {
     const handleFetch = async () => {
@@ -226,11 +287,12 @@ function Properties() {
       }
     };
 
-    if (user) {
+    if (user && refreshPage) {
       handleFetch();
+      setRefreshPage(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [error, user, dispatch]);
+  }, [error, user, dispatch, refreshPage]);
 
   return (
     <React.Fragment>
@@ -274,8 +336,9 @@ function Properties() {
               {properties &&
                 properties.map((p: Property) => (
                   <Grid key={p.pid} size={{ xs: 12, lg: 6, xl: 3 }}>
-                    <Property
+                    <LessorProperty
                       property={p}
+                      image={p.imageUrl || null}
                       chip={
                         <StatusChip
                           label={p.status}
@@ -286,7 +349,8 @@ function Properties() {
                           }
                         />
                       }
-                      onEdit={editPropertyHandler}
+                      onEdit={handleEditClick}
+                      onDelete={handleDeleteClick}
                     />
                   </Grid>
                 ))}
@@ -303,14 +367,30 @@ function Properties() {
               lessorId={user?.Uid || "[invalid-id]"}
               open={openNewDialog}
               openSetter={setOpenNewDialog}
+              refreshSetter={() => setRefreshPage(true)}
             />
           )}
 
-          {user && selectedProperty && (
+          {user && propertyToDelete && (
+            <DeletePropertyDialog
+              key={propertyToDelete?.pid}
+              property={propertyToDelete}
+              address={formattedAddress(propertyToDelete)}
+              open={openDeleteDialog}
+              openSetter={setOpenDeleteDialog}
+              handleDelete={handleDelete}
+              refreshSetter={() => setRefreshPage(true)}
+            />
+          )}
+
+          {user && propertyToEdit && (
             <EditPropertyDialog
-              property={selectedProperty ?? null}
+              key={propertyToEdit.id}
+              property={propertyToEdit ?? null}
               open={openEditDialog}
               openSetter={setOpenEditDialog}
+              handleEdit={handleEdit}
+              refreshSetter={() => setRefreshPage(true)}
             />
           )}
         </>

@@ -45,10 +45,10 @@ export const createProperty = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      if (file == null) {
-        const nwProperty = await propertyApi.createProperty(data);
-        return nwProperty;
-      }
+      // if (file == null) {
+      //   const nwProperty = await propertyApi.createProperty(data);
+      //   return nwProperty;
+      // }
 
       const nwProperty = await propertyApi.createPropertyWithImage(
         data,
@@ -73,16 +73,27 @@ export const updateProperty = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const { property, success } = await propertyApi.updateProperty(
-        updatedData,
-        file
-      );
-      if (!success) {
-        throw new Error("update property request failed");
-      }
+      const property = await propertyApi.updateProperty(updatedData, file);
       return property;
     } catch (err: any) {
       console.log(`error updating property state: `, err);
+      return rejectWithValue(`state error: ${err.error}`);
+    }
+  }
+);
+
+export const updatePropertyImage = createAsyncThunk(
+  "properties/update-image",
+  async ({ id, file }: { id: string; file: File }, { rejectWithValue }) => {
+    try {
+      const { success } = await propertyApi.updatePropertyImage(id, file);
+      if (!success) {
+        throw new Error("updated property image failed");
+      }
+
+      return true;
+    } catch (err: any) {
+      console.log("error updating property image: ", err.error);
       return rejectWithValue(`state error: ${err.error}`);
     }
   }
@@ -96,7 +107,7 @@ export const deleteProperty = createAsyncThunk(
       return id;
     } catch (err: any) {
       console.log("error deleting property state: ", err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue(`state error: ${err ?? err.error ?? err.message}`);
     }
   }
 );

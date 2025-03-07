@@ -1,3 +1,4 @@
+import { Property } from "@/types/property";
 import {
   Button,
   Dialog,
@@ -5,49 +6,89 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
+import { useEffect, useState } from "react";
+import { TransitionAlert } from "../ui/CustomAlerts";
 
 export interface DeletePropertyDialogProps {
-  propertyId: string;
+  property: Property;
+  address: string;
   open: boolean;
-  handleOpen: (isOpen: boolean) => void;
-  // maybe make handleDelte just be a function that is called an set it to pass it the id when passing
-  // // the handler to the component
-  handleDelete: (propertyId: string) => void;
+  openSetter: (isOpen: boolean) => void;
+  handleDelete: (propertyId: string) => Promise<any>;
+  refreshSetter: () => void;
 }
 
 export default function DeletePropertyDialog({
-  propertyId,
+  property,
+  address,
   open,
-  handleOpen,
+  openSetter,
   handleDelete,
+  refreshSetter,
 }: DeletePropertyDialogProps) {
+  const [error, setError] = useState<string | undefined>(undefined);
+  const handleConfirmDelete = async () => {
+    try {
+      if (!property?.pid) {
+        setError("property id is required");
+        return;
+      }
+      const { success, msg } = await handleDelete(property.pid);
+      if (!success) {
+        setError(msg ?? "something went wrong");
+        enqueueSnackbar("an error occurred while deleting property");
+      }
+      enqueueSnackbar("property deleted successfully", { variant: "success" });
+    } catch (err: any) {
+      setError(err?.message ? err.message : "something went wrong");
+      enqueueSnackbar("an error occurred while deleting property");
+    } finally {
+      refreshSetter();
+      openSetter(false);
+    }
+  };
+
   return (
     <Dialog
       open={open}
-      onClose={() => handleOpen(false)}
+      onClose={() => openSetter(false)}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
-        {"Use Google's location service?"}
-      </DialogTitle>
+      <DialogTitle id="alert-dialog-title">Delete</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          Let Google help apps determine location. This means sending anonymous
-          location data to Google, even when no apps are running.
+          <Typography gutterBottom>
+            You are about to delete the following property:
+          </Typography>
+          <Typography textAlign="center" color="textPrimary" gutterBottom>
+            <strong>{address}</strong>
+          </Typography>
+          <Typography>
+            This data will be lost, Do you wish to continue?
+          </Typography>
         </DialogContentText>
+        <TransitionAlert
+          isOpen={error != undefined}
+          variant="error"
+          message={error ?? ""}
+          closeHandler={() => setError(undefined)}
+        />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={() => handleOpen(false)} color="primary">
-          Disagree
+      <DialogActions sx={{ m: 2 }}>
+        <Button onClick={() => openSetter(false)} color="warning">
+          Cancel
         </Button>
         <Button
-          onClick={() => handleDelete(propertyId)}
+          onClick={() => handleConfirmDelete()}
           color="primary"
+          variant="contained"
           autoFocus
         >
-          Agree
+          Confirm
         </Button>
       </DialogActions>
     </Dialog>

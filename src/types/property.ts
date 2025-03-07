@@ -24,7 +24,7 @@ export const NewAddress = (
   };
 };
 
-export interface Property {
+export type Property = {
   id?: number;
   pid?: string;
   alessorId?: string;
@@ -40,7 +40,7 @@ export interface Property {
   maxOccupancy?: number;
   image?: string;
   imageUrl?: string;
-}
+};
 
 export const NewProperty = (
   addr: Address,
@@ -113,4 +113,8 @@ export const NewSaleProperty = (
     offerPrice: offrPrice,
     finalPrice: fnPrice,
   };
+};
+
+export const formattedAddress = (property: Property) => {
+  return `${property?.address?.street}, ${property?.address?.city}, ${property?.address?.state}`;
 };

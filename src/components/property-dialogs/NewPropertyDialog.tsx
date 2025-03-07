@@ -72,11 +72,13 @@ type NewPropertyDialogProps = {
   lessorId: string;
   open: boolean;
   openSetter: (isOpen: boolean) => void;
+  refreshSetter: () => void;
 };
 export function NewPropertyDialog({
   lessorId,
   open,
   openSetter,
+  refreshSetter,
 }: NewPropertyDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [error, setError] = useState<string | undefined>();
@@ -148,6 +150,7 @@ export function NewPropertyDialog({
       setSubmitting(false);
       setSelectedFile(null);
       resetForm();
+      refreshSetter();
       return;
     }
 
@@ -196,11 +199,11 @@ export function NewPropertyDialog({
         })
       ).unwrap();
 
-      if (!result.success) {
+      if (!result) {
         enqueueSnackbar("an error occurred while saving property", {
           variant: "error",
         });
-        setError(result.err);
+        setError("something went wrong");
         return false;
       }
 
@@ -234,32 +237,49 @@ export function NewPropertyDialog({
   };
 
   const validationSchema = Yup.object().shape({
-    street: Yup.string().min(2).max(150).required("Street is required"),
+    street: Yup.string()
+      .min(2, "Street must be at least 2 characters")
+      .max(150, "Street cannot be more than 150 characters")
+      .required("Street is required"),
     city: Yup.string()
       .min(2, "City must be more than 2 characters")
       .max(150, "City cannot be more than 150 characters")
       .required("City is required"),
     state: Yup.string().min(2).max(75).required("State is required"),
     country: Yup.string().min(2).max(75).required("Country is required"),
-    zipcode: Yup.string().min(5).max(5).required("Zipcode is required"),
+    zipcode: Yup.string()
+      .min(5, "Zipcode must be 5 characters")
+      .max(5, "Zipcode must be 5 characters")
+      .required("Zipcode is required"),
     bedrooms: Yup.number()
-      .min(1)
-      .max(20)
+      .min(1, "There must be at least 1 bedrrom")
+      .max(20, "There cannot be more than 20 bedrooms")
       .required("Number of rooms is required"),
-    baths: Yup.number().min(1).max(20).required("Number of baths is required"),
-    squareFootage: Yup.number().min(1).optional(),
+    baths: Yup.number()
+      .min(1, "There must be atleast one bathroom")
+      .max(20, "There cannot be more than 20 bathrooms")
+      .required("Number of baths is required"),
+    squareFootage: Yup.number()
+      .min(1, "square footage must be more than 1")
+      .optional(),
     isAvailable: Yup.boolean().optional(),
     status: Yup.string()
       .oneOf(Object.values(PropertyStatus))
       .required("Status is required"),
-    notes: Yup.string().optional(),
-    taxRate: Yup.number().min(0.01).max(1).optional(),
+    notes: Yup.string()
+      .max(255, "Notes can not be longer than 255 characters")
+      .optional(),
+    taxRate: Yup.number()
+      .min(0.01, "Tax rate must at least be 0.01%")
+      .max(1, "Tax rate cannot be more than 100%")
+      .optional(),
     taxAmountDue: Yup.number().min(0.0).optional(),
-    maxOccupancy: Yup.number().min(1).optional(),
+    maxOccupancy: Yup.number()
+      .min(1, "There must be alteast one occupant")
+      .optional(),
     fileKey: Yup.string().optional(),
   });
 
-  // NOTE IF THERE IS AN ERROR I DID CHANGE form to FORM
   return (
     <Formik
       initialValues={initValues}
