@@ -150,12 +150,12 @@ export function NewPropertyDialog({
       setSubmitting(false);
       setSelectedFile(null);
       resetForm();
-      refreshSetter();
       return;
     }
 
     setSubmitting(false);
     enqueueSnackbar("property successfully created", { variant: "success" });
+    refreshSetter();
     openSetter(false);
   };
 
@@ -233,7 +233,7 @@ export function NewPropertyDialog({
     taxRate: 0.01,
     taxAmountDue: 0.0,
     maxOccupancy: 1,
-    fileKey: "",
+    image: "",
   };
 
   const validationSchema = Yup.object().shape({
@@ -277,7 +277,7 @@ export function NewPropertyDialog({
     maxOccupancy: Yup.number()
       .min(1, "There must be alteast one occupant")
       .optional(),
-    fileKey: Yup.string().optional(),
+    image: Yup.string().optional(),
   });
 
   return (

@@ -66,10 +66,14 @@ type regionOption = {
 };
 
 type EditPropertyDialogProps = {
-  property: Property;
+  property: Partial<Property>;
   open: boolean;
   openSetter: (isOpen: boolean) => void;
-  handleEdit: (property?: Property, file?: File) => Promise<any>;
+  handleEdit: (
+    property: Partial<Property>,
+    address: Address,
+    file?: File
+  ) => Promise<any>;
   refreshSetter: () => void;
 };
 
@@ -117,8 +121,8 @@ export function EditPropertyDialog({
       cRegions.set(r.countryName, [r]);
     });
     setRegionsByCountry(cRegions);
-    setRegions(cRegions.get(property.address.country));
-  }, [property.address.country]);
+    setRegions(cRegions.get(property?.address?.country ?? ""));
+  }, [property?.address?.country]);
 
   const handleSubmit = async (
     values: any,
@@ -136,36 +140,43 @@ export function EditPropertyDialog({
     };
 
     const uProperty = {
+      pid: property.pid,
       alessorId: property.alessorId,
-      address: address,
-      bedrooms: Number(values?.beds),
+      bedrooms: Number(values?.bedrooms),
       baths: Number(values?.baths),
       ...(values?.squareFootage != undefined && {
         squareFootage: Number(values?.squareFootage),
       }),
-      ...(values?.available != undefined && { isAvailable: values?.available }),
+      ...(values?.isAvailable != undefined && {
+        isAvailable: values?.isAvailable,
+      }),
       ...(values?.status != undefined && { status: values?.status }),
       ...(values?.notes != undefined && { notes: values?.notes }),
-      ...(values?.taxDue != undefined && {
-        taxAmountDue: Number(values?.taxDue),
+      ...(values?.taxAmountDue != undefined && {
+        taxAmountDue: Number(values?.taxAmountDue),
       }),
       ...(values?.taxRate != undefined && { taxRate: Number(values?.taxRate) }),
-      ...(values?.occupancy != undefined && {
-        maxOccupancy: Number(values?.occupancy),
+      ...(values?.maxOccupancy != undefined && {
+        maxOccupancy: Number(values?.maxOccupancy),
       }),
-      ...(values?.fileKey != undefined && { image: values?.fileKey }),
+      ...(values?.image != undefined && { image: values?.image }),
     };
 
     try {
-      const updatedProperty = await handleEdit(uProperty, selectedFile);
-      if (updatedProperty) {
+      const { msg, success } = await handleEdit(
+        uProperty,
+        address,
+        selectedFile
+      );
+      if (success) {
         openSetter(false);
         enqueueSnackbar("changes successfully saved", { variant: "success" });
         refreshSetter();
         return;
       }
 
-      enqueueSnackbar("something went wrong");
+      setError(msg);
+      enqueueSnackbar("something went wrong", { variant: "error" });
     } catch (err: any) {
       setError(`${err.error ?? err.message ?? "something went wrong"}`);
     } finally {
@@ -175,11 +186,11 @@ export function EditPropertyDialog({
   };
 
   const initValues = {
-    street: property?.address.street || "",
-    city: property?.address.city || "",
-    state: property?.address.state || "default-state",
-    country: property?.address.country || "default-country",
-    zipcode: property?.address.zipcode || "",
+    street: property?.address?.street || "",
+    city: property?.address?.city || "",
+    state: property?.address?.state || "default-state",
+    country: property?.address?.country || "default-country",
+    zipcode: property?.address?.zipcode || "",
     bedrooms: property?.bedrooms || 0,
     baths: property?.baths || 0,
     squareFootage: property?.squareFootage || 0,
@@ -189,33 +200,51 @@ export function EditPropertyDialog({
     taxRate: property?.taxRate || 0.01,
     taxAmountDue: property?.taxAmountDue || 0.0,
     maxOccupancy: property?.maxOccupancy || 1,
-    fileKey: property?.image || "",
+    image: property?.image || "",
   };
 
   const validationSchema = Yup.object().shape({
-    street: Yup.string().min(2).max(150).required("Street is required"),
+    street: Yup.string()
+      .min(2, "Street must be at least 2 characters")
+      .max(150, "Street cannot be more than 150 characters")
+      .required("Street is required"),
     city: Yup.string()
       .min(2, "City must be more than 2 characters")
       .max(150, "City cannot be more than 150 characters")
       .required("City is required"),
     state: Yup.string().min(2).max(75).required("State is required"),
     country: Yup.string().min(2).max(75).required("Country is required"),
-    zipcode: Yup.string().min(5).max(5).required("Zipcode is required"),
+    zipcode: Yup.string()
+      .min(5, "Zipcode must be 5 characters")
+      .max(5, "Zipcode must be 5 characters")
+      .required("Zipcode is required"),
     bedrooms: Yup.number()
-      .min(1)
-      .max(20)
+      .min(1, "There must be at least 1 bedrrom")
+      .max(20, "There cannot be more than 20 bedrooms")
       .required("Number of rooms is required"),
-    baths: Yup.number().min(1).max(20).required("Number of baths is required"),
-    squareFootage: Yup.number().min(1).optional(),
+    baths: Yup.number()
+      .min(1, "There must be atleast one bathroom")
+      .max(20, "There cannot be more than 20 bathrooms")
+      .required("Number of baths is required"),
+    squareFootage: Yup.number()
+      .min(1, "square footage must be more than 1")
+      .optional(),
     isAvailable: Yup.boolean().optional(),
     status: Yup.string()
       .oneOf(Object.values(PropertyStatus))
       .required("Status is required"),
-    notes: Yup.string().optional(),
-    taxRate: Yup.number().min(0.01).max(1).optional(),
+    notes: Yup.string()
+      .max(255, "Notes can not be longer than 255 characters")
+      .optional(),
+    taxRate: Yup.number()
+      .min(0.01, "Tax rate must at least be 0.01%")
+      .max(1, "Tax rate cannot be more than 100%")
+      .optional(),
     taxAmountDue: Yup.number().min(0.0).optional(),
-    maxOccupancy: Yup.number().min(1).optional(),
-    fileKey: Yup.string().optional(),
+    maxOccupancy: Yup.number()
+      .min(1, "There must be alteast one occupant")
+      .optional(),
+    image: Yup.string().optional(),
   });
 
   return (
@@ -270,6 +299,7 @@ export function EditPropertyDialog({
                             control={
                               <Switch
                                 name="isAvailable"
+                                checked={values?.isAvailable}
                                 onChange={(e) =>
                                   setFieldValue("isAvailable", e.target.checked)
                                 }
@@ -336,9 +366,7 @@ export function EditPropertyDialog({
                                 fullWidth
                                 labelId="country-id"
                                 label="Country"
-                                defaultValue={
-                                  values?.country || "default-country"
-                                }
+                                defaultValue={values?.country}
                                 native
                                 onBlur={handleBlur}
                                 error={Boolean(

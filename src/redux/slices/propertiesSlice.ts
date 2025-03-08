@@ -45,11 +45,6 @@ export const createProperty = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      // if (file == null) {
-      //   const nwProperty = await propertyApi.createProperty(data);
-      //   return nwProperty;
-      // }
-
       const nwProperty = await propertyApi.createPropertyWithImage(
         data,
         address,
@@ -68,20 +63,32 @@ export const updateProperty = createAsyncThunk(
   async (
     {
       updatedData,
+      address,
       file,
-    }: { updatedData: Partial<Property> | Property; file?: File },
+    }: {
+      updatedData: Partial<Property> | Property;
+      address?: Address;
+      file?: File;
+    },
     { rejectWithValue }
   ) => {
     try {
-      const property = await propertyApi.updateProperty(updatedData, file);
+      const property = await propertyApi.updateProperty(
+        updatedData,
+        address,
+        file
+      );
       return property;
     } catch (err: any) {
       console.log(`error updating property state: `, err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue(
+        `state error: ${err.error ?? JSON.stringify(err)}`
+      );
     }
   }
 );
 
+// this needs to return the full property and image
 export const updatePropertyImage = createAsyncThunk(
   "properties/update-image",
   async ({ id, file }: { id: string; file: File }, { rejectWithValue }) => {
@@ -93,8 +100,8 @@ export const updatePropertyImage = createAsyncThunk(
 
       return true;
     } catch (err: any) {
-      console.log("error updating property image: ", err.error);
-      return rejectWithValue(`state error: ${err.error}`);
+      console.log("error updating property image: ", err);
+      return rejectWithValue(`state error: ${err ?? err.message ?? err.error}`);
     }
   }
 );
@@ -141,7 +148,10 @@ export const propertySlice = createSlice({
       .addCase(
         createProperty.fulfilled,
         (state, action: PayloadAction<Property>) => {
-          (state.status = "idle"), state.properties.push(action.payload);
+          // (state.status = "idle"), state.properties.push(action.payload);
+          console.log("created w/ property redux ", action.payload);
+          state.status = "idle";
+          state.properties.push(action.payload);
         }
       )
       .addCase(createProperty.rejected, (state, action) => {
@@ -149,7 +159,7 @@ export const propertySlice = createSlice({
       })
       .addCase(updateProperty.fulfilled, (state, action) => {
         const index = state.properties.findIndex(
-          (p) => p.pid === action.payload.property.pid
+          (p) => p.pid === action.payload.pid
         );
         if (index !== -1) {
           state.properties[index] = action.payload;

@@ -79,7 +79,11 @@ export const propertyApi = {
     }
   },
 
-  async updateProperty(data: Partial<Property>, file?: File | undefined) {
+  async updateProperty(
+    data: Partial<Property>,
+    address?: Address,
+    file?: File | undefined
+  ) {
     const formData = new FormData();
     if (file) {
       formData.append("image", file);
@@ -91,8 +95,10 @@ export const propertyApi = {
       }
     });
 
+    formData.append("address", JSON.stringify(address));
+
     try {
-      const res = await axiosInstance.post(
+      const res = await axiosInstance.put(
         `${propertyEp}/${data.alessorId}`,
         formData,
         {

@@ -21,7 +21,7 @@ import { Card, CardContent, CardMedia, Divider } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { AvatarGroup } from "@/components/ui/AvatarGroup";
 import StatusChip from "@/components/ui/PropertyStatusChip";
-import { formattedAddress, Property } from "@/types/property";
+import { Address, formattedAddress, Property } from "@/types/property";
 import { NewPropertyDialog } from "@/components/property-dialogs/NewPropertyDialog";
 import useAuth from "@/hooks/useAuth";
 import { useDispatch, useSelector } from "react-redux";
@@ -219,21 +219,27 @@ function Properties() {
     setOpenEditDialog(true);
   };
 
-  const handleEdit = async (property?: Property, file?: File) => {
+  const handleEdit = async (
+    property?: Partial<Property>,
+    address?: Address,
+    file?: File
+  ) => {
     try {
-      let updatedProperty;
+      let result;
       if (property) {
-        updatedProperty = await dispatch(
-          updateProperty({ updatedData: property, file: file })
-        );
+        result = await dispatch(
+          updateProperty({
+            updatedData: property,
+            address: address,
+            file: file,
+          })
+        ).unwrap();
       }
+      console.log(result);
 
-      // if (!property && file) {
-      //   result = dispatch(
-      //     updatePropertyImage({ id: property?.pid, file: file })
-      //   );
-      // }
-      console.log(updatedProperty);
+      if (result?.type && result?.type.toLowerCase().includes("rejected")) {
+        return { success: false, msg: result.payload };
+      }
 
       return { success: true, msg: undefined };
     } catch (err: any) {
