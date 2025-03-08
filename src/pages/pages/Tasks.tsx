@@ -19,12 +19,14 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
+  Fade,
   Grid2 as Grid,
   Link,
+  Tooltip,
   Typography as MuiTypography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { orange, green, blue } from "@mui/material/colors";
+import { orange, green, blue, red, yellow } from "@mui/material/colors";
 import { Add as AddIcon } from "@mui/icons-material";
 
 const Card = styled(MuiCard)(spacing);
@@ -105,7 +107,7 @@ const mockItems1 = [
   {
     id: faker.datatype.uuid(),
     title: "Redesign the homepage",
-    badges: [green[600], orange[600]],
+    badges: [green[600], orange[600], yellow[600]],
     notifications: 2,
     avatars: [1, 2, 3, 4],
   },
@@ -180,20 +182,21 @@ const mockItems3 = [
   },
 ];
 
-const mockColumns = {
+const priorityColumns = {
   [faker.datatype.uuid()]: {
-    title: "Backlog",
-    description: "Nam pretium turpis et arcu. Duis arcu.",
+    title: "Low",
+    description: "Tasks in this bucket will be completed last",
     items: mockItems1,
   },
   [faker.datatype.uuid()]: {
-    title: "In Progress",
-    description: "Curabitur ligula sapien, tincidunt non.",
+    title: "Medium",
+    description: "Tasks in this bucket will be completed before the lowest",
     items: mockItems2,
   },
   [faker.datatype.uuid()]: {
-    title: "Completed",
-    description: "Aenean posuere, tortor sed cursus feugiat.",
+    title: "High",
+    description:
+      "Tasks in this bucket will be completed before any other, unless marked as urgent",
     items: mockItems3,
   },
 };
@@ -286,7 +289,9 @@ const Task = ({ item }: TaskProps) => {
       <TaskWrapperContent>
         {item.badges &&
           item.badges.map((color: any, i: number) => (
-            <TaskBadge color={color} key={i} />
+            <Tooltip title="Status Go here" TransitionComponent={Fade} key={i}>
+              <TaskBadge color={color} key={i} />
+            </Tooltip>
           ))}
 
         <TaskTitle variant="body1" gutterBottom>
@@ -319,7 +324,7 @@ const Task = ({ item }: TaskProps) => {
 };
 
 function Tasks() {
-  const [columns, setColumns] = useState(mockColumns);
+  const [columns, setColumns] = useState(priorityColumns);
   const [documentReady, setDocumentReady] = useState(false);
 
   useEffect(() => {
@@ -334,10 +339,10 @@ function Tasks() {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/">
+        <Link component={NavLink} to="/dashboard">
           Dashboard
         </Link>
-        <Link component={NavLink} to="/">
+        <Link component={NavLink} to="/dashboard">
           Pages
         </Link>
         <Typography>Tasks</Typography>

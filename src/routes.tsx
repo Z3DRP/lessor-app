@@ -33,6 +33,7 @@ import ProtectedPage from "@/pages/protected/ProtectedPage";
 // Dashboard components
 import AuthCover from "@/layouts/AuthCover";
 import Properties from "./pages/pages/Properties";
+import Default from "./pages/dashboards/Default";
 const Analytics = async(() => import("@/pages/dashboards/Analytics"));
 const SaaS = async(() => import("@/pages/dashboards/SaaS"));
 const Profile = async(() => import("@/pages/pages/Profile"));
@@ -54,11 +55,11 @@ const routes = [
     element: <DashboardLayout />,
     children: [
       {
-        path: "default",
+        path: "",
         //element: <Default />,
         element: (
           <AuthGuard>
-            <SaaS />
+            <Default />
           </AuthGuard>
         ),
       },
@@ -66,16 +67,20 @@ const routes = [
         path: "analytics",
         element: <Analytics />,
       },
-      {
-        path: "saas",
-        element: <SaaS />,
-      },
+      // {
+      //   path: "saas",
+      //   element: <SaaS />,
+      // },
     ],
   },
   {
     path: "admin",
     element: <DashboardLayout />,
     children: [
+      {
+        path: "",
+        element: <Profile />,
+      },
       {
         path: "company",
         element: <Profile />,

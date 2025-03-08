@@ -309,10 +309,10 @@ function Properties() {
             Properties
           </Typography>
           <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-            <Link component={NavLink} to="/">
+            <Link component={NavLink} to="/dashboard">
               Dashboard
             </Link>
-            <Link component={NavLink} to="/">
+            <Link component={NavLink} to="/dashboard">
               Pages
             </Link>
             <Typography>Properties</Typography>

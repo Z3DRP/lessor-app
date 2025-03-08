@@ -28,6 +28,14 @@ export enum PeriodType {
   Monthly = "monthly",
 }
 
+export enum TaskStatus {
+  Scheduled = "scheduled",
+  Started = "started",
+  Paused = "paused",
+  Failed = "failed",
+  Completed = "completed",
+}
+
 export const propertyStatuses = [
   "pending",
   "in-progress",

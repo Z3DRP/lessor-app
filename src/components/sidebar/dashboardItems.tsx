@@ -18,6 +18,10 @@ const pagesSection = [
     title: "Dashboard",
     children: [
       {
+        href: "/dashboard",
+        title: "Home",
+      },
+      {
         href: "/dashboard/analytics",
         title: "Analytics",
       },
@@ -28,10 +32,10 @@ const pagesSection = [
     icon: Layout,
     title: "Admin",
     children: [
-      {
-        href: "/admin/company",
-        title: "Company",
-      },
+      // {
+      //   href: "/admin/company",
+      //   title: "Company",
+      // },
       {
         href: "/admin/lease",
         title: "Leases",
@@ -75,26 +79,26 @@ const pagesSection = [
     icon: Users,
     title: "Workers",
   },
-  {
-    href: "/invoices",
-    icon: CreditCard,
-    title: "Invoices",
-    children: [
-      {
-        href: "/invoices",
-        title: "List",
-      },
-      {
-        href: "/invoices/detail",
-        title: "Detail",
-      },
-    ],
-  },
-  {
-    href: "/calendar",
-    icon: Calendar,
-    title: "Calendar",
-  },
+  // {
+  //   href: "/invoices",
+  //   icon: CreditCard,
+  //   title: "Invoices",
+  //   children: [
+  //     {
+  //       href: "/invoices",
+  //       title: "List",
+  //     },
+  //     {
+  //       href: "/invoices/detail",
+  //       title: "Detail",
+  //     },
+  //   ],
+  // },
+  // {
+  //   href: "/calendar",
+  //   icon: Calendar,
+  //   title: "Calendar",
+  // },
 ] as SidebarItemsType[];
 
 const navItems = [

@@ -266,9 +266,7 @@ export function NewPropertyDialog({
     status: Yup.string()
       .oneOf(Object.values(PropertyStatus))
       .required("Status is required"),
-    notes: Yup.string()
-      .max(255, "Notes can not be longer than 255 characters")
-      .optional(),
+    notes: Yup.string().optional(),
     taxRate: Yup.number()
       .min(0.01, "Tax rate must at least be 0.01%")
       .max(1, "Tax rate cannot be more than 100%")
