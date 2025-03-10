@@ -1,25 +1,7 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled";
-import { NavLink } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 
-import {
-  Avatar,
-  CardContent,
-  Grid2 as Grid,
-  Link,
-  Breadcrumbs as MuiBreadcrumbs,
-  Card as MuiCard,
-  Chip as MuiChip,
-  Divider as MuiDivider,
-  Typography,
-  Stack,
-} from "@mui/material";
-import {
-  Done as DoneIcon,
-  Face as FaceIcon,
-  TagFaces as TagFacesIcon,
-} from "@mui/icons-material";
+import { Avatar, Chip as MuiChip } from "@mui/material";
 import { spacing, SpacingProps } from "@mui/system";
 
 interface ChipProps extends SpacingProps {
@@ -30,7 +12,7 @@ interface ChipProps extends SpacingProps {
 
 const Chip = styled(MuiChip)<ChipProps>(spacing);
 
-const DfltChip = styled(MuiChip)<{ color?: string }>`
+export const DfltChip = styled(MuiChip)<{ color?: string }>`
   height: 20px;
   padding: 4px 0;
   font-size: 85%;

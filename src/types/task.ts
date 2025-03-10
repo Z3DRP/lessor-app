@@ -1,10 +1,12 @@
-import { TaskStatus } from "enums/enums";
+import { PriorityLevel, TaskStatus } from "enums/enums";
 
 export type Task = {
   id?: number;
   tid?: string;
   lessorId: string;
   workerId?: string;
+  priority: PriorityLevel;
+  takePrecedence: boolean;
   details: string;
   notes: string;
   propertyId: number;

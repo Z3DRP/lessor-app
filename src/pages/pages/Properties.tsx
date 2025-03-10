@@ -32,7 +32,7 @@ import {
   updateProperty,
 } from "@/redux/slices/propertiesSlice";
 import { useSnackbar } from "notistack";
-import { LinearQuery } from "@/components/ui/Loaders";
+import { LinearLoading } from "@/components/ui/Loaders";
 import EmptyCard from "@/components/ui/EmptyCard";
 import { PropertyStatus } from "enums/enums";
 import { EditPropertyDialog } from "@/components/property-dialogs/EditPropertyDialog";
@@ -334,7 +334,7 @@ function Properties() {
       <Divider my={6} />
 
       {isLoading ? (
-        <LinearQuery />
+        <LinearLoading />
       ) : (
         <>
           {properties.length > 0 ? (

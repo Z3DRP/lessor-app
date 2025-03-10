@@ -175,7 +175,7 @@ export function LinearDeterminate() {
   );
 }
 
-export function LinearQuery() {
+export function LinearLoading() {
   return (
     <Card mb={6}>
       <CardContent>

@@ -42,6 +42,14 @@ const PurpleAvatar = styled(Avatar)`
   background-color: ${deepPurple[500]};
 `;
 
+export type InitialAvatarProps = {
+  initials: string;
+};
+
+export function InitialAvatar({ initials }: InitialAvatarProps) {
+  return <OrangeAvatar>{initials}</OrangeAvatar>;
+}
+
 export function ImageAvatars() {
   return (
     <Card mb={6}>

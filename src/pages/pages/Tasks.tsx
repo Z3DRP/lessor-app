@@ -2,7 +2,7 @@ import React, { useState, useEffect, ReactNode } from "react";
 import styled from "@emotion/styled";
 import { NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { MessageCircle } from "lucide-react";
+import { DollarSignIcon } from "lucide-react";
 import {
   DragDropContext,
   Draggable,
@@ -15,19 +15,27 @@ import {
   Avatar,
   AvatarGroup as MuiAvatarGroup,
   Breadcrumbs as MuiBreadcrumbs,
+  Box,
   Button,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
-  Fade,
   Grid2 as Grid,
   Link,
-  Tooltip,
   Typography as MuiTypography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { orange, green, blue, red, yellow } from "@mui/material/colors";
+import { green } from "@mui/material/colors";
 import { Add as AddIcon } from "@mui/icons-material";
+import { InitialAvatar } from "@/components/ui/Avatars";
+import { TaskStatusChip } from "@/components/tasks/taskChips";
+import { PriorityLevel, TaskStatus } from "enums/enums";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchTasks } from "@/redux/slices/tasksSlice";
+import useAuth from "@/hooks/useAuth";
+import { LinearLoading } from "@/components/ui/Loaders";
+import Error from "@/layouts/Error";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -67,18 +75,9 @@ const TaskAvatars = styled.div`
   margin-top: ${(props) => props.theme.spacing(1)};
 `;
 
-const MessageCircleIcon = styled(MessageCircle)`
+const TaskAmountIcon = styled(DollarSignIcon)`
   color: ${(props) => props.theme.palette.grey[500]};
   vertical-align: middle;
-`;
-
-const TaskBadge = styled.div`
-  background: ${(props) => props.color};
-  width: 40px;
-  height: 6px;
-  border-radius: 6px;
-  display: inline-block;
-  margin-right: ${(props) => props.theme.spacing(2)};
 `;
 
 const TaskNotifications = styled.div`
@@ -90,9 +89,10 @@ const TaskNotifications = styled.div`
 
 const TaskNotificationsAmount = styled.div`
   color: ${(props) => props.theme.palette.grey[500]};
-  font-weight: 600;
+  font-weight: 800;
+  margin-left: ${(props) => props.theme.spacing(1)};
   margin-right: ${(props) => props.theme.spacing(1)};
-  line-height: 1.75;
+  line-height: 1.95;
 `;
 
 const Typography = styled(MuiTypography)(spacing);
@@ -107,36 +107,36 @@ const mockItems1 = [
   {
     id: faker.datatype.uuid(),
     title: "Redesign the homepage",
-    badges: [green[600], orange[600], yellow[600]],
-    notifications: 2,
+    badges: [1],
+    notifications: 1200.34,
     avatars: [1, 2, 3, 4],
   },
   {
     id: faker.datatype.uuid(),
     title: "Upgrade dependencies to latest versions",
     badges: [green[600]],
-    notifications: 1,
+    notifications: 103.43,
     avatars: [2],
   },
   {
     id: faker.datatype.uuid(),
     title: "Google Adwords best practices",
-    badges: [],
-    notifications: 0,
+    badges: [1],
+    notifications: 232.49,
     avatars: [2, 3],
   },
   {
     id: faker.datatype.uuid(),
     title: "Improve site speed",
-    badges: [green[600]],
-    notifications: 3,
+    badges: [1],
+    notifications: 300.89,
     avatars: [],
   },
   {
     id: faker.datatype.uuid(),
     title: "Stripe payment integration",
-    badges: [blue[600]],
-    notifications: 0,
+    badges: [1],
+    notifications: 50.32,
     avatars: [],
   },
 ];
@@ -145,14 +145,14 @@ const mockItems2 = [
   {
     id: faker.datatype.uuid(),
     title: "Google Adwords best practices",
-    badges: [],
-    notifications: 0,
+    badges: [1],
+    notifications: 609.82,
     avatars: [2, 3],
   },
   {
     id: faker.datatype.uuid(),
     title: "Stripe payment integration",
-    badges: [blue[600]],
+    badges: [1],
     notifications: 0,
     avatars: [2],
   },
@@ -162,26 +162,27 @@ const mockItems3 = [
   {
     id: faker.datatype.uuid(),
     title: "Improve site speed",
-    badges: [green[600]],
-    notifications: 3,
+    badges: [1],
+    notifications: 0,
     avatars: [1, 2],
   },
   {
     id: faker.datatype.uuid(),
     title: "Google Adwords best practices",
-    badges: [],
-    notifications: 0,
+    badges: [1],
+    notifications: 3000.0,
     avatars: [2],
   },
   {
     id: faker.datatype.uuid(),
     title: "Redesign the homepage",
-    badges: [green[600], orange[600]],
-    notifications: 2,
+    badges: [1],
+    notifications: 240.49,
     avatars: [],
   },
 ];
 
+//maybe define them here but then remove the items and then use below in the state
 const priorityColumns = {
   [faker.datatype.uuid()]: {
     title: "Low",
@@ -289,12 +290,10 @@ const Task = ({ item }: TaskProps) => {
       <TaskWrapperContent>
         {item.badges &&
           item.badges.map((color: any, i: number) => (
-            <Tooltip title="Status Go here" TransitionComponent={Fade} key={i}>
-              <TaskBadge color={color} key={i} />
-            </Tooltip>
+            <TaskStatusChip key={i} status={TaskStatus.Completed} />
           ))}
 
-        <TaskTitle variant="body1" gutterBottom>
+        <TaskTitle variant="body1" sx={{ mt: 1 }} gutterBottom>
           {item.title}
         </TaskTitle>
 
@@ -302,6 +301,7 @@ const Task = ({ item }: TaskProps) => {
           <AvatarGroup max={3}>
             {!!item.avatars &&
               item.avatars.map((avatar: any, i: number) => (
+                //<InitialAvatar initials={worker.initials} />
                 <Avatar
                   src={`/static/img/avatars/avatar-${avatar}.jpg`}
                   key={i}
@@ -312,10 +312,10 @@ const Task = ({ item }: TaskProps) => {
 
         {!!item.notifications && item.notifications > 0 && (
           <TaskNotifications>
+            <TaskAmountIcon />
             <TaskNotificationsAmount>
               {item.notifications}
             </TaskNotificationsAmount>
-            <MessageCircleIcon />
           </TaskNotifications>
         )}
       </TaskWrapperContent>
@@ -326,10 +326,68 @@ const Task = ({ item }: TaskProps) => {
 function Tasks() {
   const [columns, setColumns] = useState(priorityColumns);
   const [documentReady, setDocumentReady] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { tasks, status } = useSelector((state: RootState) => state.task);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 }));
+    }
+  }, [user, status, dispatch]);
 
   useEffect(() => {
     setDocumentReady(true);
   }, []);
+
+  if (status === "loading") {
+    return <LinearLoading />;
+  }
+
+  if (status === "failed") {
+    return (
+      <Error>
+        <Typography>Failed to fetch tasks</Typography>
+      </Error>
+    );
+  }
+
+  const priorityColumns = {
+    [faker.datatype.uuid()]: {
+      title: "Low",
+      description: "Tasks in this bucket will be completed last",
+      items: tasks
+        .sort(
+          (t1, t2) =>
+            t1.scheduledAt.getUTCMilliseconds() -
+            t2.scheduledAt.getUTCMilliseconds()
+        )
+        .filter((t) => t.priority === PriorityLevel.Low),
+    },
+    [faker.datatype.uuid()]: {
+      title: "Medium",
+      description: "Tasks in this bucket will be completed before the lowest",
+      items: tasks
+        .sort(
+          (t1, t2) =>
+            t1.scheduledAt.getUTCMilliseconds() -
+            t2.scheduledAt.getUTCMilliseconds()
+        )
+        .filter((t) => t.priority === PriorityLevel.High),
+    },
+    [faker.datatype.uuid()]: {
+      title: "High",
+      description:
+        "Tasks in this bucket will be completed before any other, unless marked as urgent",
+      items: tasks
+        .sort(
+          (t1, t2) =>
+            t1.scheduledAt.getUTCMilliseconds() -
+            t2.scheduledAt.getUTCMilliseconds()
+        )
+        .filter((t) => t.priority === PriorityLevel.High),
+    },
+  };
 
   return (
     <React.Fragment>
@@ -370,8 +428,8 @@ function Tasks() {
                         {column.items.map((item, index) => {
                           return (
                             <Draggable
-                              key={item.id}
-                              draggableId={item.id}
+                              key={item?.tid}
+                              draggableId={item?.tid || "inv"}
                               index={index}
                             >
                               {(provided) => {
