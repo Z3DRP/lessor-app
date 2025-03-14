@@ -76,7 +76,9 @@ function Footer() {
         >
           <List>
             <ListItemButton>
-              <ListItemText primary={`© ${new Date().getFullYear()} - Mira`} />
+              <ListItemText
+                primary={`© ${new Date().getFullYear()} - Zach Palmer/z3dev`}
+              />
             </ListItemButton>
           </List>
         </Grid>

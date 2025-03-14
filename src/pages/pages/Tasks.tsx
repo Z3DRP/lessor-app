@@ -23,6 +23,7 @@ import {
   Grid2 as Grid,
   Link,
   Typography as MuiTypography,
+  Popover,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { green } from "@mui/material/colors";
@@ -36,6 +37,10 @@ import { fetchTasks } from "@/redux/slices/tasksSlice";
 import useAuth from "@/hooks/useAuth";
 import { LinearLoading } from "@/components/ui/Loaders";
 import Error from "@/layouts/Error";
+import { determineTaskStatus, Task } from "@/types/task";
+import { getInitials } from "@/types/user";
+import EmptyCard from "@/components/ui/EmptyCard";
+import InfoPopover from "@/components/ui/InfoPopover";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -182,23 +187,33 @@ const mockItems3 = [
   },
 ];
 
+interface Column {
+  title: string;
+  description: string;
+  items: Task[];
+}
+
+const lowColId = faker.datatype.uuid();
+const medColId = faker.datatype.uuid();
+const hiColId = faker.datatype.uuid();
+
 //maybe define them here but then remove the items and then use below in the state
-const priorityColumns = {
-  [faker.datatype.uuid()]: {
+const priorityColumns: Record<string, Column> = {
+  [lowColId]: {
     title: "Low",
     description: "Tasks in this bucket will be completed last",
-    items: mockItems1,
+    items: [],
   },
-  [faker.datatype.uuid()]: {
+  [medColId]: {
     title: "Medium",
     description: "Tasks in this bucket will be completed before the lowest",
-    items: mockItems2,
+    items: [],
   },
-  [faker.datatype.uuid()]: {
+  [hiColId]: {
     title: "High",
     description:
       "Tasks in this bucket will be completed before any other, unless marked as urgent",
-    items: mockItems3,
+    items: [],
   },
 };
 
@@ -224,6 +239,11 @@ const onDragEnd = (result: DropResult, columns: any, setColumns: any) => {
         items: destItems,
       },
     });
+
+    const updatedTasks = columns[destination.droppableId];
+    if (updatedTasks) {
+      //  make api call to update task priorities
+    }
   } else {
     const column = columns[source.droppableId];
     const copiedItems = [...column.items];
@@ -243,6 +263,7 @@ interface LaneProps {
   column: {
     title: string;
     description: string;
+    items: Task[];
   };
   children: ReactNode;
 }
@@ -258,12 +279,22 @@ const Lane = ({ column, children }: LaneProps) => {
     >
       <Card mb={6}>
         <CardContent pb={0}>
-          <Typography variant="h6" gutterBottom>
-            {column.title}
-          </Typography>
-          <Typography variant="body2" mb={4}>
-            {column.description}
-          </Typography>
+          <Grid
+            container
+            display="flex"
+            justifyItems="center"
+            alignItems="center"
+            spacing={1}
+            direction="row"
+            sx={{ mb: 2 }}
+          >
+            <Grid>
+              <Typography variant="h6">{column.title}</Typography>
+            </Grid>
+            <Grid>
+              <InfoPopover message={column.description} />
+            </Grid>
+          </Grid>
           {children}
           <Button color="primary" variant="contained" fullWidth>
             <AddIcon />
@@ -276,45 +307,35 @@ const Lane = ({ column, children }: LaneProps) => {
 };
 
 interface TaskProps {
-  item: {
-    badges: any;
-    title: string;
-    avatars: any;
-    notifications: any;
-  };
+  task: Task;
 }
 
-const Task = ({ item }: TaskProps) => {
+const TaskItem = ({ task }: TaskProps) => {
   return (
     <TaskWrapper mb={4}>
       <TaskWrapperContent>
-        {item.badges &&
-          item.badges.map((color: any, i: number) => (
-            <TaskStatusChip key={i} status={TaskStatus.Completed} />
-          ))}
+        <TaskStatusChip status={determineTaskStatus(task)} />
 
         <TaskTitle variant="body1" sx={{ mt: 1 }} gutterBottom>
-          {item.title}
+          {task?.name}
         </TaskTitle>
 
         <TaskAvatars>
           <AvatarGroup max={3}>
-            {!!item.avatars &&
-              item.avatars.map((avatar: any, i: number) => (
-                //<InitialAvatar initials={worker.initials} />
-                <Avatar
-                  src={`/static/img/avatars/avatar-${avatar}.jpg`}
-                  key={i}
-                />
-              ))}
+            <InitialAvatar
+              initials={getInitials(
+                task.worker?.user?.firstName ?? "",
+                task.worker?.user?.lastName ?? ""
+              )}
+            />
           </AvatarGroup>
         </TaskAvatars>
 
-        {!!item.notifications && item.notifications > 0 && (
+        {!!task.estimatedCost && task.estimatedCost >= 0 && (
           <TaskNotifications>
             <TaskAmountIcon />
             <TaskNotificationsAmount>
-              {item.notifications}
+              {task.estimatedCost}
             </TaskNotificationsAmount>
           </TaskNotifications>
         )}
@@ -334,11 +355,44 @@ function Tasks() {
     if (status === "idle") {
       dispatch(fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 }));
     }
-  }, [user, status, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.Uid]);
 
   useEffect(() => {
-    setDocumentReady(true);
-  }, []);
+    const sortedTasks = tasks.sort(
+      (t1, t2) =>
+        t1.scheduledAt.getUTCMilliseconds() -
+        t2.scheduledAt.getUTCMilliseconds()
+    );
+
+    setColumns((prev) => ({
+      ...prev,
+      [lowColId]: {
+        ...prev[lowColId],
+        items: sortedTasks.filter(
+          (t: Task) => t.priority === PriorityLevel.Low
+        ),
+      },
+      [medColId]: {
+        ...prev[medColId],
+        items: sortedTasks.filter(
+          (t: Task) => t.priority === PriorityLevel.Medium
+        ),
+      },
+      [hiColId]: {
+        ...prev[hiColId],
+        items: sortedTasks.filter(
+          (t: Task) => t.priority === PriorityLevel.High
+        ),
+      },
+    }));
+  }, [tasks]);
+
+  useEffect(() => {
+    if (status !== "loading") {
+      setDocumentReady(true);
+    }
+  }, [status]);
 
   if (status === "loading") {
     return <LinearLoading />;
@@ -351,43 +405,6 @@ function Tasks() {
       </Error>
     );
   }
-
-  const priorityColumns = {
-    [faker.datatype.uuid()]: {
-      title: "Low",
-      description: "Tasks in this bucket will be completed last",
-      items: tasks
-        .sort(
-          (t1, t2) =>
-            t1.scheduledAt.getUTCMilliseconds() -
-            t2.scheduledAt.getUTCMilliseconds()
-        )
-        .filter((t) => t.priority === PriorityLevel.Low),
-    },
-    [faker.datatype.uuid()]: {
-      title: "Medium",
-      description: "Tasks in this bucket will be completed before the lowest",
-      items: tasks
-        .sort(
-          (t1, t2) =>
-            t1.scheduledAt.getUTCMilliseconds() -
-            t2.scheduledAt.getUTCMilliseconds()
-        )
-        .filter((t) => t.priority === PriorityLevel.High),
-    },
-    [faker.datatype.uuid()]: {
-      title: "High",
-      description:
-        "Tasks in this bucket will be completed before any other, unless marked as urgent",
-      items: tasks
-        .sort(
-          (t1, t2) =>
-            t1.scheduledAt.getUTCMilliseconds() -
-            t2.scheduledAt.getUTCMilliseconds()
-        )
-        .filter((t) => t.priority === PriorityLevel.High),
-    },
-  };
 
   return (
     <React.Fragment>
@@ -413,46 +430,58 @@ function Tasks() {
           <DragDropContext
             onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
           >
-            {Object.entries(columns).map(([columnId, column]) => (
-              <Lane key={columnId} column={column}>
-                <Droppable droppableId={columnId} key={columnId}>
-                  {(provided) => {
-                    return (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        style={{
-                          minHeight: 50,
-                        }}
-                      >
-                        {column.items.map((item, index) => {
-                          return (
-                            <Draggable
-                              key={item?.tid}
-                              draggableId={item?.tid || "inv"}
-                              index={index}
-                            >
-                              {(provided) => {
+            {Object.entries(columns)
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              .filter(([_, col]: [string, Column]) => col.title)
+              .map(([columnId, column]) => (
+                <Lane key={columnId} column={column}>
+                  <Droppable droppableId={columnId} key={columnId}>
+                    {(provided) => {
+                      return (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          style={{
+                            minHeight: 50,
+                          }}
+                        >
+                          {column.items.length === 0 ? (
+                            <EmptyCard
+                              title="Empty"
+                              body="no tasks have been created for this priority bucket"
+                            />
+                          ) : (
+                            <>
+                              {column.items.map((item, index) => {
                                 return (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
+                                  <Draggable
+                                    key={item?.tid}
+                                    draggableId={item?.tid || "inv"}
+                                    index={index}
                                   >
-                                    <Task item={item} />
-                                  </div>
+                                    {(provided) => {
+                                      return (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                        >
+                                          <TaskItem task={item} />
+                                        </div>
+                                      );
+                                    }}
+                                  </Draggable>
                                 );
-                              }}
-                            </Draggable>
-                          );
-                        })}
-                        {provided.placeholder}
-                      </div>
-                    );
-                  }}
-                </Droppable>
-              </Lane>
-            ))}
+                              })}
+                            </>
+                          )}
+                          {provided.placeholder}
+                        </div>
+                      );
+                    }}
+                  </Droppable>
+                </Lane>
+              ))}
           </DragDropContext>
         )}
       </Grid>

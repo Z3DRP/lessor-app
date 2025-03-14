@@ -1,17 +1,8 @@
 import styled from "@emotion/styled";
 import { Chip as MuiChip } from "@mui/material";
 import { spacing, SpacingProps, Stack } from "@mui/system";
-import { PropertyStatus, TaskStatus } from "enums/enums";
-import {
-  deepOrange,
-  deepPurple,
-  orange,
-  green,
-  yellow,
-  red,
-  blue,
-} from "@mui/material/colors";
-import { Schedule } from "@mui/icons-material";
+import { TaskStatus } from "enums/enums";
+import { orange, green, yellow, red } from "@mui/material/colors";
 
 interface ChipProps extends SpacingProps {
   component?: React.ElementType;
@@ -114,36 +105,36 @@ export type TaskStatusChipProps = {
 export function TaskStatusChip({ status }: TaskStatusChipProps) {
   switch (status) {
     case TaskStatus.Scheduled:
-      return <ScheduledChip label="Scheduled" />;
+      return <ScheduledChip label={TaskStatus.Scheduled} />;
     case TaskStatus.Started:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label="Scheduled" mb={2} />
-          <StartedChip label="Started" mb={2} />
+          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <StartedChip label={TaskStatus.Started} mb={2} />
         </Stack>
       );
     case TaskStatus.Paused:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label="Scheduled" mb={2} />
-          <StartedChip label="Started" mb={2} />
-          <PausedChip label="Paused" />
+          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <StartedChip label={TaskStatus.Started} mb={2} />
+          <PausedChip label={TaskStatus.Paused} />
         </Stack>
       );
     case TaskStatus.Failed:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label="Scheduled" mb={2} />
-          <StartedChip label="Started" mb={2} />
-          <FailedChip label="Failed" mb={2} />
+          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <StartedChip label={TaskStatus.Started} mb={2} />
+          <FailedChip label={TaskStatus.Failed} mb={2} />
         </Stack>
       );
     case TaskStatus.Completed:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label="Scheduled" mb={2} />
-          <StartedChip label="Started" mb={2} />
-          <CompletedChip label="Completed" mb={2} />
+          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <StartedChip label={TaskStatus.Started} mb={2} />
+          <CompletedChip label={TaskStatus.Completed} mb={2} />
         </Stack>
       );
     default:

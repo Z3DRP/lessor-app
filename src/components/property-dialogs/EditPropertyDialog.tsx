@@ -28,7 +28,7 @@ import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
-import { LinearQuery } from "../ui/Loaders";
+import { LinearLoading } from "../ui/Loaders";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
 import { Percent } from "@mui/icons-material";
@@ -286,7 +286,7 @@ export function EditPropertyDialog({
 
                   {isSubmitting ? (
                     <Box display="flex" justifyContent="center" my={6}>
-                      <LinearQuery />
+                      <LinearLoading />
                     </Box>
                   ) : (
                     <Grid container spacing={1}>

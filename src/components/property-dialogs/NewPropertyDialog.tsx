@@ -28,7 +28,7 @@ import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
 import { countryData } from "../../data/countryData";
-import { LinearQuery } from "../ui/Loaders";
+import { LinearLoading } from "../ui/Loaders";
 import { createProperty } from "@/redux/slices/propertiesSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
@@ -318,7 +318,7 @@ export function NewPropertyDialog({
 
                   {isSubmitting ? (
                     <Box display="flex" justifyContent="center" my={6}>
-                      <LinearQuery />
+                      <LinearLoading />
                     </Box>
                   ) : (
                     <Grid container spacing={1}>

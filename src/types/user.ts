@@ -1,6 +1,6 @@
 import { ProfileType } from "unions/unions";
 
-export type Profile = {
+export type User = {
   id?: string;
   uid?: string;
   firstName: string;
@@ -12,4 +12,8 @@ export type Profile = {
   email: string;
   password?: string;
   avatar?: File | any;
+};
+
+export const getInitials = (firstName: string, lastName: string) => {
+  return `${firstName[0]}${lastName[0]}`;
 };
