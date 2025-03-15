@@ -3,13 +3,13 @@ import { User } from "./user";
 
 export interface Worker {
   id?: number;
-  uid?: number;
+  uid?: string;
   user?: User;
   startDate?: Date;
   endDate?: Date;
   title?: string;
   specilization?: string;
   payRate?: number;
-  bossId?: string;
+  lessorId?: string;
   paymentMethod?: MethodOfPayment;
 }

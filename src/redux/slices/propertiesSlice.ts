@@ -158,6 +158,7 @@ export const propertySlice = createSlice({
         (state.status = "failed"), (state.error = action.payload as string);
       })
       .addCase(updateProperty.fulfilled, (state, action) => {
+        state.status = "idle";
         const index = state.properties.findIndex(
           (p) => p.pid === action.payload.pid
         );

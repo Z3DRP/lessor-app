@@ -2,7 +2,6 @@ import { Task } from "@/types/task";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { taskApi } from "api/taskApi";
 import { RootState } from "../store";
-import { fetchProperties } from "./propertiesSlice";
 
 interface TaskState {
   tasks: Task[];
@@ -123,6 +122,7 @@ export const taskSlice = createSlice({
         (state.status = "failed"), (state.error = action.payload as string);
       })
       .addCase(updateTask.fulfilled, (state, action) => {
+        state.status = "idle";
         const index = state.tasks.findIndex(
           (t) => t.tid === action.payload.tid
         );
