@@ -22,6 +22,8 @@ export type TransitionAlertProps = {
   message: string;
   isOpen: boolean;
   closeHandler: () => void;
+  mx?: number;
+  my?: number;
 };
 
 export function TransitionAlert({
@@ -29,11 +31,15 @@ export function TransitionAlert({
   message,
   isOpen,
   closeHandler,
+  mx,
+  my,
 }: TransitionAlertProps) {
   return (
     <Collapse in={isOpen}>
       <Alert
         severity={variant}
+        mx={mx}
+        my={my}
         action={
           <IconButton
             aria-label="close"

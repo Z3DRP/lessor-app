@@ -33,7 +33,12 @@ import { TaskStatusChip } from "@/components/tasks/taskChips";
 import { PriorityLevel, TaskStatus } from "enums/enums";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { fetchTasks } from "@/redux/slices/tasksSlice";
+import {
+  createTask,
+  deleteTask,
+  fetchTasks,
+  updateTask,
+} from "@/redux/slices/tasksSlice";
 import useAuth from "@/hooks/useAuth";
 import { LinearLoading } from "@/components/ui/Loaders";
 import Error from "@/layouts/Error";
@@ -41,6 +46,14 @@ import { determineTaskStatus, Task } from "@/types/task";
 import { getInitials } from "@/types/user";
 import EmptyCard from "@/components/ui/EmptyCard";
 import InfoPopover from "@/components/ui/InfoPopover";
+import NewTaskDialog from "@/components/task-dialogs/NewTaskDialog";
+import EditTaskDialog from "@/components/task-dialogs/EditTaskDialog";
+import EditTaskDialog from "@/components/task-dialogs/EditTaskDialog";
+import EditTaskDialog from "@/components/task-dialogs/EditTaskDialog";
+import DeleteTaskDialog from "@/components/task-dialogs/DeleteTaskDialog";
+import { enqueueSnackbar } from "notistack";
+import { RequestDto } from "@/types/requestResult";
+import { TransitionAlert } from "@/components/ui/CustomAlerts";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -108,44 +121,6 @@ const TaskTitle = styled(Typography)`
   margin-right: ${(props) => props.theme.spacing(10)};
 `;
 
-const mockItems1 = [
-  {
-    id: faker.datatype.uuid(),
-    title: "Redesign the homepage",
-    badges: [1],
-    notifications: 1200.34,
-    avatars: [1, 2, 3, 4],
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: "Upgrade dependencies to latest versions",
-    badges: [green[600]],
-    notifications: 103.43,
-    avatars: [2],
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: "Google Adwords best practices",
-    badges: [1],
-    notifications: 232.49,
-    avatars: [2, 3],
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: "Improve site speed",
-    badges: [1],
-    notifications: 300.89,
-    avatars: [],
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: "Stripe payment integration",
-    badges: [1],
-    notifications: 50.32,
-    avatars: [],
-  },
-];
-
 const mockItems2 = [
   {
     id: faker.datatype.uuid(),
@@ -163,32 +138,9 @@ const mockItems2 = [
   },
 ];
 
-const mockItems3 = [
-  {
-    id: faker.datatype.uuid(),
-    title: "Improve site speed",
-    badges: [1],
-    notifications: 0,
-    avatars: [1, 2],
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: "Google Adwords best practices",
-    badges: [1],
-    notifications: 3000.0,
-    avatars: [2],
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: "Redesign the homepage",
-    badges: [1],
-    notifications: 240.49,
-    avatars: [],
-  },
-];
-
 interface Column {
   title: string;
+  level: PriorityLevel;
   description: string;
   items: Task[];
 }
@@ -201,16 +153,19 @@ const hiColId = faker.datatype.uuid();
 const priorityColumns: Record<string, Column> = {
   [lowColId]: {
     title: "Low",
+    level: PriorityLevel.Low,
     description: "Tasks in this bucket will be completed last",
     items: [],
   },
   [medColId]: {
     title: "Medium",
+    level: PriorityLevel.Medium,
     description: "Tasks in this bucket will be completed before the lowest",
     items: [],
   },
   [hiColId]: {
     title: "High",
+    level: PriorityLevel.High,
     description:
       "Tasks in this bucket will be completed before any other, unless marked as urgent",
     items: [],
@@ -262,13 +217,15 @@ const onDragEnd = (result: DropResult, columns: any, setColumns: any) => {
 interface LaneProps {
   column: {
     title: string;
+    level: PriorityLevel;
     description: string;
     items: Task[];
   };
   children: ReactNode;
+  onAddTask: (priority: PriorityLevel) => void;
 }
 
-const Lane = ({ column, children }: LaneProps) => {
+const Lane = ({ column, children, onAddTask }: LaneProps) => {
   return (
     <Grid
       size={{
@@ -296,7 +253,12 @@ const Lane = ({ column, children }: LaneProps) => {
             </Grid>
           </Grid>
           {children}
-          <Button color="primary" variant="contained" fullWidth>
+          <Button
+            color="primary"
+            variant="contained"
+            fullWidth
+            onClick={() => onAddTask(column.level)}
+          >
             <AddIcon />
             Add new task
           </Button>
@@ -350,13 +312,34 @@ function Tasks() {
   const dispatch = useDispatch<AppDispatch>();
   const { tasks, status } = useSelector((state: RootState) => state.task);
   const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [openNewDialog, setOpenNewDialog] = useState<boolean>(false);
+  const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | Partial<Task> | null>(
+    null
+  );
+  const [taskToDelete, setTaskToDelete] = useState<Task | Partial<Task> | null>(
+    null
+  );
+  const [refreshPage, setRefreshPage] = useState<boolean>(false);
+  const [selectedColumnPriority, setSelectedColumnPriority] =
+    useState<PriorityLevel | null>(null);
 
   useEffect(() => {
     if (status === "idle") {
-      dispatch(fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 }));
+      try {
+        const results = dispatch(
+          fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 })
+        ).unwrap();
+        console.log("results", results);
+      } catch (err: any) {
+        console.error("error fetching tasks ", err);
+        setError(err.message || "unkown error");
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.Uid]);
+  }, [user?.Uid, refreshPage]);
 
   useEffect(() => {
     const sortedTasks = tasks.sort(
@@ -386,7 +369,7 @@ function Tasks() {
         ),
       },
     }));
-  }, [tasks]);
+  }, [tasks, refreshPage]);
 
   useEffect(() => {
     if (status !== "loading") {
@@ -398,13 +381,59 @@ function Tasks() {
     return <LinearLoading />;
   }
 
-  if (status === "failed") {
-    return (
-      <Error>
-        <Typography>Failed to fetch tasks</Typography>
-      </Error>
-    );
-  }
+  // if (status === "failed") {
+  //   return (
+  //     <Error>
+  //       <Typography>Failed to fetch tasks</Typography>
+  //     </Error>
+  //   );
+  // }
+
+  const handleAddTask = (columnPriority: PriorityLevel) => {
+    setSelectedColumnPriority(columnPriority);
+    setOpenNewDialog(true);
+  };
+
+  const handleSave = async (task: Partial<Task>): Promise<RequestDto> => {
+    try {
+      const result = await dispatch(createTask({ data: task })).unwrap();
+      return { success: true, msg: null, data: result };
+    } catch (err: any) {
+      return {
+        success: false,
+        msg: err?.message ?? `${JSON.stringify(err)}`,
+        data: null,
+      };
+    }
+  };
+
+  const handleEdit = async (
+    task: Task | Partial<Task>
+  ): Promise<RequestDto> => {
+    try {
+      const result = await dispatch(updateTask({ data: task })).unwrap();
+      return { success: true, msg: null, data: result };
+    } catch (err: any) {
+      return {
+        success: false,
+        msg: err.message || "an unexpected error occurred",
+        data: null,
+      };
+    }
+  };
+
+  const handleDelete = async (taskId: string): Promise<RequestDto> => {
+    try {
+      await dispatch(deleteTask({ id: taskId })).unwrap();
+      return { success: true, msg: null, data: null };
+    } catch (err: any) {
+      return {
+        success: false,
+        msg: err.message || "an unexpected error occurred",
+        data: null,
+      };
+    }
+  };
 
   return (
     <React.Fragment>
@@ -426,6 +455,14 @@ function Tasks() {
       <Divider my={6} />
 
       <Grid container spacing={6}>
+        {error && (
+          <TransitionAlert
+            variant="error"
+            message={error}
+            isOpen={error != null}
+            closeHandler={() => setError(null)}
+          />
+        )}
         {!!documentReady && (
           <DragDropContext
             onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
@@ -434,7 +471,7 @@ function Tasks() {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               .filter(([_, col]: [string, Column]) => col.title)
               .map(([columnId, column]) => (
-                <Lane key={columnId} column={column}>
+                <Lane key={columnId} column={column} onAddTask={handleAddTask}>
                   <Droppable droppableId={columnId} key={columnId}>
                     {(provided) => {
                       return (
@@ -485,6 +522,36 @@ function Tasks() {
           </DragDropContext>
         )}
       </Grid>
+
+      {user && selectedColumnPriority && openNewDialog && (
+        <NewTaskDialog
+          lessorId={user.Uid}
+          priority={selectedColumnPriority}
+          open={openNewDialog}
+          openHandler={setOpenNewDialog}
+          onSave={handleSave}
+          refreshState={() => setRefreshPage(true)}
+        />
+      )}
+
+      {user && taskToEdit && openEditDialog && (
+        <EditTaskDialog
+          task={taskToEdit}
+          open={openEditDialog}
+          openSetter={setOpenEditDialog}
+          handleEdit={handleEdit}
+        />
+      )}
+
+      {user && taskToDelete && openDeleteDialog && (
+        <DeleteTaskDialog
+          task={taskToDelete}
+          open={openDeleteDialog}
+          openSetter={setOpenDeleteDialog}
+          handleDelete={handleDelete}
+          refreshPage={() => setRefreshPage(true)}
+        />
+      )}
     </React.Fragment>
   );
 }

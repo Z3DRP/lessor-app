@@ -18,6 +18,18 @@ const customBlue = {
   900: "#2052c2 ",
 };
 
+const customOrange = {
+  100: "#ffe0b2",
+  200: "#ffcc80",
+  300: "#ffb74d",
+  400: "#ffa726",
+  500: "#ff9800",
+  600: "#fb8c00",
+  700: "#f57c00",
+  800: "#ef6c00",
+  900: "#e65100",
+};
+
 const defaultVariant = {
   name: THEMES.DEFAULT,
   palette: {
@@ -75,7 +87,13 @@ const darkVariant = merge(defaultVariant, {
   palette: {
     mode: "dark",
     primary: {
-      main: customBlue[600],
+      main: customOrange[700],
+      //main: customBlue[600],
+      contrastText: "#FFF",
+    },
+    secondary: {
+      main: customBlue[400],
+      default: customBlue[600],
       contrastText: "#FFF",
     },
     background: {

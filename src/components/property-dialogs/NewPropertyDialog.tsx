@@ -685,7 +685,11 @@ export function NewPropertyDialog({
               </Card>
             </DialogContent>
             <DialogActions sx={{ mb: 2, mr: 2 }}>
-              <Button onClick={() => openSetter(false)} color="warning">
+              <Button
+                onClick={() => openSetter(false)}
+                color="secondary"
+                variant="text"
+              >
                 Cancel
               </Button>
               <Button

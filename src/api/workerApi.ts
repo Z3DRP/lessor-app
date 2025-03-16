@@ -1,5 +1,5 @@
 import axiosInstance from "@/utils/axios";
-import { Worker } from "@/types/worker";
+import { MaintenanceWorker } from "@/types/worker";
 const workerEp = import.meta.env.VITE_WORKER_EP;
 
 export const workerApi = {
@@ -45,7 +45,7 @@ export const workerApi = {
     return workers;
   },
 
-  async createWorker(data: Partial<Worker>) {
+  async createWorker(data: Partial<MaintenanceWorker>) {
     const res = await axiosInstance.put(workerEp, data).catch((err) => {
       console.error("error creating worker ", err);
       throw err;
@@ -64,7 +64,7 @@ export const workerApi = {
     return worker;
   },
 
-  async updateWorker(data: Partial<Worker> | Worker) {
+  async updateWorker(data: Partial<MaintenanceWorker> | MaintenanceWorker) {
     const res = await axiosInstance
       .put(`${workerEp}/${data.uid}`, data)
       .catch((err) => {

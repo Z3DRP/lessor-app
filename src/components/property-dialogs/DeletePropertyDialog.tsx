@@ -1,3 +1,4 @@
+import variants from "@/theme/variants";
 import { Property } from "@/types/property";
 import {
   Button,
@@ -9,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TransitionAlert } from "../ui/CustomAlerts";
 
 export interface DeletePropertyDialogProps {
@@ -44,7 +45,9 @@ export default function DeletePropertyDialog({
       enqueueSnackbar("property deleted successfully", { variant: "success" });
     } catch (err: any) {
       setError(err?.message ? err.message : "something went wrong");
-      enqueueSnackbar("an error occurred while deleting property");
+      enqueueSnackbar("an error occurred while deleting property", {
+        variant: "error",
+      });
     } finally {
       refreshSetter();
       openSetter(false);
@@ -55,12 +58,12 @@ export default function DeletePropertyDialog({
     <Dialog
       open={open}
       onClose={() => openSetter(false)}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
+      aria-labelledby="new-dialog-title"
+      aria-describedby="new-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">Delete</DialogTitle>
+      <DialogTitle id="new-dialog-title">Delete</DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
+        <DialogContentText id="new-dialog-description">
           <Typography gutterBottom>
             You are about to delete the following property:
           </Typography>
@@ -79,7 +82,11 @@ export default function DeletePropertyDialog({
         />
       </DialogContent>
       <DialogActions sx={{ m: 2 }}>
-        <Button onClick={() => openSetter(false)} color="warning">
+        <Button
+          onClick={() => openSetter(false)}
+          color="secondary"
+          variant="outlined"
+        >
           Cancel
         </Button>
         <Button

@@ -120,7 +120,7 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
       <CardActions>
         <IconButton
           size="small"
-          color="primary"
+          color="secondary"
           onClick={() => {
             onEdit(property);
           }}
@@ -129,7 +129,7 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
         </IconButton>
         <IconButton
           size="small"
-          color="primary"
+          color="secondary"
           onClick={() => {
             onDelete(property);
           }}
@@ -140,7 +140,7 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
         <ExpandMore
           expand={expanded}
           onClick={() => setExpanded(!expanded)}
-          color="primary"
+          color="secondary"
           aria-expanded={expanded}
           aria-label="show more"
         >
@@ -237,13 +237,12 @@ function Properties() {
       }
       console.log(result);
 
-      if (result?.type && result?.type.toLowerCase().includes("rejected")) {
-        return { success: false, msg: result.payload };
-      }
-
       return { success: true, msg: undefined };
     } catch (err: any) {
-      return { success: false, msg: err.error ?? err.message };
+      return {
+        success: false,
+        msg: err.error || err.message || "an unexpected error ocurred",
+      };
     }
   };
 

@@ -1,10 +1,10 @@
-import { Worker } from "@/types/worker";
+import { MaintenanceWorker } from "@/types/worker";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { workerApi } from "api/workerApi";
 import { RootState } from "../store";
 
 interface WorkerState {
-  workers: Worker[];
+  workers: MaintenanceWorker[];
   status: "idle" | "loading" | "failed";
   error?: string;
 }
@@ -36,14 +36,17 @@ export const fetchWorkers = createAsyncThunk(
       return workers;
     } catch (err: any) {
       console.error("error fetching worker state ", err);
-      return rejectWithValue(`state error ${err?.error ?? err?.message}`);
+      return rejectWithValue({ message: err || "idunno" });
     }
   }
 );
 
 export const createWorker = createAsyncThunk(
   "worker/create",
-  async ({ data }: { data: Partial<Worker> }, { rejectWithValue }) => {
+  async (
+    { data }: { data: Partial<MaintenanceWorker> },
+    { rejectWithValue }
+  ) => {
     try {
       const worker = await workerApi.createWorker(data);
       return worker;
@@ -56,7 +59,10 @@ export const createWorker = createAsyncThunk(
 
 export const updateWorker = createAsyncThunk(
   "worker/update",
-  async ({ data }: { data: Partial<Worker> | Worker }, { rejectWithValue }) => {
+  async (
+    { data }: { data: Partial<MaintenanceWorker> | MaintenanceWorker },
+    { rejectWithValue }
+  ) => {
     try {
       const worker = await workerApi.updateWorker(data);
       return worker;
@@ -100,7 +106,7 @@ export const workerSlice = createSlice({
       })
       .addCase(
         fetchWorkers.fulfilled,
-        (state, action: PayloadAction<Worker[]>) => {
+        (state, action: PayloadAction<MaintenanceWorker[]>) => {
           (state.status = "idle"), (state.workers = action.payload);
         }
       )
@@ -112,7 +118,7 @@ export const workerSlice = createSlice({
       })
       .addCase(
         createWorker.fulfilled,
-        (state, action: PayloadAction<Worker>) => {
+        (state, action: PayloadAction<MaintenanceWorker>) => {
           (state.status = "idle"), state.workers.push(action.payload);
         }
       )

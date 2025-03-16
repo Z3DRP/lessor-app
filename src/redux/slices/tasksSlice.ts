@@ -33,7 +33,7 @@ export const fetchTasks = createAsyncThunk(
       return tasks;
     } catch (err: any) {
       console.log("error fetching tasks state: ", err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue({ message: err.message || "unknown error" });
     }
   }
 );
@@ -43,11 +43,10 @@ export const createTask = createAsyncThunk(
   async ({ data }: { data: Partial<Task> }, { rejectWithValue }) => {
     try {
       const task = await taskApi.createTask(data);
-
       return task;
     } catch (err: any) {
       console.log("error creating task state: ", err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue({ message: err?.message || "unknown error" });
     }
   }
 );
@@ -60,7 +59,7 @@ export const updateTask = createAsyncThunk(
       return task;
     } catch (err: any) {
       console.log("error updating task state: ", err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue({ message: err?.message || "unkown error" });
     }
   }
 );
@@ -74,7 +73,7 @@ export const updateTaskPriorities = createAsyncThunk(
       return tasks;
     } catch (err: any) {
       console.log("error updating task priorities: ", err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue({ message: err?.message || "unknown error" });
     }
   }
 );
@@ -87,7 +86,7 @@ export const deleteTask = createAsyncThunk(
       return id;
     } catch (err: any) {
       console.log("error deleting tasks state: ", err);
-      return rejectWithValue(`state error: ${err.error}`);
+      return rejectWithValue({ message: err?.message || "unknown error" });
     }
   }
 );

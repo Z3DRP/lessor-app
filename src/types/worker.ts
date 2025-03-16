@@ -1,7 +1,7 @@
 import { MethodOfPayment } from "../enums/enums";
 import { User } from "./user";
 
-export interface Worker {
+export interface MaintenanceWorker {
   id?: number;
   uid?: string;
   user?: User;

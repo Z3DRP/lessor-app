@@ -25,8 +25,7 @@ const InfoPopover = ({ message }: { message: string }) => {
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        transformOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Typography sx={{ p: 2 }}>{message}</Typography>
       </Popover>
