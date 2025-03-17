@@ -352,7 +352,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
-            Products
+            Workers
           </Typography>
         )}
       </ToolbarTitle>
@@ -539,7 +539,7 @@ function EnhancedTable() {
   );
 }
 
-function Products() {
+function Workers() {
   return (
     <React.Fragment>
       <Helmet title="Products" />
@@ -550,10 +550,10 @@ function Products() {
           </Typography>
 
           <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-            <Link component={NavLink} to="/">
+            <Link component={NavLink} color="secondary" to="/">
               Dashboard
             </Link>
-            <Link component={NavLink} to="/">
+            <Link component={NavLink} color="secondary" to="/">
               Pages
             </Link>
             <Typography>Products</Typography>
@@ -563,7 +563,7 @@ function Products() {
           <div>
             <Button variant="contained" color="primary">
               <AddIcon />
-              New Product
+              New Worker
             </Button>
           </div>
         </Grid>
@@ -578,4 +578,4 @@ function Products() {
   );
 }
 
-export default Products;
+export default Workers;

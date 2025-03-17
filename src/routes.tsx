@@ -23,7 +23,7 @@ import Page500 from "@/pages/auth/Page500";
 import Blank from "@/pages/pages/Blank";
 import InvoiceDetails from "@/pages/pages/InvoiceDetails";
 import InvoiceList from "@/pages/pages/InvoiceList";
-import Products from "@/pages/pages/Products";
+import Workers from "@/pages/pages/Workers";
 import Settings from "@/pages/pages/Settings";
 import Projects from "@/pages/pages/Projects";
 
@@ -56,7 +56,6 @@ const routes = [
     children: [
       {
         path: "",
-        //element: <Default />,
         element: (
           <AuthGuard>
             <Default />
@@ -79,19 +78,35 @@ const routes = [
     children: [
       {
         path: "",
-        element: <Profile />,
+        element: (
+          <AuthGuard>
+            <Profile />
+          </AuthGuard>
+        ),
       },
       {
         path: "company",
-        element: <Profile />,
+        element: (
+          <AuthGuard>
+            <Profile />
+          </AuthGuard>
+        ),
       },
       {
         path: "settings",
-        element: <Settings />,
+        element: (
+          <AuthGuard>
+            <Settings />
+          </AuthGuard>
+        ),
       },
       {
         path: "lease",
-        element: <Blank />,
+        element: (
+          <AuthGuard>
+            <Blank />
+          </AuthGuard>
+        ),
       },
     ],
   },
@@ -115,11 +130,19 @@ const routes = [
     children: [
       {
         path: "",
-        element: <Projects />,
+        element: (
+          <AuthGuard>
+            <Projects />
+          </AuthGuard>
+        ),
       },
       {
         path: "view",
-        element: <Tasks />,
+        element: (
+          <AuthGuard>
+            <Tasks />
+          </AuthGuard>
+        ),
       },
     ],
   },
@@ -129,7 +152,11 @@ const routes = [
     children: [
       {
         path: "",
-        element: <Products />,
+        element: (
+          <AuthGuard>
+            <Workers />
+          </AuthGuard>
+        ),
       },
     ],
   },
@@ -139,7 +166,11 @@ const routes = [
     children: [
       {
         path: "",
-        element: <Products />,
+        element: (
+          <AuthGuard>
+            <Workers />
+          </AuthGuard>
+        ),
       },
     ],
   },
@@ -149,11 +180,19 @@ const routes = [
     children: [
       {
         path: "",
-        element: <InvoiceList />,
+        element: (
+          <AuthGuard>
+            <InvoiceList />
+          </AuthGuard>
+        ),
       },
       {
         path: "detail",
-        element: <InvoiceDetails />,
+        element: (
+          <AuthGuard>
+            <InvoiceDetails />
+          </AuthGuard>
+        ),
       },
     ],
   },
@@ -163,7 +202,11 @@ const routes = [
     children: [
       {
         path: "",
-        element: <Calendar />,
+        element: (
+          <AuthGuard>
+            <Calendar />
+          </AuthGuard>
+        ),
       },
     ],
   },

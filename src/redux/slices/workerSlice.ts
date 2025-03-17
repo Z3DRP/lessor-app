@@ -1,6 +1,6 @@
 import { MaintenanceWorker } from "@/types/worker";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { workerApi } from "api/workerApi";
+import { workerApi } from "services/workerApi";
 import { RootState } from "../store";
 
 interface WorkerState {

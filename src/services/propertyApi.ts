@@ -1,7 +1,5 @@
 import axiosInstance from "@/utils/axios";
 import { Address, Property } from "@/types/property";
-import { PropertyStatus } from "enums/enums";
-import { updatePropertyImage } from "@/redux/slices/propertiesSlice";
 
 const propertyEp = import.meta.env.VITE_PROPERTY_EP;
 const tempPropertiesEP = import.meta.env.VITE_TEMP_PROPERTIES_EP;

@@ -38,6 +38,7 @@ import {
   deleteTask,
   fetchTasks,
   updateTask,
+  updateTaskPriorities,
 } from "@/redux/slices/tasksSlice";
 import useAuth from "@/hooks/useAuth";
 import { LinearLoading } from "@/components/ui/Loaders";
@@ -151,28 +152,38 @@ const hiColId = faker.datatype.uuid();
 
 //maybe define them here but then remove the items and then use below in the state
 const priorityColumns: Record<string, Column> = {
-  [lowColId]: {
+  [PriorityLevel.Low.toString()]: {
     title: "Low",
     level: PriorityLevel.Low,
-    description: "Tasks in this bucket will be completed last",
+    description:
+      "Tasks in this bucket are of lowest priority and will be completed last after all other priority buckets are empty, unless a task takes precedence",
     items: [],
   },
-  [medColId]: {
+  [PriorityLevel.Medium.toString()]: {
     title: "Medium",
     level: PriorityLevel.Medium,
-    description: "Tasks in this bucket will be completed before the lowest",
+    description:
+      "Tasks in this bucket are mid priority will be completed before the lowest and after the highest, unless a task takes precedence",
     items: [],
   },
-  [hiColId]: {
+  [PriorityLevel.High.toString()]: {
     title: "High",
     level: PriorityLevel.High,
     description:
-      "Tasks in this bucket will be completed before any other, unless marked as urgent",
+      "Tasks in this bucket are of the highest priority and will be completed before any other, unless marked as urgent, unless a task takes precedence",
     items: [],
   },
 };
 
-const onDragEnd = (result: DropResult, columns: any, setColumns: any) => {
+const onDragEnd = (
+  result: DropResult,
+  columns: any,
+  setColumns: any,
+  updateItems: (
+    tasks: Task[] | Partial<Task>[],
+    priorityLevel: PriorityLevel
+  ) => Promise<void>
+) => {
   if (!result.destination) return;
   const { source, destination } = result;
 
@@ -195,10 +206,7 @@ const onDragEnd = (result: DropResult, columns: any, setColumns: any) => {
       },
     });
 
-    const updatedTasks = columns[destination.droppableId];
-    if (updatedTasks) {
-      //  make api call to update task priorities
-    }
+    updateItems(removed, destColumn?.level);
   } else {
     const column = columns[source.droppableId];
     const copiedItems = [...column.items];
@@ -249,7 +257,10 @@ const Lane = ({ column, children, onAddTask }: LaneProps) => {
               <Typography variant="h6">{column.title}</Typography>
             </Grid>
             <Grid>
-              <InfoPopover message={column.description} />
+              <InfoPopover
+                title="Priority Level"
+                message={column.description}
+              />
             </Grid>
           </Grid>
           {children}
@@ -325,61 +336,65 @@ function Tasks() {
   const [refreshPage, setRefreshPage] = useState<boolean>(false);
   const [selectedColumnPriority, setSelectedColumnPriority] =
     useState<PriorityLevel | null>(null);
+  const [dialogHasErr, setDialogHasErr] = useState<boolean>(false);
 
   useEffect(() => {
-    if (status === "idle") {
+    const fetchData = async () => {
       try {
-        const results = dispatch(
+        const reslt = dispatch(
           fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 })
         ).unwrap();
-        console.log("results", results);
+        console.log("results: ", reslt);
       } catch (err: any) {
-        console.error("error fetching tasks ", err);
-        setError(err.message || "unkown error");
+        console.log("error fetching tasks ", err);
+        setError(err?.message || err?.error || "unexpected error");
       }
+    };
+    if (status === "idle" || !dialogHasErr) {
+      fetchData().finally(() => setDocumentReady(true));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.Uid, refreshPage]);
+  }, [user?.Uid]);
 
-  useEffect(() => {
-    const sortedTasks = tasks.sort(
-      (t1, t2) =>
-        t1.scheduledAt.getUTCMilliseconds() -
-        t2.scheduledAt.getUTCMilliseconds()
-    );
+  // useEffect(() => {
+  //   const sortColumns = () => {
+  //     const sortedTasks = tasks.sort(
+  //       (t1, t2) => t1.scheduledAt - t2.scheduledAt
+  //     );
 
-    setColumns((prev) => ({
-      ...prev,
-      [lowColId]: {
-        ...prev[lowColId],
-        items: sortedTasks.filter(
-          (t: Task) => t.priority === PriorityLevel.Low
-        ),
-      },
-      [medColId]: {
-        ...prev[medColId],
-        items: sortedTasks.filter(
-          (t: Task) => t.priority === PriorityLevel.Medium
-        ),
-      },
-      [hiColId]: {
-        ...prev[hiColId],
-        items: sortedTasks.filter(
-          (t: Task) => t.priority === PriorityLevel.High
-        ),
-      },
-    }));
-  }, [tasks, refreshPage]);
+  //     setColumns((prev) => ({
+  //       ...prev,
+  //       [lowColId]: {
+  //         ...prev[PriorityLevel.Low],
+  //         items: sortedTasks.filter(
+  //           (t: Task) => t.priority === PriorityLevel.Low
+  //         ),
+  //       },
+  //       [medColId]: {
+  //         ...prev[PriorityLevel.Medium],
+  //         items: sortedTasks.filter(
+  //           (t: Task) => t.priority === PriorityLevel.Medium
+  //         ),
+  //       },
+  //       [hiColId]: {
+  //         ...prev[PriorityLevel.High],
+  //         items: sortedTasks.filter(
+  //           (t: Task) => t.priority === PriorityLevel.High
+  //         ),
+  //       },
+  //     }));
+  //   };
 
-  useEffect(() => {
-    if (status !== "loading") {
-      setDocumentReady(true);
-    }
-  }, [status]);
+  //   if (tasks.length > 0) {
+  //     sortColumns();
+  //   }
+  // }, [tasks]);
 
-  if (status === "loading") {
-    return <LinearLoading />;
-  }
+  // useEffect(() => {
+  //   if (status !== "loading" && documentReady === false) {
+  //     setDocumentReady(true);
+  //   }
+  // }, [status, documentReady]);
 
   // if (status === "failed") {
   //   return (
@@ -397,6 +412,14 @@ function Tasks() {
   const handleSave = async (task: Partial<Task>): Promise<RequestDto> => {
     try {
       const result = await dispatch(createTask({ data: task })).unwrap();
+      setColumns((prev) => ({
+        ...prev,
+        [task.priority!.toString()]: {
+          ...prev[task.priority!.toString()],
+          items: [...prev[task!.priority!].items, result],
+        },
+      }));
+
       return { success: true, msg: null, data: result };
     } catch (err: any) {
       return {
@@ -425,6 +448,15 @@ function Tasks() {
   const handleDelete = async (taskId: string): Promise<RequestDto> => {
     try {
       await dispatch(deleteTask({ id: taskId })).unwrap();
+      setColumns((prev) => {
+        const updatedColumns = { ...prev };
+        Object.keys(updatedColumns).forEach((key) => {
+          updatedColumns[key].items = updatedColumns[key].items.filter(
+            (t) => t.tid !== taskId
+          );
+        });
+        return updatedColumns;
+      });
       return { success: true, msg: null, data: null };
     } catch (err: any) {
       return {
@@ -432,6 +464,31 @@ function Tasks() {
         msg: err.message || "an unexpected error occurred",
         data: null,
       };
+    }
+  };
+
+  const handleChangePriorities = async (
+    updatedTasks: Task[] | Partial<Task>[],
+    newPriority: PriorityLevel
+  ) => {
+    updatedTasks.forEach(
+      (t: Task | Partial<Task>) => (t.priority = newPriority)
+    );
+    try {
+      const result = await dispatch(
+        updateTaskPriorities({ data: updatedTasks })
+      );
+
+      if (result) {
+        enqueueSnackbar("task priorities updated", { variant: "success" });
+      }
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          err ||
+          "an unexpected error occurred while updating priority"
+      );
+      enqueueSnackbar("could not update task priorities", { variant: "error" });
     }
   };
 
@@ -443,10 +500,10 @@ function Tasks() {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/dashboard">
+        <Link component={NavLink} color="secondary" to="/dashboard">
           Dashboard
         </Link>
-        <Link component={NavLink} to="/dashboard">
+        <Link component={NavLink} color="secondary" to="/dashboard">
           Pages
         </Link>
         <Typography>Tasks</Typography>
@@ -463,74 +520,87 @@ function Tasks() {
             closeHandler={() => setError(null)}
           />
         )}
-        {!!documentReady && (
-          <DragDropContext
-            onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
-          >
-            {Object.entries(columns)
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              .filter(([_, col]: [string, Column]) => col.title)
-              .map(([columnId, column]) => (
-                <Lane key={columnId} column={column} onAddTask={handleAddTask}>
-                  <Droppable droppableId={columnId} key={columnId}>
-                    {(provided) => {
-                      return (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          style={{
-                            minHeight: 50,
-                          }}
-                        >
-                          {column.items.length === 0 ? (
-                            <EmptyCard
-                              title="Empty"
-                              body="no tasks have been created for this priority bucket"
-                            />
-                          ) : (
-                            <>
-                              {column.items.map((item, index) => {
-                                return (
-                                  <Draggable
-                                    key={item?.tid}
-                                    draggableId={item?.tid || "inv"}
-                                    index={index}
-                                  >
-                                    {(provided) => {
-                                      return (
-                                        <div
-                                          ref={provided.innerRef}
-                                          {...provided.draggableProps}
-                                          {...provided.dragHandleProps}
-                                        >
-                                          <TaskItem task={item} />
-                                        </div>
-                                      );
-                                    }}
-                                  </Draggable>
-                                );
-                              })}
-                            </>
-                          )}
-                          {provided.placeholder}
-                        </div>
-                      );
-                    }}
-                  </Droppable>
-                </Lane>
-              ))}
-          </DragDropContext>
+
+        {status === "loading" ? (
+          <LinearLoading />
+        ) : (
+          <>
+            {!!documentReady && (
+              <DragDropContext
+                onDragEnd={(result) =>
+                  onDragEnd(result, columns, setColumns, handleChangePriorities)
+                }
+              >
+                {Object.entries(columns)
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  .filter(([_, col]: [string, Column]) => col.title)
+                  .map(([columnId, column]) => (
+                    <Lane
+                      key={columnId}
+                      column={column}
+                      onAddTask={handleAddTask}
+                    >
+                      <Droppable droppableId={columnId} key={columnId}>
+                        {(provided) => {
+                          return (
+                            <div
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                              style={{
+                                minHeight: 50,
+                              }}
+                            >
+                              {column.items.length === 0 ? (
+                                <EmptyCard
+                                  title="Empty"
+                                  body="no tasks have been created for this priority bucket"
+                                />
+                              ) : (
+                                <>
+                                  {column.items.map((item, index) => {
+                                    return (
+                                      <Draggable
+                                        key={item?.tid}
+                                        draggableId={item?.tid || "inv"}
+                                        index={index}
+                                      >
+                                        {(provided) => {
+                                          return (
+                                            <div
+                                              ref={provided.innerRef}
+                                              {...provided.draggableProps}
+                                              {...provided.dragHandleProps}
+                                            >
+                                              <TaskItem task={item} />
+                                            </div>
+                                          );
+                                        }}
+                                      </Draggable>
+                                    );
+                                  })}
+                                </>
+                              )}
+                              {provided.placeholder}
+                            </div>
+                          );
+                        }}
+                      </Droppable>
+                    </Lane>
+                  ))}
+              </DragDropContext>
+            )}
+          </>
         )}
       </Grid>
 
-      {user && selectedColumnPriority && openNewDialog && (
+      {user && selectedColumnPriority && (
         <NewTaskDialog
           lessorId={user.Uid}
           priority={selectedColumnPriority}
           open={openNewDialog}
           openHandler={setOpenNewDialog}
           onSave={handleSave}
-          refreshState={() => setRefreshPage(true)}
+          refreshState={setRefreshPage}
         />
       )}
 

@@ -40,6 +40,7 @@ import PropertyViewAccordian from "@/components/property/PropertyViewAccordion";
 import { ExpandMore } from "@/components/ui/ExpandMore";
 import { Stack } from "@mui/system";
 import DeletePropertyDialog from "@/components/property-dialogs/DeletePropertyDialog";
+import { useTheme } from "@emotion/react";
 
 const propertyStatusColors = new Map<
   PropertyStatus,
@@ -68,12 +69,23 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
   onDelete,
 }) => {
   const [expanded, setExpanded] = useState<boolean>(false);
+  const theme = useTheme();
 
   const getOccupancyAvatars = (occupancy: number) => {
     const avatars = [];
     for (let i = 0; i < occupancy; i++) {
       avatars.push(
-        <Avatar key={i} alt="Avatar" src="/static/img/avatars/default.png" />
+        <Avatar
+          key={i}
+          alt="Avatar"
+          src="/static/img/avatars/default.png"
+          sx={{
+            filter: "invert(1)", // filter changes to white
+            backgroundColor: `${theme.palette.primary.main}`,
+            // mixBlendMode: "screen",
+            // backgroundColor: "primary.main",
+          }}
+        />
       );
     }
     return avatars;
@@ -308,10 +320,10 @@ function Properties() {
             Properties
           </Typography>
           <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-            <Link component={NavLink} to="/dashboard">
+            <Link component={NavLink} color="secondary" to="/dashboard">
               Dashboard
             </Link>
-            <Link component={NavLink} to="/dashboard">
+            <Link component={NavLink} color="secondary" to="/dashboard">
               Pages
             </Link>
             <Typography>Properties</Typography>

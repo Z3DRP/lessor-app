@@ -4,7 +4,7 @@ import { JWTContextType, ActionMap, AuthState, AuthUser } from "@/types/auth";
 
 import { isValidToken, setSession } from "@/utils/jwt";
 import { ProfileType } from "unions/unions";
-import { userApi } from "api/userApi";
+import { userApi } from "services/userApi";
 
 // Note: If you're trying to connect JWT to your own backend, don't forget
 // to remove the Axios mocks in the `/src/index.tsx` file.

@@ -1,6 +1,6 @@
 import { Task } from "@/types/task";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { taskApi } from "api/taskApi";
+import { taskApi } from "services/taskApi";
 import { RootState } from "../store";
 
 interface TaskState {
@@ -33,7 +33,9 @@ export const fetchTasks = createAsyncThunk(
       return tasks;
     } catch (err: any) {
       console.log("error fetching tasks state: ", err);
-      return rejectWithValue({ message: err.message || "unknown error" });
+      return rejectWithValue({
+        message: err.message || err.error || err || "unknown error",
+      });
     }
   }
 );
@@ -46,7 +48,9 @@ export const createTask = createAsyncThunk(
       return task;
     } catch (err: any) {
       console.log("error creating task state: ", err);
-      return rejectWithValue({ message: err?.message || "unknown error" });
+      return rejectWithValue({
+        message: err?.message || err.error || err || "unknown error",
+      });
     }
   }
 );
@@ -59,7 +63,9 @@ export const updateTask = createAsyncThunk(
       return task;
     } catch (err: any) {
       console.log("error updating task state: ", err);
-      return rejectWithValue({ message: err?.message || "unkown error" });
+      return rejectWithValue({
+        message: err?.message || err.error || err || "unkown error",
+      });
     }
   }
 );
@@ -73,7 +79,9 @@ export const updateTaskPriorities = createAsyncThunk(
       return tasks;
     } catch (err: any) {
       console.log("error updating task priorities: ", err);
-      return rejectWithValue({ message: err?.message || "unknown error" });
+      return rejectWithValue({
+        message: err?.message || err.error || err || "unknown error",
+      });
     }
   }
 );
@@ -86,7 +94,9 @@ export const deleteTask = createAsyncThunk(
       return id;
     } catch (err: any) {
       console.log("error deleting tasks state: ", err);
-      return rejectWithValue({ message: err?.message || "unknown error" });
+      return rejectWithValue({
+        message: err?.message || err.error || err || "unknown error",
+      });
     }
   }
 );

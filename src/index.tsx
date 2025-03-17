@@ -21,7 +21,11 @@ const root = createRoot(container!);
 root.render(
   <BrowserRouter>
     <ThemeProvider>
-      <SnackbarProvider maxSnack={5} autoHideDuration={1500}>
+      <SnackbarProvider
+        maxSnack={5}
+        autoHideDuration={2700}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
         <App />
       </SnackbarProvider>
     </ThemeProvider>

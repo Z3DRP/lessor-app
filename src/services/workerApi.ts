@@ -1,5 +1,6 @@
 import axiosInstance from "@/utils/axios";
 import { MaintenanceWorker } from "@/types/worker";
+const lessorEp = import.meta.env.VITE_ALESSOR_EP;
 const workerEp = import.meta.env.VITE_WORKER_EP;
 
 export const workerApi = {
@@ -24,7 +25,7 @@ export const workerApi = {
 
   async getWorkers(alsrId: string, page: number, limit: number) {
     const res = await axiosInstance
-      .get(`alessor/${alsrId}/${workerEp}`, {
+      .get(`${lessorEp}/${alsrId}/${workerEp}`, {
         params: { page, limit },
       })
       .catch((err) => {

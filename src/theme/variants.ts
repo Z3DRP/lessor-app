@@ -24,8 +24,9 @@ const customOrange = {
   300: "#ffb74d",
   400: "#ffa726",
   500: "#ff9800",
-  600: "#fb8c00",
-  700: "#f57c00",
+  //600: "#fb8c00",
+  600: "#f57c00",
+  700: "#c45f00",
   800: "#ef6c00",
   900: "#e65100",
 };
@@ -100,6 +101,7 @@ const darkVariant = merge(defaultVariant, {
       default: "#1B2635",
       paper: "#233044",
     },
+    divider: customBlue[400],
     text: {
       primary: "rgba(255, 255, 255, 0.95)",
       secondary: "rgba(255, 255, 255, 0.5)",

@@ -19,12 +19,12 @@ import {
   DialogActions,
 } from "@mui/material";
 import { PriorityLevel } from "enums/enums";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikValues } from "formik";
 import * as Yup from "yup";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
-import { spacing, SpacingProps } from "@mui/system";
-import { useEffect, useState } from "react";
+import { spacing, SpacingProps, Stack } from "@mui/system";
+import { useEffect, useState, useRef } from "react";
 import Error from "layouts/Error";
 import { LinearLoading } from "../ui/Loaders";
 import { LucideDollarSign } from "lucide-react";
@@ -37,6 +37,8 @@ import { formattedAddress, Property } from "@/types/property";
 import { MaintenanceWorker } from "@/types/worker";
 import { Task } from "@/types/task";
 import { RequestDto } from "@/types/requestResult";
+import InfoPopover from "../ui/InfoPopover";
+import { enqueueSnackbar } from "notistack";
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
 interface ButtonProps extends SpacingProps {
@@ -51,12 +53,13 @@ export type NewTaskDialogProps = {
   onSave: (task: Partial<Task> | Task) => Promise<RequestDto>;
   open: boolean;
   openHandler: (isOpen: boolean) => void;
-  refreshState: () => void;
+  refreshState: (value: boolean) => void;
 };
 
 export default function NewTaskDialog({
   lessorId,
   priority,
+  onSave,
   open,
   openHandler,
   refreshState,
@@ -77,6 +80,13 @@ export default function NewTaskDialog({
   );
 
   const [error, setError] = useState<string | null>(null);
+  const errRef = useRef<string | null>();
+
+  useEffect(() => {
+    if (error) {
+      errRef.current = error;
+    }
+  }, [error]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,11 +109,11 @@ export default function NewTaskDialog({
       }
     };
 
-    if (lessorId) {
+    if (lessorId && properties.length === 0 && workers.length === 0) {
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessorId]);
+  }, [lessorId, properties.length, workers.length]);
 
   if (wStatus === "loading" || pStatus === "loading") {
     return <LinearLoading />;
@@ -138,28 +148,53 @@ export default function NewTaskDialog({
       .min(2, "notes must be at least 2 characters")
       .optional(),
     propertyId: Yup.string().required("property is required"),
-    estimatedCost: Yup.number().positive().optional(),
-    actualCost: Yup.number().positive().optional(),
+    estimatedCost: Yup.number()
+      .moreThan(-1, "estimated cost cannot be negative")
+      .optional(),
+    actualCost: Yup.number()
+      .moreThan(-1, "actual cost cannot be negative")
+      .optional(),
   });
 
   const handleSubmit = async (
-    values: any,
+    values: FormikValues,
     { resetForm, setSubmitting }: any
   ) => {
-    console.log(
-      "values ",
-      values,
-      "setSub",
-      setSubmitting,
-      "reset form",
-      resetForm
-    );
+    setSubmitting(true);
+    const task: Partial<Task> = {
+      lessorId: lessorId,
+      name: values.name,
+      workerId: values?.workerId,
+      propertyId: values?.propertyId,
+      priority: values?.priority,
+      takePrecedence: values.takePrecedence,
+      details: values?.details,
+      notes: values?.notes,
+      estimatedCost: values?.estimatedCost,
+      actualCost: values?.actualCost,
+      scheduledAt: Date.now(),
+    };
+
+    try {
+      const { success, msg, data } = await onSave(task);
+
+      if (!success) {
+        refreshState(false);
+        setError(msg ?? "something unexpected happened");
+        enqueueSnackbar("could not create task", { variant: "error" });
+        return;
+      }
+
+      refreshState(true);
+      console.log(data);
+    } catch (err: any) {
+      setError(err);
+    }
   };
 
   return (
     <Formik
       initialValues={initValues}
-      enableReinitialize
       validationSchema={validationSchema}
       validationOnMount
       onSubmit={handleSubmit}
@@ -169,6 +204,7 @@ export default function NewTaskDialog({
         handleBlur,
         handleChange,
         handleSubmit,
+        resetForm,
         isSubmitting,
         setFieldValue,
         touched,
@@ -194,6 +230,7 @@ export default function NewTaskDialog({
                     </Box>
                   ) : (
                     <>
+                      {console.log("error before ta ", error)}
                       <TransitionAlert
                         isOpen={error != null}
                         variant="error"
@@ -202,6 +239,89 @@ export default function NewTaskDialog({
                         closeHandler={() => setError(null)}
                       />
                       <Grid container spacing={1}>
+                        <Grid size={{ xs: 12 }}>
+                          <Grid container direction="row" spacing={2}>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <Grid
+                                container
+                                direction="row"
+                                alignItems="center"
+                                spacing={0.5}
+                              >
+                                <Grid>
+                                  <FormControl
+                                    variant="outlined"
+                                    sx={{ my: 2 }}
+                                    fullWidth
+                                  >
+                                    <FormControlLabel
+                                      label="Take Precedence"
+                                      control={
+                                        <Switch
+                                          name="takePrecedence"
+                                          onChange={(e) =>
+                                            setFieldValue(
+                                              "takePrecedence",
+                                              e.target.checked
+                                            )
+                                          }
+                                        />
+                                      }
+                                    />
+                                    {touched.takePrecedence &&
+                                      Boolean(errors.takePrecedence) && (
+                                        <FormHelperText error>
+                                          {errors.takePrecedence}
+                                        </FormHelperText>
+                                      )}
+                                  </FormControl>
+                                </Grid>
+                                <Grid>
+                                  <InfoPopover
+                                    title="Take Precedence"
+                                    message="execute this task next before others in bucket"
+                                  />
+                                </Grid>
+                              </Grid>
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FormControl
+                                variant="outlined"
+                                sx={{ my: 2 }}
+                                fullWidth
+                                disabled
+                              >
+                                <InputLabel id="priority">Priority</InputLabel>
+                                <Select
+                                  disabled
+                                  name="priority"
+                                  fullWidth
+                                  labelId="priority"
+                                  label="Priority"
+                                  defaultValue={priority}
+                                  native
+                                  onBlur={handleBlur}
+                                  onChange={(e: any) => {
+                                    setFieldValue("priority", e.target.value);
+                                  }}
+                                >
+                                  {Object.values(PriorityLevel).map((pl) => (
+                                    <option key={pl} value={pl}>
+                                      {pl}
+                                    </option>
+                                  ))}
+                                </Select>
+                                {touched.priority &&
+                                  Boolean(errors.priority) && (
+                                    <FormHelperText error>
+                                      {errors.priority}
+                                    </FormHelperText>
+                                  )}
+                              </FormControl>
+                            </Grid>
+                          </Grid>
+                        </Grid>
                         <Grid size={{ xs: 12 }}>
                           <TextField
                             name="name"
@@ -296,84 +416,22 @@ export default function NewTaskDialog({
                             </Grid>
                           </Grid>
                         </Grid>
-                        <Grid size={{ xs: 12 }}>
-                          <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl
-                                variant="outlined"
-                                sx={{ my: 2 }}
-                                fullWidth
-                                disabled
-                              >
-                                <InputLabel id="priority">Priority</InputLabel>
-                                <Select
-                                  disabled
-                                  name="priority"
-                                  fullWidth
-                                  labelId="priority"
-                                  defaultValue={priority}
-                                  native
-                                  onBlur={handleBlur}
-                                  onChange={(e: any) => {
-                                    setFieldValue("priority", e.target.value);
-                                  }}
-                                >
-                                  {Object.values(PriorityLevel).map((pl) => (
-                                    <option key={pl} value={pl}>
-                                      {pl}
-                                    </option>
-                                  ))}
-                                </Select>
-                                {touched.priority &&
-                                  Boolean(errors.priority) && (
-                                    <FormHelperText error>
-                                      {errors.priority}
-                                    </FormHelperText>
-                                  )}
-                              </FormControl>
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl
-                                variant="outlined"
-                                sx={{ my: 2 }}
-                                fullWidth
-                              >
-                                <FormControlLabel
-                                  label="Take precedence"
-                                  control={
-                                    <Switch
-                                      name="takePrecedence"
-                                      onChange={(e) =>
-                                        setFieldValue(
-                                          "takePrecedence",
-                                          e.target.checked
-                                        )
-                                      }
-                                    />
-                                  }
-                                />
-                                {touched.takePrecedence &&
-                                  Boolean(errors.takePrecedence) && (
-                                    <FormHelperText error>
-                                      {errors.takePrecedence}
-                                    </FormHelperText>
-                                  )}
-                              </FormControl>
-                            </Grid>
-                          </Grid>
-                        </Grid>
+
                         <Grid size={{ xs: 12 }}>
                           <Grid container direction="row" spacing={2}>
                             <Grid size={{ xs: 12, md: 6 }}>
                               <TextField
                                 name="details"
-                                label="details"
+                                label="Details"
                                 value={values.details}
                                 error={
                                   touched.details && Boolean(errors.details)
                                 }
-                                fullWidth
                                 helperText={touched.details && errors.details}
+                                fullWidth
+                                multiline
+                                rows={5}
+                                maxRows={10}
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 variant="outlined"
@@ -383,11 +441,14 @@ export default function NewTaskDialog({
                             <Grid size={{ xs: 12, md: 6 }}>
                               <TextField
                                 name="notes"
-                                label="notes"
+                                label="Notes"
                                 value={values.notes}
                                 error={touched.notes && Boolean(errors.notes)}
                                 helperText={touched.notes && errors.notes}
                                 fullWidth
+                                multiline
+                                rows={5}
+                                maxRows={10}
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 variant="outlined"
@@ -460,7 +521,10 @@ export default function NewTaskDialog({
             </DialogContent>
             <DialogActions sx={{ mb: 2, mr: 2 }}>
               <Button
-                onClick={() => openHandler(false)}
+                onClick={() => {
+                  resetForm();
+                  openHandler(false);
+                }}
                 color="secondary"
                 variant="outlined"
               >

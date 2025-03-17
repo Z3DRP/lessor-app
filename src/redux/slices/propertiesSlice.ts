@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/redux/store";
 import { Address, Property } from "@/types/property";
-import { propertyApi } from "api/propertyApi";
+import { propertyApi } from "services/propertyApi";
 
 interface PropertyState {
   properties: Property[];

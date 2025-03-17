@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <BrandIcon />{" "}
         <Box ml={1}>
           Alessor
-          <BrandChip label="Pro" />
+          <BrandChip label="Dev" />
         </Box>
       </Brand>
       <SidebarNav items={items} />

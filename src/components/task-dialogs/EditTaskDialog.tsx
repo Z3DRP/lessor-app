@@ -90,8 +90,12 @@ export default function EditTaskDialog({
       .min(2, "notes must be at least 2 characters")
       .optional(),
     propertyId: Yup.string().required("property is required"),
-    estimatedCost: Yup.number().positive().optional(),
-    actualCost: Yup.number().positive().optional(),
+    estimatedCost: Yup.number()
+      .moreThan(-1, "estimated cost cannot be negative")
+      .optional(),
+    actualCost: Yup.number()
+      .moreThan(-1, "actual cost cannot be negative")
+      .optional(),
   };
 
   return (

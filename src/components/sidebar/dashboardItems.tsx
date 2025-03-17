@@ -58,22 +58,23 @@ const pagesSection = [
     title: "Tasks",
     //badge: "View",
     children: [
-      {
-        href: "/tasks",
-        title: "List",
-        badge: "3",
-      },
+      // {
+      //   href: "/tasks",
+      //   title: "List",
+      //   badge: "3",
+      // },
       {
         href: "/tasks/view",
-        title: "Priority View",
+        title: "View",
+        badge: "3",
       },
     ],
   },
-  {
-    href: "/tenant",
-    icon: User,
-    title: "Tenants",
-  },
+  // {
+  //   href: "/tenant",
+  //   icon: User,
+  //   title: "Tenants",
+  // },
   {
     href: "/worker",
     icon: Users,
