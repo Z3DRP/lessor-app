@@ -90,6 +90,10 @@ const TaskWrapperContent = styled(CardContent)`
   }
 `;
 
+const TaskWorkers = styled.div`
+  margin-top: ${(props) => props.theme.spacing(1)};
+`;
+
 const TaskAvatars = styled.div`
   margin-top: ${(props) => props.theme.spacing(1)};
 `;
@@ -122,20 +126,30 @@ const TaskTitle = styled(Typography)`
   margin-right: ${(props) => props.theme.spacing(10)};
 `;
 
-const mockItems2 = [
+type tdata = {
+  id: string;
+  name: string;
+  fInitial: string;
+  lInitial: string;
+  worker: { user: { firstName: string; lastName: string } };
+  estimatedCost: number;
+};
+const mockItems2: tdata[] = [
   {
     id: faker.datatype.uuid(),
-    title: "Google Adwords best practices",
-    badges: [1],
-    notifications: 609.82,
-    avatars: [2, 3],
+    name: "Google Adwords best practices",
+    fInitial: "Z",
+    lInitial: "P",
+    worker: { user: { firstName: "zach", lastName: "palmer" } },
+    estimatedCost: 609.82,
   },
   {
     id: faker.datatype.uuid(),
-    title: "Stripe payment integration",
-    badges: [1],
-    notifications: 0,
-    avatars: [2],
+    name: "Stripe payment integration",
+    fInitial: "Z",
+    lInitial: "P",
+    worker: { user: { firstName: "elias", lastName: "king" } },
+    estimatedCost: 450.32,
   },
 ];
 
@@ -143,7 +157,7 @@ interface Column {
   title: string;
   level: PriorityLevel;
   description: string;
-  items: Task[];
+  items: Task[] | tdata[];
 }
 
 const lowColId = faker.datatype.uuid();
@@ -164,7 +178,7 @@ const priorityColumns: Record<string, Column> = {
     level: PriorityLevel.Medium,
     description:
       "Tasks in this bucket are mid priority will be completed before the lowest and after the highest, unless a task takes precedence",
-    items: [],
+    items: mockItems2,
   },
   [PriorityLevel.High.toString()]: {
     title: "High",
@@ -280,27 +294,34 @@ const Lane = ({ column, children, onAddTask }: LaneProps) => {
 };
 
 interface TaskProps {
-  task: Task;
+  task: Task | tdata;
 }
 
 const TaskItem = ({ task }: TaskProps) => {
   return (
     <TaskWrapper mb={4}>
       <TaskWrapperContent>
-        <TaskStatusChip status={determineTaskStatus(task)} />
-
+        <TaskStatusChip status={TaskStatus.Started} />
         <TaskTitle variant="body1" sx={{ mt: 1 }} gutterBottom>
           {task?.name}
         </TaskTitle>
 
+        <TaskWorkers>
+          {task?.worker ? (
+            <Typography>Worker(s)</Typography>
+          ) : (
+            // dont know why but if Not Assigned is rendered the style from TaskWorkers goes away so set explictly
+            <Typography mt={2}>Not Assigned</Typography>
+          )}
+        </TaskWorkers>
+
         <TaskAvatars>
-          <AvatarGroup max={3}>
+          <AvatarGroup max={4}>
             <InitialAvatar
-              initials={getInitials(
-                task.worker?.user?.firstName ?? "",
-                task.worker?.user?.lastName ?? ""
-              )}
+              firstName={task?.worker?.user?.firstName || null}
+              lastName={task?.worker?.user?.lastName || null}
             />
+            <Avatar src={`/static/img/avatars/avatar-1.jpg`} />
           </AvatarGroup>
         </TaskAvatars>
 

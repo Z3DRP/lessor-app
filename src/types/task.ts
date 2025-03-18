@@ -13,14 +13,14 @@ export type Task = {
   takePrecedence: boolean;
   details: string;
   notes: string;
-  propertyId: number;
+  propertyId: string;
   property: Property;
-  scheduledAt: number;
-  startedAt?: number;
-  completedAt?: number;
-  pausedAt?: number;
+  scheduledAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  pausedAt?: string;
   pausedReason?: string;
-  failedAt?: number;
+  failedAt?: string;
   failedReason?: string;
   estimatedCost?: number;
   actualCost?: number;
@@ -29,8 +29,8 @@ export type Task = {
 
 export type AssignedTask = {
   id: number;
-  taskId: number;
-  workerId: number;
+  taskId: string;
+  workerId: string;
   status: TaskStatus;
 };
 
@@ -41,7 +41,17 @@ export const determineTaskStatus = (task: Task) => {
   return TaskStatus.Scheduled;
 };
 
-export const formattedDate = (dateArg: number) =>
+export const displayDate = (dateArg: number) =>
+  new Date(dateArg).toLocaleString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    hour12: true,
+    minute: "2-digit",
+  });
+
+export const formattedDate = (dateArg: string) =>
   new Date(dateArg).toLocaleString("en-US", {
     day: "2-digit",
     month: "short",

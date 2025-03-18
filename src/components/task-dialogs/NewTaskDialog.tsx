@@ -170,10 +170,12 @@ export default function NewTaskDialog({
       takePrecedence: values.takePrecedence,
       details: values?.details,
       notes: values?.notes,
-      estimatedCost: values?.estimatedCost,
-      actualCost: values?.actualCost,
-      scheduledAt: Date.now(),
+      estimatedCost: +values?.estimatedCost,
+      actualCost: +values?.actualCost,
+      scheduledAt: new Date().toISOString(),
     };
+
+    console.log("creating task:: ", task);
 
     try {
       const { success, msg, data } = await onSave(task);
@@ -186,6 +188,8 @@ export default function NewTaskDialog({
       }
 
       refreshState(true);
+      resetForm();
+      openHandler(false);
       console.log(data);
     } catch (err: any) {
       setError(err);

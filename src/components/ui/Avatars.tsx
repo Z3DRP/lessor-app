@@ -12,8 +12,10 @@ import {
   Assignment as AssignmentIcon,
   Folder as FolderIcon,
   Pageview as PageviewIcon,
+  Person,
 } from "@mui/icons-material";
 import { spacing } from "@mui/system";
+import { User, UserIcon, UserRoundIcon } from "lucide-react";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -34,7 +36,7 @@ const GreenAvatar = styled(Avatar)`
   background-color: ${green[500]};
 `;
 
-const OrangeAvatar = styled(Avatar)`
+const OrangeAvatar = styled(MuiAvatar)`
   background-color: ${deepOrange[500]};
 `;
 
@@ -43,25 +45,25 @@ const PurpleAvatar = styled(Avatar)`
 `;
 
 export type InitialAvatarProps = {
-  initials: string;
+  firstName: string | null;
+  lastName: string | null;
 };
 
-export function InitialAvatar({ initials }: InitialAvatarProps) {
-  return <OrangeAvatar>{initials}</OrangeAvatar>;
+export function InitialAvatar({ firstName, lastName }: InitialAvatarProps) {
+  if (firstName == null || lastName == null) {
+    return (
+      <OrangeAvatar>
+        <Person fontSize="large" />
+      </OrangeAvatar>
+    );
+  }
+  return <OrangeAvatar>{`${firstName[0]}${lastName[0]}`}</OrangeAvatar>;
 }
 
 export function ImageAvatars() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Image Avatars
-        </Typography>
-        <Typography variant="body2" gutterBottom>
-          Image avatars can be created by passing standard img props src or
-          srcSet into the component.
-        </Typography>
-
         <Grid container justifyContent="center" alignItems="center">
           <Avatar alt="Remy Sharp" src="/static/img/avatars/avatar-1.jpg" />
           <BigAvatar alt="Remy Sharp" src="/static/img/avatars/avatar-1.jpg" />
@@ -72,38 +74,13 @@ export function ImageAvatars() {
 }
 
 export function LetterAvatars() {
-  return (
-    <Card mb={6}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Letter avatars
-        </Typography>
-        <Typography variant="body2" gutterBottom>
-          Avatars containing simple characters can be created by passing your
-          string as children.
-        </Typography>
-
-        <Grid container justifyContent="center" alignItems="center">
-          <Avatar>H</Avatar>
-          <OrangeAvatar>N</OrangeAvatar>
-          <PurpleAvatar>OP</PurpleAvatar>
-        </Grid>
-      </CardContent>
-    </Card>
-  );
+  return <PurpleAvatar>OP</PurpleAvatar>;
 }
 
 export function IconAvatars() {
   return (
     <Card mb={6}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Icon avatars
-        </Typography>
-        <Typography variant="body2" gutterBottom>
-          Icon avatars are created by passing an icon as children.
-        </Typography>
-
         <Grid container justifyContent="center" alignItems="center">
           <Avatar>
             <FolderIcon />

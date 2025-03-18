@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Chip as MuiChip } from "@mui/material";
 import { spacing, SpacingProps, Stack } from "@mui/system";
 import { TaskStatus } from "enums/enums";
-import { orange, green, yellow, red } from "@mui/material/colors";
+import { green, yellow, red, deepPurple } from "@mui/material/colors";
 
 interface ChipProps extends SpacingProps {
   component?: React.ElementType;
@@ -20,7 +20,7 @@ const StartedChip = styled(MuiChip)<{
   padding: 4px 0;
   font-size: 0.8rem;
   font-weight: bold;
-  background-color: ${orange[800]};
+  background-color: ${({ theme }) => theme.palette.secondary.main};
   margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
@@ -35,7 +35,7 @@ const ScheduledChip = styled(MuiChip)<{
   padding: 4px 0;
   font-size: 0.8rem;
   font-weight: bold;
-  background-color: ${({ theme }) => theme.palette.primary.main};
+  background-color: ${deepPurple[400]};
   margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
