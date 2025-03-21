@@ -16,6 +16,7 @@ import {
 } from "@mui/icons-material";
 import { spacing } from "@mui/system";
 import { User, UserIcon, UserRoundIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -71,6 +72,14 @@ export function ImageAvatars() {
       </CardContent>
     </Card>
   );
+}
+
+export type EmptyUserAvatarProps = {
+  icon: ReactNode;
+};
+
+export function EmptyUserAvatar({ icon }: EmptyUserAvatarProps) {
+  return <OrangeAvatar>{icon}</OrangeAvatar>;
 }
 
 export function LetterAvatars() {

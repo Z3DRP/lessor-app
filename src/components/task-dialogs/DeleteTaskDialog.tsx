@@ -47,6 +47,7 @@ export default function DeleteTaskDialog({
 
       enqueueSnackbar("task successfully deleted", { variant: "success" });
       refreshPage();
+      openSetter(false);
     } catch (err: any) {
       setError(`${err.message ?? err.error}`);
       enqueueSnackbar("an error occurred while deleting task", {

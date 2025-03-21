@@ -2,7 +2,7 @@ import React, { useState, useEffect, ReactNode } from "react";
 import styled from "@emotion/styled";
 import { NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { DollarSignIcon } from "lucide-react";
+import { DollarSignIcon, Eye, Pencil, TrashIcon } from "lucide-react";
 import {
   DragDropContext,
   Draggable,
@@ -24,11 +24,19 @@ import {
   Link,
   Typography as MuiTypography,
   Popover,
+  CardActions,
+  IconButton,
+  CardHeader,
+  Collapse,
 } from "@mui/material";
-import { spacing } from "@mui/system";
+import { spacing, Stack, useTheme } from "@mui/system";
 import { green } from "@mui/material/colors";
-import { Add as AddIcon } from "@mui/icons-material";
-import { InitialAvatar } from "@/components/ui/Avatars";
+import { Add as AddIcon, PersonOff } from "@mui/icons-material";
+import {
+  EmptyUserAvatar,
+  IconAvatars,
+  InitialAvatar,
+} from "@/components/ui/Avatars";
 import { TaskStatusChip } from "@/components/tasks/taskChips";
 import { PriorityLevel, TaskStatus } from "enums/enums";
 import { useDispatch, useSelector } from "react-redux";
@@ -55,6 +63,8 @@ import DeleteTaskDialog from "@/components/task-dialogs/DeleteTaskDialog";
 import { enqueueSnackbar } from "notistack";
 import { RequestDto } from "@/types/requestResult";
 import { TransitionAlert } from "@/components/ui/CustomAlerts";
+import { ExpandMore } from "@/components/ui/ExpandMore";
+import { formattedAddress } from "@/types/property";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -118,6 +128,12 @@ const TaskNotificationsAmount = styled.div`
   line-height: 1.95;
 `;
 
+const TaskHiddenFooter = styled.div`
+  bottom: ${(props) => props.theme.spacing(12)};
+  margin-left: ${(props) => props.theme.spacing(4)};
+  margin-right: ${(props) => props.theme.spacing(4)};
+`;
+
 const Typography = styled(MuiTypography)(spacing);
 
 const TaskTitle = styled(Typography)`
@@ -126,38 +142,46 @@ const TaskTitle = styled(Typography)`
   margin-right: ${(props) => props.theme.spacing(10)};
 `;
 
-type tdata = {
-  id: string;
-  name: string;
-  fInitial: string;
-  lInitial: string;
-  worker: { user: { firstName: string; lastName: string } };
-  estimatedCost: number;
-};
-const mockItems2: tdata[] = [
-  {
-    id: faker.datatype.uuid(),
-    name: "Google Adwords best practices",
-    fInitial: "Z",
-    lInitial: "P",
-    worker: { user: { firstName: "zach", lastName: "palmer" } },
-    estimatedCost: 609.82,
-  },
-  {
-    id: faker.datatype.uuid(),
-    name: "Stripe payment integration",
-    fInitial: "Z",
-    lInitial: "P",
-    worker: { user: { firstName: "elias", lastName: "king" } },
-    estimatedCost: 450.32,
-  },
-];
+// type tdata = {
+//   id: string;
+//   name: string;
+//   fInitial: string;
+//   lInitial: string;
+//   worker: { user: { firstName: string; lastName: string } };
+//   estimatedCost: number;
+// };
+// const mockItems2: Task[] = [
+//   {
+//     id: 1,
+//     name: "Google Adwords best practices",
+//     worker: {
+//       user: {
+//         id: "1",
+//         username: "usr",
+//         firstName: "zach",
+//         lastName: "palmer",
+//         profileType: "alessor",
+//         phone: "1231212345",
+//         email: "email@gmail.com",
+//       },
+//     },
+//     estimatedCost: 609.82,
+//   },
+//   {
+//     id: faker.datatype.uuid(),
+//     name: "Stripe payment integration",
+//     fInitial: "Z",
+//     lInitial: "P",
+//     worker: { user: { firstName: "elias", lastName: "king" } },
+//     estimatedCost: 450.32,
+//   },
+// ];
 
 interface Column {
   title: string;
   level: PriorityLevel;
   description: string;
-  items: Task[] | tdata[];
+  items: Task[];
 }
 
 const lowColId = faker.datatype.uuid();
@@ -166,21 +190,21 @@ const hiColId = faker.datatype.uuid();
 
 //maybe define them here but then remove the items and then use below in the state
 const priorityColumns: Record<string, Column> = {
-  [PriorityLevel.Low.toString()]: {
+  [PriorityLevel.Low]: {
     title: "Low",
     level: PriorityLevel.Low,
     description:
       "Tasks in this bucket are of lowest priority and will be completed last after all other priority buckets are empty, unless a task takes precedence",
     items: [],
   },
-  [PriorityLevel.Medium.toString()]: {
+  [PriorityLevel.Medium]: {
     title: "Medium",
     level: PriorityLevel.Medium,
     description:
       "Tasks in this bucket are mid priority will be completed before the lowest and after the highest, unless a task takes precedence",
-    items: mockItems2,
+    items: [],
   },
-  [PriorityLevel.High.toString()]: {
+  [PriorityLevel.High]: {
     title: "High",
     level: PriorityLevel.High,
     description:
@@ -294,17 +318,62 @@ const Lane = ({ column, children, onAddTask }: LaneProps) => {
 };
 
 interface TaskProps {
-  task: Task | tdata;
+  task: Task;
+  onEdit: (task: Task) => Promise<void>;
+  onDelete: (task: Task) => Promise<void>;
 }
 
-const TaskItem = ({ task }: TaskProps) => {
+const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+  //const theme = useTheme();
+
   return (
     <TaskWrapper mb={4}>
       <TaskWrapperContent>
-        <TaskStatusChip status={TaskStatus.Started} />
-        <TaskTitle variant="body1" sx={{ mt: 1 }} gutterBottom>
-          {task?.name}
-        </TaskTitle>
+        <Grid container justifyContent="space-between">
+          <Grid>
+            <TaskStatusChip status={determineTaskStatus(task)} />
+          </Grid>
+
+          <Grid>
+            <IconButton
+              size="small"
+              color="secondary"
+              onClick={() => {
+                onEdit(task);
+              }}
+            >
+              <Pencil />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="secondary"
+              onClick={() => {
+                onDelete(task);
+              }}
+            >
+              <TrashIcon />
+            </IconButton>
+
+            <ExpandMore
+              expand={expanded}
+              onClick={() => setExpanded(!expanded)}
+              color="secondary"
+              aria-expanded={expanded}
+              aria-label="show more"
+            >
+              <Eye />
+            </ExpandMore>
+          </Grid>
+        </Grid>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <TaskTitle variant="h4" sx={{ mt: 1 }} gutterBottom>
+            <strong>{task?.name}</strong>,
+          </TaskTitle>
+          <Typography variant="body1">{` ${formattedAddress(
+            task?.property
+          )}`}</Typography>
+        </Stack>
 
         <TaskWorkers>
           {task?.worker ? (
@@ -317,11 +386,17 @@ const TaskItem = ({ task }: TaskProps) => {
 
         <TaskAvatars>
           <AvatarGroup max={4}>
-            <InitialAvatar
-              firstName={task?.worker?.user?.firstName || null}
-              lastName={task?.worker?.user?.lastName || null}
-            />
-            <Avatar src={`/static/img/avatars/avatar-1.jpg`} />
+            {task?.worker ? (
+              <>
+                <InitialAvatar
+                  firstName={task?.worker?.user?.firstName || null}
+                  lastName={task?.worker?.user?.lastName || null}
+                />
+                <Avatar src={`/static/img/avatars/avatar-1.jpg`} />
+              </>
+            ) : (
+              <EmptyUserAvatar icon={<PersonOff fontSize="large" />} />
+            )}
           </AvatarGroup>
         </TaskAvatars>
 
@@ -329,11 +404,18 @@ const TaskItem = ({ task }: TaskProps) => {
           <TaskNotifications>
             <TaskAmountIcon />
             <TaskNotificationsAmount>
-              {task.estimatedCost}
+              {task?.actualCost ? task?.actualCost : task?.estimatedCost}
             </TaskNotificationsAmount>
           </TaskNotifications>
         )}
       </TaskWrapperContent>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <TaskHiddenFooter>
+          <Typography variant="body2" sx={{ m: 2 }}>
+            {task.details}
+          </Typography>
+        </TaskHiddenFooter>
+      </Collapse>
     </TaskWrapper>
   );
 };
@@ -357,7 +439,16 @@ function Tasks() {
   const [refreshPage, setRefreshPage] = useState<boolean>(false);
   const [selectedColumnPriority, setSelectedColumnPriority] =
     useState<PriorityLevel | null>(null);
-  const [dialogHasErr, setDialogHasErr] = useState<boolean>(false);
+
+  const handleEditClick = async (tsk: Task) => {
+    setTaskToEdit(tsk);
+    setOpenEditDialog(true);
+  };
+
+  const handleDeleteClick = async (tsk: Task) => {
+    setTaskToDelete(tsk);
+    setOpenDeleteDialog(true);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -371,45 +462,39 @@ function Tasks() {
         setError(err?.message || err?.error || "unexpected error");
       }
     };
-    if (status === "idle" || !dialogHasErr) {
+    if (status === "idle") {
       fetchData().finally(() => setDocumentReady(true));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.Uid]);
+  }, [user?.Uid, refreshPage]);
 
-  // useEffect(() => {
-  //   const sortColumns = () => {
-  //     const sortedTasks = tasks.sort(
-  //       (t1, t2) => t1.scheduledAt - t2.scheduledAt
-  //     );
+  useEffect(() => {
+    const sortColumns = () => {
+      // const sortedTasks = tasks.sort(
+      //   (t1, t2) => t1.scheduledAt - t2.scheduledAt
+      // );
 
-  //     setColumns((prev) => ({
-  //       ...prev,
-  //       [lowColId]: {
-  //         ...prev[PriorityLevel.Low],
-  //         items: sortedTasks.filter(
-  //           (t: Task) => t.priority === PriorityLevel.Low
-  //         ),
-  //       },
-  //       [medColId]: {
-  //         ...prev[PriorityLevel.Medium],
-  //         items: sortedTasks.filter(
-  //           (t: Task) => t.priority === PriorityLevel.Medium
-  //         ),
-  //       },
-  //       [hiColId]: {
-  //         ...prev[PriorityLevel.High],
-  //         items: sortedTasks.filter(
-  //           (t: Task) => t.priority === PriorityLevel.High
-  //         ),
-  //       },
-  //     }));
-  //   };
+      setColumns((prev) => ({
+        ...prev,
+        [PriorityLevel.Low]: {
+          ...prev[PriorityLevel.Low],
+          items: tasks.filter((t: Task) => t.priority === PriorityLevel.Low),
+        },
+        [PriorityLevel.Medium]: {
+          ...prev[PriorityLevel.Medium],
+          items: tasks.filter((t: Task) => t.priority === PriorityLevel.Medium),
+        },
+        [PriorityLevel.High]: {
+          ...prev[PriorityLevel.High],
+          items: tasks.filter((t: Task) => t.priority === PriorityLevel.High),
+        },
+      }));
+    };
 
-  //   if (tasks.length > 0) {
-  //     sortColumns();
-  //   }
-  // }, [tasks]);
+    if (tasks.length > 0) {
+      sortColumns();
+    }
+  }, [tasks]);
 
   // useEffect(() => {
   //   if (status !== "loading" && documentReady === false) {
@@ -592,7 +677,11 @@ function Tasks() {
                                               {...provided.draggableProps}
                                               {...provided.dragHandleProps}
                                             >
-                                              <TaskItem task={item} />
+                                              <TaskItem
+                                                task={item}
+                                                onEdit={handleEditClick}
+                                                onDelete={handleDeleteClick}
+                                              />
                                             </div>
                                           );
                                         }}
