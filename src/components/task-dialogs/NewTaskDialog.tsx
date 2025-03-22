@@ -198,6 +198,7 @@ export default function NewTaskDialog({
     <Formik
       initialValues={initValues}
       validationSchema={schema}
+      enableReinitialize
       validationOnMount
       onSubmit={handleSubmit}
     >
@@ -232,7 +233,6 @@ export default function NewTaskDialog({
                     </Box>
                   ) : (
                     <>
-                      {console.log("error before ta ", error)}
                       <TransitionAlert
                         isOpen={error != null}
                         variant="error"
@@ -301,9 +301,9 @@ export default function NewTaskDialog({
                                   fullWidth
                                   labelId="priority"
                                   label="Priority"
-                                  defaultValue={priority}
                                   native
                                   onBlur={handleBlur}
+                                  value={values.priority}
                                   onChange={(e: any) => {
                                     setFieldValue("priority", e.target.value);
                                   }}
@@ -432,8 +432,7 @@ export default function NewTaskDialog({
                                 helperText={touched.details && errors.details}
                                 fullWidth
                                 multiline
-                                rows={5}
-                                maxRows={10}
+                                minRows={5}
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 variant="outlined"
@@ -449,8 +448,7 @@ export default function NewTaskDialog({
                                 helperText={touched.notes && errors.notes}
                                 fullWidth
                                 multiline
-                                rows={5}
-                                maxRows={10}
+                                minRows={5}
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 variant="outlined"

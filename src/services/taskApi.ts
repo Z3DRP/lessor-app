@@ -64,10 +64,12 @@ export const taskApi = {
   },
 
   async updateTask(taskData: Partial<Task> | Task) {
-    const res = await axiosInstance.put(taskEP, taskData).catch((err) => {
-      console.error("error updating task ", err);
-      throw err;
-    });
+    const res = await axiosInstance
+      .put(`${taskEP}/${taskData.tid}`, taskData)
+      .catch((err) => {
+        console.error("error updating task ", err);
+        throw err;
+      });
 
     if (res?.data == null) {
       throw new Error("update task response was undefined");

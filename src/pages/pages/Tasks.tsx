@@ -66,6 +66,8 @@ import { RequestDto } from "@/types/requestResult";
 import { TransitionAlert } from "@/components/ui/CustomAlerts";
 import { ExpandMore } from "@/components/ui/ExpandMore";
 import { formattedAddress } from "@/types/property";
+import { fetchWorkers } from "@/redux/slices/workerSlice";
+import { fetchProperties } from "@/redux/slices/propertiesSlice";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -307,7 +309,10 @@ const Lane = ({ column, children, onAddTask }: LaneProps) => {
             color="primary"
             variant="contained"
             fullWidth
-            onClick={() => onAddTask(column.level)}
+            onClick={() => {
+              console.log(column.level);
+              onAddTask(column.level);
+            }}
           >
             <AddIcon />
             Add new task
@@ -431,6 +436,12 @@ function Tasks() {
   const [documentReady, setDocumentReady] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const { tasks, status } = useSelector((state: RootState) => state.task);
+  const { workers, status: workerStatus } = useSelector(
+    (state: RootState) => state.worker
+  );
+  const { properties, status: propertyStatus } = useSelector(
+    (state: RootState) => state.property
+  );
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [openNewDialog, setOpenNewDialog] = useState<boolean>(false);
@@ -459,17 +470,48 @@ function Tasks() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const reslt = dispatch(
+        const reslt = await dispatch(
           fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 })
         ).unwrap();
-        console.log("results: ", reslt);
+        console.log("tasks: ", reslt);
       } catch (err: any) {
         console.log("error fetching tasks ", err);
         setError(err?.message || err?.error || "unexpected error");
       }
     };
+
+    const fetchWorkerData = async () => {
+      try {
+        const result = await dispatch(
+          fetchWorkers({ alsrId: user?.Uid, page: 1, limit: 30 })
+        ).unwrap();
+        console.log("workers: ", result);
+      } catch (err: any) {
+        setError(err?.message || "an unexpected error occurred");
+      }
+    };
+
+    const fetchPropertyData = async () => {
+      try {
+        const result = await dispatch(
+          fetchProperties({ alsrId: user?.Uid, page: 1 })
+        ).unwrap();
+        console.log("properties: ", result);
+      } catch (err: any) {
+        setError(err?.message || "an unexpected error occurred");
+      }
+    };
+
     if (status === "idle") {
       fetchData().finally(() => setDocumentReady(true));
+    }
+
+    if (workerStatus === "idle") {
+      fetchWorkerData();
+    }
+
+    if (propertyStatus === "idle") {
+      fetchPropertyData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.Uid, refreshPage]);
@@ -724,6 +766,8 @@ function Tasks() {
         <EditTaskDialog
           task={taskToEdit}
           open={openEditDialog}
+          properties={properties}
+          workers={workers}
           openSetter={setOpenEditDialog}
           handleEdit={handleEdit}
           refreshState={setRefreshPage}

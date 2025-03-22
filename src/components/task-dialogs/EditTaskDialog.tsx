@@ -25,12 +25,13 @@ import { TransitionAlert } from "../ui/CustomAlerts";
 import { LinearLoading } from "../ui/Loaders";
 import * as Yup from "yup";
 import { PriorityLevel } from "enums/enums";
-import { formattedAddress } from "@/types/property";
+import { formattedAddress, Property } from "@/types/property";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { LucideDollarSign } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import InfoPopover from "../ui/InfoPopover";
+import { MaintenanceWorker } from "@/types/worker";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -42,6 +43,8 @@ const TextField = styled(MuiTextField)<{ my?: number }>(spacing);
 
 export type EditTaskDialogProps = {
   task: Task | Partial<Task>;
+  properties: Property[];
+  workers: MaintenanceWorker[];
   open: boolean;
   openSetter: (isOpen: boolean) => void;
   handleEdit: (task: Partial<Task> | Task) => Promise<any>;
@@ -50,18 +53,14 @@ export type EditTaskDialogProps = {
 
 export default function EditTaskDialog({
   task,
+  properties,
+  workers,
   open,
   openSetter,
   handleEdit,
   refreshState,
 }: EditTaskDialogProps) {
   const [error, setError] = useState<string | null>(null);
-  const { properties, status: pStatus } = useSelector(
-    (state: RootState) => state.property
-  );
-  const { workers, status: wStatus } = useSelector(
-    (state: RootState) => state.worker
-  );
   const initValues = {
     name: task?.name || "",
     workerId: task?.workerId || "",
@@ -103,7 +102,8 @@ export default function EditTaskDialog({
     values: FormikValues,
     { resetForm, setSubmitting }: any
   ) => {
-    const task: Partial<Task> = {
+    const editedTask: Partial<Task> = {
+      tid: task.tid,
       name: values.name,
       workerId: values.workerId,
       priority: values.priority,
@@ -116,7 +116,7 @@ export default function EditTaskDialog({
     };
 
     try {
-      const { msg, success } = await handleEdit(task);
+      const { msg, success } = await handleEdit(editedTask);
 
       if (success) {
         openSetter(false);
