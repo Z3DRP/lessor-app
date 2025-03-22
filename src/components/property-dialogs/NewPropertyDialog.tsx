@@ -35,7 +35,7 @@ import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
 import { Percent } from "@mui/icons-material";
-import { LucideDollarSign } from "lucide-react";
+import { LucideDollarSign, LucidePercent } from "lucide-react";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -580,7 +580,7 @@ export function NewPropertyDialog({
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
-                                    <Percent fontSize="small" />
+                                    <LucidePercent size={18} />
                                   </InputAdornment>
                                 ),
                               }}
@@ -605,7 +605,7 @@ export function NewPropertyDialog({
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <LucideDollarSign fontSize="small" />
+                                    <LucideDollarSign size={18} />
                                   </InputAdornment>
                                 ),
                               }}

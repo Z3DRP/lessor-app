@@ -28,6 +28,7 @@ import {
   IconButton,
   CardHeader,
   Collapse,
+  setRef,
 } from "@mui/material";
 import { spacing, Stack, useTheme } from "@mui/system";
 import { green } from "@mui/material/colors";
@@ -325,45 +326,51 @@ interface TaskProps {
 
 const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
   const [expanded, setExpanded] = useState<boolean>(false);
-  //const theme = useTheme();
+  const theme = useTheme();
 
   return (
     <TaskWrapper mb={4}>
       <TaskWrapperContent>
-        <Grid container justifyContent="space-between">
+        <Grid container justifyContent="space-between" alignItems="center">
           <Grid>
             <TaskStatusChip status={determineTaskStatus(task)} />
           </Grid>
 
           <Grid>
-            <IconButton
-              size="small"
-              color="secondary"
-              onClick={() => {
-                onEdit(task);
-              }}
+            <Grid
+              container
+              spacing={2}
+              alignItems="center"
+              justifyItems="flex-end"
             >
-              <Pencil />
-            </IconButton>
-            <IconButton
-              size="small"
-              color="secondary"
-              onClick={() => {
-                onDelete(task);
-              }}
-            >
-              <TrashIcon />
-            </IconButton>
-
-            <ExpandMore
-              expand={expanded}
-              onClick={() => setExpanded(!expanded)}
-              color="secondary"
-              aria-expanded={expanded}
-              aria-label="show more"
-            >
-              <Eye />
-            </ExpandMore>
+              <Grid>
+                <Pencil
+                  size={18}
+                  color={theme.palette.secondary.main}
+                  onClick={() => {
+                    onEdit(task);
+                  }}
+                />
+              </Grid>
+              <Grid>
+                <TrashIcon
+                  size={18}
+                  onClick={() => onDelete(task)}
+                  color={theme.palette.secondary.main}
+                />
+              </Grid>
+              <Grid>
+                <ExpandMore
+                  expand={expanded}
+                  onClick={() => setExpanded(!expanded)}
+                  color="secondary"
+                  aria-expanded={expanded}
+                  aria-label="show more"
+                >
+                  <Eye size={18} />
+                </ExpandMore>
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
         <Stack direction="row" alignItems="center" spacing={1}>
@@ -379,7 +386,6 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
           {task?.worker ? (
             <Typography>Worker(s)</Typography>
           ) : (
-            // dont know why but if Not Assigned is rendered the style from TaskWorkers goes away so set explictly
             <Typography mt={2}>Not Assigned</Typography>
           )}
         </TaskWorkers>
@@ -402,7 +408,7 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
 
         {!!task.estimatedCost && task.estimatedCost >= 0 && (
           <TaskNotifications>
-            <TaskAmountIcon />
+            <TaskAmountIcon size={22} />
             <TaskNotificationsAmount>
               {task?.actualCost ? task?.actualCost : task?.estimatedCost}
             </TaskNotificationsAmount>
@@ -720,6 +726,7 @@ function Tasks() {
           open={openEditDialog}
           openSetter={setOpenEditDialog}
           handleEdit={handleEdit}
+          refreshState={setRefreshPage}
         />
       )}
 

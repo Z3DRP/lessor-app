@@ -1,3 +1,4 @@
+import { isDefaultDate } from "@/utils/shared";
 import { PriorityLevel, TaskStatus } from "enums/enums";
 import { Property } from "./property";
 import { MaintenanceWorker } from "./worker";
@@ -35,9 +36,9 @@ export type AssignedTask = {
 };
 
 export const determineTaskStatus = (task: Task) => {
-  if (task.completedAt != null) return TaskStatus.Completed;
-  if (task.failedAt != null) return TaskStatus.Failed;
-  if (task.pausedAt != null) return TaskStatus.Paused;
+  if (!isDefaultDate(task?.completedAt)) return TaskStatus.Completed;
+  if (!isDefaultDate(task?.failedAt)) return TaskStatus.Failed;
+  if (!isDefaultDate(task?.pausedAt)) return TaskStatus.Paused;
   return TaskStatus.Scheduled;
 };
 

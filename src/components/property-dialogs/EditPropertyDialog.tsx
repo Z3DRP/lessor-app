@@ -32,7 +32,7 @@ import { LinearLoading } from "../ui/Loaders";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
 import { Percent } from "@mui/icons-material";
-import { LucideDollarSign } from "lucide-react";
+import { LucideDollarSign, LucidePercent } from "lucide-react";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -203,7 +203,7 @@ export function EditPropertyDialog({
     image: property?.image || "",
   };
 
-  const validationSchema = Yup.object().shape({
+  const schema = Yup.object().shape({
     street: Yup.string()
       .min(2, "Street must be at least 2 characters")
       .max(150, "Street cannot be more than 150 characters")
@@ -249,7 +249,7 @@ export function EditPropertyDialog({
     <Formik
       initialValues={initValues}
       enableReinitialize
-      validationSchema={validationSchema}
+      validationSchema={schema}
       validateOnMount
       onSubmit={handleSubmit}
     >
@@ -549,7 +549,7 @@ export function EditPropertyDialog({
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
-                                    <Percent fontSize="small" />
+                                    <LucidePercent size={18} />
                                   </InputAdornment>
                                 ),
                               }}
@@ -574,7 +574,7 @@ export function EditPropertyDialog({
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <LucideDollarSign fontSize="small" />
+                                    <LucideDollarSign size={18} />
                                   </InputAdornment>
                                 ),
                               }}

@@ -17,6 +17,9 @@ import { store } from "./redux/store";
 import createEmotionCache from "@/utils/createEmotionCache";
 
 import { AuthProvider } from "./contexts/JWTContext";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
+import { Typography } from "@mui/material";
+import Error from "./layouts/Error";
 // import { AuthProvider } from "./contexts/FirebaseAuthContext";
 // import { AuthProvider } from "./contexts/Auth0Context";
 // import { AuthProvider } from "./contexts/CognitoContext";
@@ -35,7 +38,15 @@ function App({ emotionCache = clientSideEmotionCache }) {
         <Provider store={store}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <MuiThemeProvider theme={createTheme(theme)}>
-              <AuthProvider>{content}</AuthProvider>
+              <ErrorBoundary
+                fallback={
+                  <Error>
+                    <Typography>An unexpected error occurred</Typography>
+                  </Error>
+                }
+              >
+                <AuthProvider>{content}</AuthProvider>
+              </ErrorBoundary>
             </MuiThemeProvider>
           </LocalizationProvider>
         </Provider>

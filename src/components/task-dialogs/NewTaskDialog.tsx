@@ -23,15 +23,13 @@ import { Form, Formik, FormikValues } from "formik";
 import * as Yup from "yup";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
-import { spacing, SpacingProps, Stack } from "@mui/system";
+import { spacing, SpacingProps } from "@mui/system";
 import { useEffect, useState, useRef } from "react";
-import Error from "layouts/Error";
 import { LinearLoading } from "../ui/Loaders";
 import { LucideDollarSign } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { fetchWorkers } from "@/redux/slices/workerSlice";
-import useAuth from "@/hooks/useAuth";
 import { fetchProperties } from "@/redux/slices/propertiesSlice";
 import { formattedAddress, Property } from "@/types/property";
 import { MaintenanceWorker } from "@/types/worker";
@@ -131,7 +129,7 @@ export default function NewTaskDialog({
     actualCost: 0.0,
   };
 
-  const validationSchema = Yup.object().shape({
+  const schema = Yup.object().shape({
     name: Yup.string()
       .min(2, "name must be at least 2 characters")
       .max(255, "name must be less than 255 characters")
@@ -199,7 +197,7 @@ export default function NewTaskDialog({
   return (
     <Formik
       initialValues={initValues}
-      validationSchema={validationSchema}
+      validationSchema={schema}
       validationOnMount
       onSubmit={handleSubmit}
     >
@@ -483,7 +481,7 @@ export default function NewTaskDialog({
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <LucideDollarSign fontSize="small" />
+                                      <LucideDollarSign size={16} />
                                     </InputAdornment>
                                   ),
                                 }}
@@ -509,7 +507,7 @@ export default function NewTaskDialog({
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <LucideDollarSign fontSize="small" />
+                                      <LucideDollarSign size={18} />
                                     </InputAdornment>
                                   ),
                                 }}
