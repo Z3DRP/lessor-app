@@ -24,7 +24,7 @@ import * as Yup from "yup";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import styled from "@emotion/styled";
 import { spacing, SpacingProps } from "@mui/system";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { LinearLoading } from "../ui/Loaders";
 import { LucideDollarSign } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -78,14 +78,6 @@ export default function NewTaskDialog({
   );
 
   const [error, setError] = useState<string | null>(null);
-  const errRef = useRef<string | null>();
-
-  useEffect(() => {
-    if (error) {
-      errRef.current = error;
-    }
-  }, [error]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {

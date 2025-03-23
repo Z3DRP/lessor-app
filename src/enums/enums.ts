@@ -1,3 +1,9 @@
+export enum Profiles {
+  Alessor = "alessor",
+  Worker = "worker",
+  Tenant = "tenant",
+}
+
 export enum CommunicationPreference {
   Email = "email",
   Phone = "phone",

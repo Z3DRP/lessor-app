@@ -2,12 +2,14 @@ import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import propertyReducer from "./slices/propertiesSlice";
 import taskReducer from "./slices/tasksSlice";
 import workerReducer from "./slices/workerSlice";
+import alessorReducer from "./slices/alessorSlice";
 
 export const store = configureStore({
   reducer: {
     property: propertyReducer,
     task: taskReducer,
     worker: workerReducer,
+    alessor: alessorReducer,
   },
 });
 

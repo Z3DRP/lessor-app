@@ -15,6 +15,7 @@ import AuthGuard from "@/components/guards/AuthGuard";
 // Auth components
 import SignIn from "@/pages/auth/SignIn";
 import SignUp from "@/pages/auth/SignUp";
+import SignUpWorker from "@/pages/auth/SignUpWorker";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import Page404 from "@/pages/auth/Page404";
 import Page500 from "@/pages/auth/Page500";
@@ -47,6 +48,7 @@ const routes = [
     children: [
       { path: "", element: <SignIn /> },
       { path: "sign-up", element: <SignUp /> },
+      { path: "sign-up/worker", element: <SignUpWorker /> },
       { path: "reset-password", element: <ResetPassword /> },
     ],
   },

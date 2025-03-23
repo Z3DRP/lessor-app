@@ -5,6 +5,7 @@ import { JWTContextType, ActionMap, AuthState, AuthUser } from "@/types/auth";
 import { isValidToken, setSession } from "@/utils/jwt";
 import { ProfileType } from "unions/unions";
 import { userApi } from "services/userApi";
+import { SignupRequest } from "@/types/user";
 
 // Note: If you're trying to connect JWT to your own backend, don't forget
 // to remove the Axios mocks in the `/src/index.tsx` file.
@@ -78,22 +79,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // const isAuthEnabled = import.meta.env.VITE_AUTH_ENABLED === "true";
-
-        // if (!isAuthEnabled) {
-        //   console.log(
-        //     "authentication is disabled in development mode... auto logging in"
-        //   );
-        //   dispatch({
-        //     type: INITIALIZE,
-        //     payload: {
-        //       isAuthenticated: true,
-        //       user: { id: "dev", name: "developer", role: "admin" },
-        //     },
-        //   });
-        //   return;
-        // }
-
         const accessToken = window.localStorage.getItem("accessToken");
 
         if (accessToken && isValidToken(accessToken)) {
@@ -152,23 +137,25 @@ function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (
-    firstName: string,
-    lastName: string,
-    phone: string,
-    email: string,
-    username: string,
-    password: string,
-    profileType: ProfileType
+    userInfo: SignupRequest
+    // firstName: string,
+    // lastName: string,
+    // phone: string,
+    // email: string,
+    // username: string,
+    // password: string,
+    // profileType: ProfileType
   ) => {
     const response = await userApi.signupUser(
-      firstName,
-      lastName,
-      phone,
+      userInfo
+      // firstName,
+      // lastName,
+      // phone,
 
-      email,
-      username,
-      password,
-      profileType
+      // email,
+      // username,
+      // password,
+      // profileType
     );
 
     console.log("response from signup", response);

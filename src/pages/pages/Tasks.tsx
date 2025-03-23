@@ -15,7 +15,6 @@ import {
   Avatar,
   AvatarGroup as MuiAvatarGroup,
   Breadcrumbs as MuiBreadcrumbs,
-  Box,
   Button,
   Card as MuiCard,
   CardContent as MuiCardContent,
@@ -23,23 +22,13 @@ import {
   Grid2 as Grid,
   Link,
   Typography as MuiTypography,
-  Popover,
-  CardActions,
-  IconButton,
-  CardHeader,
   Collapse,
-  setRef,
 } from "@mui/material";
 import { spacing, Stack, useTheme } from "@mui/system";
-import { green } from "@mui/material/colors";
 import { Add as AddIcon, PersonOff } from "@mui/icons-material";
-import {
-  EmptyUserAvatar,
-  IconAvatars,
-  InitialAvatar,
-} from "@/components/ui/Avatars";
+import { EmptyUserAvatar, InitialAvatar } from "@/components/ui/Avatars";
 import { TaskStatusChip } from "@/components/tasks/taskChips";
-import { PriorityLevel, TaskStatus } from "enums/enums";
+import { PriorityLevel } from "enums/enums";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import {
@@ -51,14 +40,10 @@ import {
 } from "@/redux/slices/tasksSlice";
 import useAuth from "@/hooks/useAuth";
 import { LinearLoading } from "@/components/ui/Loaders";
-import Error from "@/layouts/Error";
 import { determineTaskStatus, Task } from "@/types/task";
-import { getInitials } from "@/types/user";
 import EmptyCard from "@/components/ui/EmptyCard";
 import InfoPopover from "@/components/ui/InfoPopover";
 import NewTaskDialog from "@/components/task-dialogs/NewTaskDialog";
-import EditTaskDialog from "@/components/task-dialogs/EditTaskDialog";
-import EditTaskDialog from "@/components/task-dialogs/EditTaskDialog";
 import EditTaskDialog from "@/components/task-dialogs/EditTaskDialog";
 import DeleteTaskDialog from "@/components/task-dialogs/DeleteTaskDialog";
 import { enqueueSnackbar } from "notistack";
@@ -471,7 +456,7 @@ function Tasks() {
     const fetchData = async () => {
       try {
         const reslt = await dispatch(
-          fetchTasks({ alsrId: user?.Uid, page: 1, limit: 30 })
+          fetchTasks({ alsrId: user?.uid, page: 1, limit: 30 })
         ).unwrap();
         console.log("tasks: ", reslt);
       } catch (err: any) {
@@ -483,7 +468,7 @@ function Tasks() {
     const fetchWorkerData = async () => {
       try {
         const result = await dispatch(
-          fetchWorkers({ alsrId: user?.Uid, page: 1, limit: 30 })
+          fetchWorkers({ alsrId: user?.uid, page: 1, limit: 30 })
         ).unwrap();
         console.log("workers: ", result);
       } catch (err: any) {
@@ -494,7 +479,7 @@ function Tasks() {
     const fetchPropertyData = async () => {
       try {
         const result = await dispatch(
-          fetchProperties({ alsrId: user?.Uid, page: 1 })
+          fetchProperties({ alsrId: user?.uid, page: 1 })
         ).unwrap();
         console.log("properties: ", result);
       } catch (err: any) {
@@ -514,7 +499,7 @@ function Tasks() {
       fetchPropertyData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.Uid, refreshPage]);
+  }, [user?.uid, refreshPage]);
 
   useEffect(() => {
     const sortColumns = () => {
@@ -753,7 +738,7 @@ function Tasks() {
 
       {user && selectedColumnPriority && (
         <NewTaskDialog
-          lessorId={user.Uid}
+          lessorId={user.uid}
           priority={selectedColumnPriority}
           open={openNewDialog}
           openHandler={setOpenNewDialog}

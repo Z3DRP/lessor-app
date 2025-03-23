@@ -281,7 +281,7 @@ function Properties() {
         setIsLoading(true);
         if (user) {
           const res = await dispatch(
-            fetchProperties({ alsrId: user.Uid, page: 1 })
+            fetchProperties({ alsrId: user.uid, page: 1 })
           ).unwrap();
 
           if (!res) {
@@ -381,7 +381,7 @@ function Properties() {
 
           {user && (
             <NewPropertyDialog
-              lessorId={user?.Uid || "[invalid-id]"}
+              lessorId={user?.uid || "[invalid-id]"}
               open={openNewDialog}
               openSetter={setOpenNewDialog}
               refreshSetter={() => setRefreshPage(true)}

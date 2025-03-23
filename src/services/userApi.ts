@@ -1,4 +1,6 @@
+import { SignupRequest } from "@/types/user";
 import axiosInstance from "@/utils/axios";
+import { Profiles } from "enums/enums";
 import { ProfileType } from "unions/unions";
 
 const userEP = import.meta.env.VITE_USER_EP;
@@ -13,31 +15,59 @@ export const userApi = {
   },
 
   async signupUser(
-    firstName: string,
-    lastName: string,
-    phone: string,
-    email: string,
-    username: string,
-    pwd: string,
-    profileType: ProfileType
+    userInfo: SignupRequest
+    // firstName: string,
+    // lastName: string,
+    // phone: string,
+    // email: string,
+    // username: string,
+    // pwd: string,
+    // profileType: ProfileType
   ) {
     try {
-      const usr = {
-        firstName,
-        lastName,
-        profileType,
-        username,
-        phone,
-        email,
-        password: pwd,
-      };
-
+      //TODO: refactor
+      let usr;
+      let res;
       const signupEP = import.meta.env.VITE_SIGN_UP;
-      const res = await axiosInstance.post(signupEP, usr).catch((err) => {
-        console.log("er response ", res);
-        console.log(err);
-        throw err;
-      });
+      const workerSignupEP = import.meta.env.VITE_WORKER_EP;
+
+      if (userInfo.profileType === Profiles.Worker) {
+        usr = {
+          firstName: userInfo?.firstName,
+          lastName: userInfo?.lastName,
+          profileType: userInfo.profileType,
+          username: userInfo.username,
+          phone: userInfo.phone,
+          email: userInfo.email,
+          password: userInfo.password,
+          title: userInfo.title,
+          startDate: userInfo.startDate,
+          payRate: userInfo.payRate,
+          lessorId: userInfo.lessorId,
+          paymentMethod: userInfo.paymentMethod,
+        };
+
+        res = await axiosInstance
+          .post(`${signupEP}/${workerSignupEP}`, usr)
+          .catch((err) => {
+            console.error("error signing up worker ", err);
+            throw err;
+          });
+      } else {
+        usr = {
+          firstName: userInfo?.firstName,
+          lastName: userInfo?.lastName,
+          profileType: userInfo.profileType,
+          username: userInfo.username,
+          phone: userInfo.phone,
+          email: userInfo.email,
+          password: userInfo.password,
+        };
+        res = await axiosInstance.post(signupEP, usr).catch((err) => {
+          console.log("error signing up alessor ", err);
+          throw err;
+        });
+      }
 
       console.log("response: ", res);
 

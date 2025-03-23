@@ -10,7 +10,7 @@ export const taskApi = {
     });
 
     if (res?.data == null) {
-      throw new Error("task response was undefined");
+      throw new Error("task response was null");
     }
     const { task, success } = res.data;
 
@@ -72,7 +72,7 @@ export const taskApi = {
       });
 
     if (res?.data == null) {
-      throw new Error("update task response was undefined");
+      throw new Error("update task response was null");
     }
 
     const { task, success } = res.data;
@@ -93,7 +93,7 @@ export const taskApi = {
       });
 
     if (res?.data == null) {
-      throw new Error("task priority response was undefiend");
+      throw new Error("task priority response was null");
     }
 
     const { task, success } = res.data;
@@ -113,7 +113,7 @@ export const taskApi = {
       });
 
     if (res?.data == null) {
-      throw new Error("bulk task priority update response undefined");
+      throw new Error("bulk task priority update response null");
     }
 
     const { tasks, success } = res.data;

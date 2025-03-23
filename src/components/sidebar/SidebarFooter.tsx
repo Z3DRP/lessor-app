@@ -51,7 +51,7 @@ const SidebarFooter: React.FC = ({ ...rest }) => {
             }}
             variant="dot"
           >
-            {!!user && <Avatar alt={user.displayName} src={user.avatar} />}
+            {!!user && <Avatar alt={user.username} src={user.avatar} />}
             {!user && (
               <Avatar
                 alt="Zach Palmer"
@@ -62,7 +62,11 @@ const SidebarFooter: React.FC = ({ ...rest }) => {
         </Grid>
         <Grid>
           {!!user && (
-            <FooterText variant="body2">{user.displayName}</FooterText>
+            <FooterText variant="body2">
+              {user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
+                : user.username}
+            </FooterText>
           )}
           {/* Demo data */}
           {!user && <FooterText variant="body2">Zach Palmer</FooterText>}

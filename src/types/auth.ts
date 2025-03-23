@@ -1,5 +1,6 @@
 import firebase from "firebase/app";
 import { ProfileType } from "unions/unions";
+import { SignupRequest } from "./user";
 
 export type ActionMap<M extends { [index: string]: any }> = {
   [Key in keyof M]: M[Key] extends undefined
@@ -28,13 +29,14 @@ export type JWTContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   signUp: (
-    firstName: string,
-    lastName: string,
-    phone: string,
-    email: string,
-    username: string,
-    password: string,
-    profileType: ProfileType
+    userInfo: SignupRequest
+    // firstName: string,
+    // lastName: string,
+    // phone: string,
+    // email: string,
+    // username: string,
+    // password: string,
+    // profileType: ProfileType
   ) => Promise<void>;
   resetPassword: (email: string) => void;
 };
