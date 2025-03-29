@@ -28,7 +28,7 @@ const pagesSection = [
       },
       {
         href: "/dashboard/worker",
-        title: "Home",
+        title: "Worker Home",
         role: "worker",
       },
     ],

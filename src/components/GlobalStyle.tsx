@@ -1,5 +1,6 @@
 import React from "react";
 import { Global, css } from "@emotion/react";
+import "leaflet/dist/leaflet.css";
 
 const GlobalStyle = (props: any) => (
   <Global

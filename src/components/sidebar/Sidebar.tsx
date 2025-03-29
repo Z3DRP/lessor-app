@@ -92,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <Drawer variant="permanent" {...rest}>
-      <Brand component={NavLink as any} to="/">
+      <Brand component={NavLink as any} to="/dashboard">
         <BrandIcon />{" "}
         <Box ml={1}>
           Alessor

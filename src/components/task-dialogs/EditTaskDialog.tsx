@@ -72,6 +72,7 @@ export default function EditTaskDialog({
     propertyId: task?.propertyId || "",
     estimatedCost: task?.estimatedCost || 0.0,
     actualCost: task?.actualCost || 0.0,
+    profit: task?.profit || 0.0,
   };
 
   const schema = Yup.object().shape({
@@ -101,6 +102,7 @@ export default function EditTaskDialog({
     actualCost: Yup.number()
       .moreThan(-1, "actual cost cannot be negative")
       .optional(),
+    profit: Yup.number().moreThan(-1, "profit cannot be negative").optional(),
   });
 
   const handleSubmit = async (
@@ -119,6 +121,7 @@ export default function EditTaskDialog({
       propertyId: values.propertyId,
       estimatedCost: values.estimatedCost,
       actualCost: values.actualCost,
+      profit: values.profit,
     };
 
     try {
@@ -416,7 +419,7 @@ export default function EditTaskDialog({
                       </Grid>
                       <Grid size={{ xs: 12 }}>
                         <Grid container direction="row" spacing={2}>
-                          <Grid size={{ xs: 12, md: 6 }}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             <Field name="estimatedCost">
                               {({ field, meta }: any) => (
                                 <TextField
@@ -438,12 +441,34 @@ export default function EditTaskDialog({
                               )}
                             </Field>
                           </Grid>
-                          <Grid size={{ xs: 12, md: 6 }}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             <Field name="actualCost">
                               {({ field, meta }: any) => (
                                 <TextField
                                   {...field}
                                   label="Actual Cost"
+                                  fullWidth
+                                  error={meta.touched && Boolean(meta.error)}
+                                  helperText={meta.touched && meta.error}
+                                  variant="outlined"
+                                  my={2}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LucideDollarSign size={18} />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              )}
+                            </Field>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <Field name="profit">
+                              {({ field, meta }: any) => (
+                                <TextField
+                                  {...field}
+                                  label="Profit"
                                   fullWidth
                                   error={meta.touched && Boolean(meta.error)}
                                   helperText={meta.touched && meta.error}

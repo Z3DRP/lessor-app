@@ -321,7 +321,12 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
   return (
     <TaskWrapper mb={4}>
       <TaskWrapperContent>
-        <Grid container justifyContent="space-between" alignItems="center">
+        <Grid
+          container
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 2 }}
+        >
           <Grid>
             <TaskStatusChip status={determineTaskStatus(task)} />
           </Grid>
@@ -407,7 +412,7 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
       </TaskWrapperContent>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <TaskHiddenFooter>
-          <Typography variant="body2" sx={{ m: 2 }}>
+          <Typography variant="body2" sx={{ m: 2, p: 2 }}>
             {task.details}
           </Typography>
         </TaskHiddenFooter>

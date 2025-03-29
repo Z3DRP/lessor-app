@@ -120,6 +120,7 @@ export default function NewTaskDialog({
     propertyId: "",
     estimatedCost: 0.0,
     actualCost: 0.0,
+    profit: 0.0,
   };
 
   const schema = Yup.object().shape({
@@ -148,6 +149,7 @@ export default function NewTaskDialog({
     actualCost: Yup.number()
       .moreThan(-1, "actual cost cannot be negative")
       .optional(),
+    profit: Yup.number().moreThan(-1, "profit cannot be negative").optional(),
   });
 
   const handleSubmit = async (
@@ -168,6 +170,7 @@ export default function NewTaskDialog({
       estimatedCost: +values?.estimatedCost,
       actualCost: +values?.actualCost,
       scheduledAt: new Date().toISOString(),
+      profit: +values.profit,
     };
 
     console.log("creating task:: ", task);
@@ -488,7 +491,7 @@ export default function NewTaskDialog({
                         </Grid>
                         <Grid size={{ xs: 12 }}>
                           <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 6 }}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                               <TextField
                                 fullWidth
                                 name="estimatedCost"
@@ -514,7 +517,7 @@ export default function NewTaskDialog({
                                 }}
                               />
                             </Grid>
-                            <Grid size={{ xs: 12, md: 6 }}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                               <TextField
                                 fullWidth
                                 name="actualCost"
@@ -539,6 +542,27 @@ export default function NewTaskDialog({
                                   ),
                                 }}
                               />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 4 }}>
+                              <TextField
+                                fullWidth
+                                name="profit"
+                                label="Profit"
+                                value={values.profit}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.profit && Boolean(errors.profit)}
+                                helperText={touched.profit && errors.profit}
+                                variant="outlined"
+                                my={2}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <LucideDollarSign size={18} />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />{" "}
                             </Grid>
                           </Grid>
                         </Grid>

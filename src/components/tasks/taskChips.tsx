@@ -11,7 +11,37 @@ interface ChipProps extends SpacingProps {
 
 const Chip = styled(MuiChip)<ChipProps>(spacing);
 
-const StartedChip = styled(MuiChip)<{
+export const PrimaryChip = styled(MuiChip)<{
+  color?: string;
+  mx?: number;
+  mb?: number;
+}>`
+  height: 20px;
+  padding: 4px 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: ${({ theme }) => theme.palette.primary.main};
+  margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
+`;
+
+export const SecondaryChip = styled(MuiChip)<{
+  color?: string;
+  mx?: number;
+  mb?: number;
+}>`
+  height: 20px;
+  padding: 4px 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: ${({ theme }) => theme.palette.secondary.default};
+  margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
+`;
+
+export const StartedChip = styled(MuiChip)<{
   color?: string;
   mx?: number;
   mb?: number;
@@ -26,7 +56,11 @@ const StartedChip = styled(MuiChip)<{
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
 `;
 
-const ScheduledChip = styled(MuiChip)<{
+export function StartedStatusChip() {
+  return <StartedChip label="Started" />;
+}
+
+export const DeepPurpleChip = styled(MuiChip)<{
   color?: string;
   mx?: number;
   mb?: number;
@@ -41,7 +75,11 @@ const ScheduledChip = styled(MuiChip)<{
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
 `;
 
-const CompletedChip = styled(MuiChip)<{
+export function ScheduledStatusChip() {
+  return <DeepPurpleChip label="Scheduled" />;
+}
+
+export const GreenChip = styled(MuiChip)<{
   color?: string;
   mx?: number;
   mb?: number;
@@ -56,7 +94,11 @@ const CompletedChip = styled(MuiChip)<{
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
 `;
 
-const PausedChip = styled(MuiChip)<{
+export function CompletedStatusChip() {
+  return <GreenChip label="Completed" />;
+}
+
+export const YellowChip = styled(MuiChip)<{
   color?: string;
   mx?: number;
   mb?: number;
@@ -71,7 +113,11 @@ const PausedChip = styled(MuiChip)<{
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
 `;
 
-const FailedChip = styled(MuiChip)<{
+export function PausedStatusChip() {
+  return <YellowChip label="Paused" />;
+}
+
+export const RedChip = styled(MuiChip)<{
   color?: string;
   mx?: number;
   mb?: number;
@@ -85,6 +131,10 @@ const FailedChip = styled(MuiChip)<{
   margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
 `;
+
+export function FailedStatusChip() {
+  return <RedChip label="Failed" />;
+}
 
 export const DefaultChip = styled(MuiChip)<{ color?: string; mx?: number }>`
   height: 20px;
@@ -105,36 +155,36 @@ export type TaskStatusChipProps = {
 export function TaskStatusChip({ status }: TaskStatusChipProps) {
   switch (status) {
     case TaskStatus.Scheduled:
-      return <ScheduledChip label={TaskStatus.Scheduled} />;
+      return <DeepPurpleChip label={TaskStatus.Scheduled} />;
     case TaskStatus.Started:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <DeepPurpleChip label={TaskStatus.Scheduled} mb={2} />
           <StartedChip label={TaskStatus.Started} mb={2} />
         </Stack>
       );
     case TaskStatus.Paused:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <DeepPurpleChip label={TaskStatus.Scheduled} mb={2} />
           <StartedChip label={TaskStatus.Started} mb={2} />
-          <PausedChip label={TaskStatus.Paused} />
+          <YellowChip label={TaskStatus.Paused} />
         </Stack>
       );
     case TaskStatus.Failed:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <DeepPurpleChip label={TaskStatus.Scheduled} mb={2} />
           <StartedChip label={TaskStatus.Started} mb={2} />
-          <FailedChip label={TaskStatus.Failed} mb={2} />
+          <RedChip label={TaskStatus.Failed} mb={2} />
         </Stack>
       );
     case TaskStatus.Completed:
       return (
         <Stack direction="row" spacing={2}>
-          <ScheduledChip label={TaskStatus.Scheduled} mb={2} />
+          <DeepPurpleChip label={TaskStatus.Scheduled} mb={2} />
           <StartedChip label={TaskStatus.Started} mb={2} />
-          <CompletedChip label={TaskStatus.Completed} mb={2} />
+          <GreenChip label={TaskStatus.Completed} mb={2} />
         </Stack>
       );
     default:

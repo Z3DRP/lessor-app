@@ -35,6 +35,7 @@ import ProtectedPage from "@/pages/protected/ProtectedPage";
 import AuthCover from "@/layouts/AuthCover";
 import Properties from "./pages/pages/Properties";
 import Default from "./pages/dashboards/Default";
+import WorkerTaskDashboard from "./pages/pages/WorkerTaskDashboard";
 const Analytics = async(() => import("@/pages/dashboards/Analytics"));
 const SaaS = async(() => import("@/pages/dashboards/SaaS"));
 const Profile = async(() => import("@/pages/pages/Profile"));
@@ -66,7 +67,19 @@ const routes = [
       },
       {
         path: "analytics",
-        element: <Analytics />,
+        element: (
+          <AuthGuard>
+            <Analytics />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: "worker",
+        element: (
+          <AuthGuard>
+            <WorkerTaskDashboard />
+          </AuthGuard>
+        ),
       },
       // {
       //   path: "saas",
