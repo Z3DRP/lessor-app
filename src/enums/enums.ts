@@ -51,6 +51,16 @@ export enum PriorityLevel {
   //Immediate = "immediate",
 }
 
+export enum TaskCategory {
+  maintenance = "maintenance",
+  service = "service",
+  installation = "installation",
+  project = "project",
+  client_service = "client_service",
+  client_installation = "client_installation",
+  client_project = "client_project",
+}
+
 export const propertyStatuses = [
   "pending",
   "in-progress",

@@ -16,6 +16,7 @@ const pagesSection = [
     href: "/dashboard",
     icon: Sliders,
     title: "Dashboard",
+    role: "lessor",
     children: [
       {
         href: "/dashboard",
@@ -25,12 +26,18 @@ const pagesSection = [
         href: "/dashboard/analytics",
         title: "Analytics",
       },
+      {
+        href: "/dashboard/worker",
+        title: "Home",
+        role: "worker",
+      },
     ],
   },
   {
     href: "/admin",
     icon: Layout,
     title: "Admin",
+    role: "lessor",
     children: [
       // {
       //   href: "/admin/company",
@@ -51,12 +58,14 @@ const pagesSection = [
     icon: House,
     title: "Properties",
     badge: "8",
+    role: "lessor",
   },
   {
     href: "/tasks",
     icon: CheckSquare,
     title: "Tasks",
     //badge: "View",
+    role: "lessor",
     children: [
       // {
       //   href: "/tasks",
@@ -79,6 +88,7 @@ const pagesSection = [
     href: "/worker",
     icon: Users,
     title: "Workers",
+    role: "lessor",
   },
   // {
   //   href: "/invoices",

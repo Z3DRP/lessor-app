@@ -62,6 +62,10 @@ function WorldMap(props: ThemeProps) {
     zoomOnScroll: false,
     markers: [
       {
+        latLng: [38.91462447084986, -90.17766042981528],
+        name: "Brentwood blvd",
+      },
+      {
         latLng: [39.904202, 116.407394],
         name: "Beijing",
       },

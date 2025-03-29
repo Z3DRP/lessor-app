@@ -24,7 +24,7 @@ import { useState } from "react";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import { LinearLoading } from "../ui/Loaders";
 import * as Yup from "yup";
-import { PriorityLevel } from "enums/enums";
+import { PriorityLevel, TaskCategory } from "enums/enums";
 import { formattedAddress, Property } from "@/types/property";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -65,6 +65,7 @@ export default function EditTaskDialog({
     name: task?.name || "",
     workerId: task?.workerId || "",
     priority: task?.priority || "low",
+    category: task?.category || TaskCategory.maintenance,
     takePrecedence: task?.takePrecedence || false,
     details: task?.details || "",
     notes: task?.notes || "",
@@ -82,6 +83,10 @@ export default function EditTaskDialog({
     priority: Yup.string()
       .oneOf(Object.values(PriorityLevel))
       .required("priority level is required"),
+    category: Yup.string().oneOf(
+      Object.values(TaskCategory),
+      "invalid task category"
+    ),
     takePrecedence: Yup.boolean().optional(),
     details: Yup.string()
       .min(2, "details must be at least 2 characters")
@@ -89,7 +94,7 @@ export default function EditTaskDialog({
     notes: Yup.string()
       .min(2, "notes must be at least 2 characters")
       .optional(),
-    propertyId: Yup.string().required("property is required"),
+    propertyId: Yup.string().optional(),
     estimatedCost: Yup.number()
       .moreThan(-1, "estimated cost cannot be negative")
       .optional(),
@@ -107,6 +112,7 @@ export default function EditTaskDialog({
       name: values.name,
       workerId: values.workerId,
       priority: values.priority,
+      category: values.category,
       takePrecedence: values.takePrecedence,
       notes: values.notes,
       details: values.details,
@@ -178,7 +184,7 @@ export default function EditTaskDialog({
                     <Grid container spacing={1}>
                       <Grid size={{ xs: 12 }}>
                         <Grid container direction="row" spacing={2}>
-                          <Grid size={{ xs: 12, md: 6 }}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             <Grid
                               container
                               direction="row"
@@ -223,7 +229,7 @@ export default function EditTaskDialog({
                             </Grid>
                           </Grid>
 
-                          <Grid size={{ xs: 12, md: 6 }}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             <FormControl
                               variant="outlined"
                               sx={{ my: 2 }}
@@ -253,6 +259,38 @@ export default function EditTaskDialog({
                               )}
                             </FormControl>
                           </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <FormControl
+                              variant="outlined"
+                              sx={{ my: 2 }}
+                              fullWidth
+                            >
+                              <InputLabel id="category">Category</InputLabel>
+                              <Select
+                                name="category"
+                                fullWidth
+                                native
+                                labelId="category"
+                                label="category"
+                                value={values.category}
+                                onBlur={handleBlur}
+                                onChange={(e: any) =>
+                                  setFieldValue("category", e.target.value)
+                                }
+                              >
+                                {Object.values(TaskCategory).map((tc) => (
+                                  <option key={tc} value={tc}>
+                                    {tc}
+                                  </option>
+                                ))}
+                              </Select>
+                              {touched.category && Boolean(errors.category) && (
+                                <FormHelperText error>
+                                  {errors.category}
+                                </FormHelperText>
+                              )}
+                            </FormControl>
+                          </Grid>
                         </Grid>
                       </Grid>
 
@@ -273,7 +311,7 @@ export default function EditTaskDialog({
                       </Grid>
                       <Grid size={{ xs: 12 }}>
                         <Grid container direction="row" spacing={1}>
-                          <Grid size={{ xs: 12, md: 6 }}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             <FormControl
                               id="property"
                               variant="outlined"

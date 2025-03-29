@@ -18,7 +18,7 @@ import {
   InputAdornment,
   DialogActions,
 } from "@mui/material";
-import { PriorityLevel } from "enums/enums";
+import { PriorityLevel, TaskCategory } from "enums/enums";
 import { Form, Formik, FormikValues } from "formik";
 import * as Yup from "yup";
 import { TransitionAlert } from "../ui/CustomAlerts";
@@ -113,6 +113,7 @@ export default function NewTaskDialog({
     name: "",
     workerId: "",
     priority: priority,
+    category: TaskCategory.maintenance,
     takePrecedence: false,
     details: "",
     notes: "",
@@ -130,6 +131,9 @@ export default function NewTaskDialog({
     priority: Yup.string()
       .oneOf(Object.values(PriorityLevel))
       .required("priority level is required"),
+    category: Yup.string()
+      .oneOf(Object.values(TaskCategory), "invalid task category")
+      .optional(),
     takePrecedence: Yup.boolean().optional(),
     details: Yup.string()
       .min(2, "details must be at least 2 characters")
@@ -137,7 +141,7 @@ export default function NewTaskDialog({
     notes: Yup.string()
       .min(2, "notes must be at least 2 characters")
       .optional(),
-    propertyId: Yup.string().required("property is required"),
+    propertyId: Yup.string().optional(),
     estimatedCost: Yup.number()
       .moreThan(-1, "estimated cost cannot be negative")
       .optional(),
@@ -156,6 +160,7 @@ export default function NewTaskDialog({
       name: values.name,
       workerId: values?.workerId,
       propertyId: values?.propertyId,
+      category: values?.category,
       priority: values?.priority,
       takePrecedence: values.takePrecedence,
       details: values?.details,
@@ -235,7 +240,7 @@ export default function NewTaskDialog({
                       <Grid container spacing={1}>
                         <Grid size={{ xs: 12 }}>
                           <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 6 }}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                               <Grid
                                 container
                                 direction="row"
@@ -279,7 +284,7 @@ export default function NewTaskDialog({
                               </Grid>
                             </Grid>
 
-                            <Grid size={{ xs: 12, md: 6 }}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                               <FormControl
                                 variant="outlined"
                                 sx={{ my: 2 }}
@@ -310,6 +315,38 @@ export default function NewTaskDialog({
                                   Boolean(errors.priority) && (
                                     <FormHelperText error>
                                       {errors.priority}
+                                    </FormHelperText>
+                                  )}
+                              </FormControl>
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 4 }}>
+                              <FormControl
+                                variant="outlined"
+                                sx={{ my: 2 }}
+                                fullWidth
+                              >
+                                <InputLabel id="category">Category</InputLabel>
+                                <Select
+                                  name="category"
+                                  fullWidth
+                                  labelId="category"
+                                  native
+                                  onBlur={handleBlur}
+                                  value={values.category}
+                                  onChange={(e: any) =>
+                                    setFieldValue("category", e.target.value)
+                                  }
+                                >
+                                  {Object.values(TaskCategory).map((tc) => (
+                                    <option key={tc} value={tc}>
+                                      {tc}
+                                    </option>
+                                  ))}
+                                </Select>
+                                {touched.category &&
+                                  Boolean(errors.category) && (
+                                    <FormHelperText error>
+                                      {errors.category}
                                     </FormHelperText>
                                   )}
                               </FormControl>

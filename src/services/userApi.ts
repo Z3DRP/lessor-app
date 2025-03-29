@@ -25,7 +25,7 @@ export const userApi = {
     // profileType: ProfileType
   ) {
     try {
-      //TODO: refactor
+      // TODO: refactor
       let usr;
       let res;
       const signupEP = import.meta.env.VITE_SIGN_UP;
