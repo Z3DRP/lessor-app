@@ -9,6 +9,7 @@ export type User = {
   profileType: ProfileType;
   username: string;
   phone: string;
+  lessorId?: string;
   email: string;
   password?: string;
   avatar?: File | any;

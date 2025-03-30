@@ -3,7 +3,6 @@ import React, { createContext, ReactNode, useEffect, useReducer } from "react";
 import { JWTContextType, ActionMap, AuthState, AuthUser } from "@/types/auth";
 
 import { isValidToken, setSession } from "@/utils/jwt";
-import { ProfileType } from "unions/unions";
 import { userApi } from "services/userApi";
 import { SignupRequest } from "@/types/user";
 
@@ -136,29 +135,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: SIGN_OUT });
   };
 
-  const signUp = async (
-    userInfo: SignupRequest
-    // firstName: string,
-    // lastName: string,
-    // phone: string,
-    // email: string,
-    // username: string,
-    // password: string,
-    // profileType: ProfileType
-  ) => {
-    const response = await userApi.signupUser(
-      userInfo
-      // firstName,
-      // lastName,
-      // phone,
-
-      // email,
-      // username,
-      // password,
-      // profileType
-    );
-
-    console.log("response from signup", response);
+  const signUp = async (userInfo: SignupRequest) => {
+    const response = await userApi.signupUser(userInfo);
     const { accessToken, user } = response;
 
     setSession(accessToken);

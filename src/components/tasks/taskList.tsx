@@ -23,8 +23,8 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { determineTaskStatus, Task, taskStatusDate } from "@/types/task";
-import { useState } from "react";
-import { formattedAddress } from "@/types/property";
+import { useEffect, useState } from "react";
+import { formattedAddress, Property } from "@/types/property";
 import { EmptyUserAvatar, InitialAvatar } from "../ui/Avatars";
 import { PersonOff } from "@mui/icons-material";
 import {
@@ -39,11 +39,17 @@ import {
 } from "./taskChips";
 import { TaskStatus } from "enums/enums";
 import { ExpandMore } from "../ui/ExpandMore";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import useAuth from "@/hooks/useAuth";
 import { LinearLoading } from "../ui/Loaders";
 import EmptyCard from "../ui/EmptyCard";
+import { fetchTasks, updateTask } from "@/redux/slices/tasksSlice";
+import { TransitionAlert } from "../ui/CustomAlerts";
+import TaskStatusUpdateDialog, {
+  StatusConfirmation,
+} from "../task-dialogs/TaskStatusUpdateDialog";
+import { enqueueSnackbar, useSnackbar } from "notistack";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -75,10 +81,6 @@ const TaskWrapperContent = styled(CardContent)`
   &:last-child {
     padding-bottom: ${(props) => props.theme.spacing(4)};
   }
-`;
-
-const TaskWorkers = styled.div`
-  margin-top: ${(props) => props.theme.spacing(1)};
 `;
 
 const TaskAvatars = styled.div`
@@ -120,12 +122,6 @@ const TaskTitle = styled(Typography)`
   margin-right: ${(props) => props.theme.spacing(10)};
 `;
 
-interface TaskProps {
-  task: Task;
-  onEdit: (task: Task) => Promise<void>;
-  onDelete: (task: Task) => Promise<void>;
-}
-
 const getStatusChip = (task: Task) => {
   const tStatus = determineTaskStatus(task);
   switch (tStatus) {
@@ -142,9 +138,24 @@ const getStatusChip = (task: Task) => {
   }
 };
 
-const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
+type statuses = "start" | "pause" | "fail" | "complete";
+
+interface TaskProps {
+  task: Task;
+  onStart: (task: Task, status: statuses) => void;
+  onComplete: (task: Task, status: statuses) => void;
+  onPause: (task: Task, status: statuses) => void;
+  onFail: (task: Task, status: statuses) => void;
+}
+
+const TaskItem = ({
+  task,
+  onStart,
+  onComplete,
+  onPause,
+  onFail,
+}: TaskProps) => {
   const [expanded, setExpanded] = useState<boolean>(false);
-  const theme = useTheme();
 
   return (
     <TaskWrapper mb={4}>
@@ -164,54 +175,15 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
             </Grid>
           </Grid>
           <Grid>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              justifyItems="flex-end"
+            <ExpandMore
+              expand={expanded}
+              onClick={() => setExpanded(!expanded)}
+              color="secondary"
+              aria-expanded={expanded}
+              aria-label="show more"
             >
-              <Grid>
-                <CircleDotDashed
-                  size={18}
-                  color={theme.palette.secondary.main}
-                  onClick={() => {
-                    onEdit(task);
-                  }}
-                />
-              </Grid>
-              <Grid>
-                <CircleCheckBig
-                  size={18}
-                  onClick={() => onDelete(task)}
-                  color={theme.palette.secondary.main}
-                />
-              </Grid>
-              <Grid>
-                <CircleEqual
-                  size={18}
-                  onClick={() => onDelete(task)}
-                  color={theme.palette.secondary.main}
-                />
-              </Grid>
-              <Grid>
-                <CircleOff
-                  size={18}
-                  onClick={() => onDelete(task)}
-                  color={theme.palette.secondary.main}
-                />
-              </Grid>
-              <Grid>
-                <ExpandMore
-                  expand={expanded}
-                  onClick={() => setExpanded(!expanded)}
-                  color="secondary"
-                  aria-expanded={expanded}
-                  aria-label="show more"
-                >
-                  <Eye size={18} />
-                </ExpandMore>
-              </Grid>
-            </Grid>
+              <Eye size={18} />
+            </ExpandMore>
           </Grid>
         </Grid>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ py: 1 }}>
@@ -219,7 +191,7 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
             <strong>{task?.name}</strong>,
           </TaskTitle>
           <Typography variant="body1">{` ${formattedAddress(
-            task?.property
+            task.property!
           )}`}</Typography>
         </Stack>
 
@@ -254,15 +226,32 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
           </Typography>
         </TaskHiddenFooter>
       </Collapse>
-      <Stack direction="row" spacing={2} sx={{ ml: 3, mb: 2 }}>
-        <Button startIcon={<CircleDotDashed />}>Start</Button>
-        <Button color="success" startIcon={<CircleCheckBig />}>
+      <Stack direction="row" spacing={2} sx={{ ml: 3, mb: 3 }}>
+        <Button
+          onClick={() => onStart(task, "start")}
+          startIcon={<CircleDotDashed />}
+        >
+          Start
+        </Button>
+        <Button
+          onClick={() => onComplete(task, "complete")}
+          color="success"
+          startIcon={<CircleCheckBig />}
+        >
           Complete
         </Button>
-        <Button color="warning" startIcon={<CircleEqual />}>
+        <Button
+          onClick={() => onPause(task, "pause")}
+          color="warning"
+          startIcon={<CircleEqual />}
+        >
           Pause
         </Button>
-        <Button color="error" startIcon={<CircleOff />}>
+        <Button
+          onClick={() => onFail(task, "fail")}
+          color="error"
+          startIcon={<CircleOff />}
+        >
           Fail
         </Button>
       </Stack>
@@ -270,34 +259,145 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
   );
 };
 
-export default function TaskList() {
+export type TaskListProps = {
+  location: Property | null;
+};
+
+export default function TaskList({ location }: TaskListProps) {
   const { user } = useAuth();
   const { tasks, status } = useSelector((state: RootState) => state.task);
-  const handleDelete = async () => console.log("delete");
-  const handleEdit = async () => console.log("edit");
+  const [error, setError] = useState<string | null>(null);
+  const [openStartDialog, setOpenStartDialog] = useState<boolean>(false);
+  const [openCompleteDialog, setOpenCompleteDialog] = useState<boolean>(false);
+  const [openPauseDialog, setOpenPauseDialog] = useState<boolean>(false);
+  const [openFailDialog, setOpenFailDialog] = useState<boolean>(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const setTask = (task: Task) => setSelectedTask(task);
+
+  const handleStatusChange = (task: Task, status: statuses) => {
+    setTask(task);
+    switch (status) {
+      case "start":
+        setOpenStartDialog(true);
+        break;
+      case "complete":
+        setOpenCompleteDialog(true);
+        break;
+      case "pause":
+        setOpenPauseDialog(true);
+        break;
+      case "fail":
+        setOpenFailDialog(true);
+        break;
+    }
+  };
+
+  const handleUpdateTaskStatus =
+    (status: TaskStatus) => async (confirmation: StatusConfirmation) => {
+      try {
+        const res = await dispatch(
+          updateTask({ data: confirmation?.task })
+        ).unwrap();
+        if (res) {
+          enqueueSnackbar(`task moved to ${status}`, { variant: "success" });
+          return;
+        }
+      } catch (err: any) {
+        setError(err?.error || err?.message || "something went wrong");
+      }
+    };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (status === "idle") {
+        try {
+          const result = await dispatch(
+            fetchTasks({ alsrId: user?.uid, page: 1, limit: 20 })
+          ).unwrap();
+          console.log(result);
+        } catch (err: any) {
+          setError(err?.error || err?.message);
+        }
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   return status === "loading" ? (
     <LinearLoading />
   ) : (
-    <Card>
-      <CardHeader title="Tasks" />
-      <CardContent>
-        {tasks.length > 0 ? (
-          tasks.map((t) => (
-            <TaskItem
-              key={t.tid}
-              task={t}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-            />
-          ))
-        ) : (
-          <EmptyCard
-            title="No Tasks"
-            body="this location does not have any tasks"
+    <>
+      <Card>
+        <CardHeader
+          title={
+            location != null ? formattedAddress(location) : "Service Tasks"
+          }
+        />
+        <CardContent>
+          <TransitionAlert
+            variant="error"
+            message={error ?? ""}
+            isOpen={error != null}
+            closeHandler={() => setError(null)}
           />
-        )}
-      </CardContent>
-    </Card>
+          {!error && tasks.length > 0 ? (
+            tasks.map((t) => (
+              <TaskItem
+                key={t.tid}
+                task={t}
+                onStart={handleStatusChange}
+                onComplete={handleStatusChange}
+                onPause={handleStatusChange}
+                onFail={handleStatusChange}
+              />
+            ))
+          ) : (
+            <EmptyCard
+              title="No Tasks"
+              body="this location does not have any tasks"
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <TaskStatusUpdateDialog
+        status="start"
+        task={selectedTask}
+        open={openStartDialog}
+        openSetter={setOpenStartDialog}
+        onConfirm={handleUpdateTaskStatus(TaskStatus.Started)}
+      />
+
+      <TaskStatusUpdateDialog
+        status="complete"
+        task={selectedTask}
+        open={openCompleteDialog}
+        openSetter={setOpenCompleteDialog}
+        onConfirm={handleUpdateTaskStatus(TaskStatus.Completed)}
+      />
+
+      <TaskStatusUpdateDialog
+        status="pause"
+        task={selectedTask}
+        open={openPauseDialog}
+        openSetter={setOpenPauseDialog}
+        onConfirm={handleUpdateTaskStatus(TaskStatus.Paused)}
+      />
+
+      <TaskStatusUpdateDialog
+        status="fail"
+        task={selectedTask}
+        open={openFailDialog}
+        openSetter={setOpenFailDialog}
+        onConfirm={handleUpdateTaskStatus(TaskStatus.Failed)}
+      />
+    </>
   );
 }

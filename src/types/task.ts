@@ -1,6 +1,7 @@
 import { isDefaultDate } from "@/utils/shared";
 import { PriorityLevel, TaskStatus } from "enums/enums";
 import { TaskCategory } from "unions/unions";
+import { Client } from "./client";
 import { Property } from "./property";
 import { MaintenanceWorker } from "./worker";
 
@@ -17,7 +18,9 @@ export type Task = {
   details: string;
   notes: string;
   propertyId?: string;
-  property: Property;
+  property?: Property;
+  clientId?: string;
+  client?: Client;
   scheduledAt: string;
   startedAt?: string;
   completedAt?: string;

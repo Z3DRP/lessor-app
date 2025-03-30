@@ -1,3 +1,4 @@
+import { Task } from "@/types/task";
 import {
   Button,
   Dialog,
@@ -14,12 +15,13 @@ import { TransitionAlert } from "../ui/CustomAlerts";
 type statuses = "start" | "pause" | "fail" | "complete";
 
 export type StatusConfirmation = {
-  confirmed: boolean;
+  task: Task;
   reason?: string | null;
 };
 
 export type TaskStatusUpdateDialogProps = {
   status: statuses;
+  task: Task | null;
   open: boolean;
   openSetter: (value: boolean) => void;
   onConfirm: (confirmation: StatusConfirmation) => Promise<void>;
@@ -60,6 +62,7 @@ const isFailStatus = (status: statuses) => status === "fail";
 export default function TaskStatusUpdateDialog({
   status,
   open,
+  task,
   openSetter,
   onConfirm,
 }: TaskStatusUpdateDialogProps) {
@@ -79,8 +82,13 @@ export default function TaskStatusUpdateDialog({
       return;
     }
 
+    if (task == null) {
+      setError("task is null verify task and start over");
+      return;
+    }
+
     const confirmation: StatusConfirmation = {
-      confirmed: true,
+      task: task,
       reason: isFailStatus(status)
         ? failedReason
         : isPauseStatus(status)
