@@ -17,12 +17,14 @@ import LineChart from "./LineChart";
 import DoughnutChart from "./DoughnutChart";
 import Stats from "./Stats";
 import Table from "./Table";
+import useAuth from "@/hooks/useAuth";
 
 const Divider = styled(MuiDivider)(spacing);
 
 const Typography = styled(MuiTypography)(spacing);
 
 function Default() {
+  const { user } = useAuth();
   const { t } = useTranslation();
 
   return (
@@ -34,7 +36,7 @@ function Default() {
             Default Dashboard
           </Typography>
           <Typography variant="subtitle1">
-            {t("Welcome back")}, Lucy! {t("We've missed you")}.{" "}
+            {t("Welcome back")}, {user?.firstName} {t("We've missed you")}.{" "}
             <span role="img" aria-label="Waving Hand Sign">
               👋
             </span>

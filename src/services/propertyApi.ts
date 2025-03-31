@@ -16,7 +16,7 @@ export const propertyApi = {
   async getProperties(alsrId: string, page: number) {
     const res = await axiosInstance
       .get(`${tempPropertiesEP}/${alsrId}`, {
-        params: { page },
+        params: { page, limit: 20 },
       })
       .catch((err) => {
         console.log("eror fetching properties: ", err);

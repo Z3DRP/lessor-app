@@ -1,5 +1,4 @@
 import {
-  Avatar,
   AvatarGroup as MuiAvatarGroup,
   Card as MuiCard,
   Button,
@@ -11,7 +10,7 @@ import {
   Typography as MuiTypography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import { spacing, Stack, useTheme } from "@mui/system";
+import { spacing, Stack } from "@mui/system";
 import {
   CalendarDays,
   CircleCheckBig,
@@ -19,23 +18,21 @@ import {
   CircleEqual,
   CircleOff,
   Eye,
-  Pencil,
-  TrashIcon,
+  TriangleAlert,
 } from "lucide-react";
 import { determineTaskStatus, Task, taskStatusDate } from "@/types/task";
 import { useEffect, useState } from "react";
 import { formattedAddress, Property } from "@/types/property";
-import { EmptyUserAvatar, InitialAvatar } from "../ui/Avatars";
-import { PersonOff } from "@mui/icons-material";
+import { InitialAvatar } from "../ui/Avatars";
 import {
   CompletedStatusChip,
   FailedStatusChip,
   PausedStatusChip,
   PrimaryChip,
+  PriorityChip,
   ScheduledStatusChip,
   SecondaryChip,
   StartedStatusChip,
-  YellowChip,
 } from "./taskChips";
 import { TaskStatus } from "enums/enums";
 import { ExpandMore } from "../ui/ExpandMore";
@@ -49,7 +46,7 @@ import { TransitionAlert } from "../ui/CustomAlerts";
 import TaskStatusUpdateDialog, {
   StatusConfirmation,
 } from "../task-dialogs/TaskStatusUpdateDialog";
-import { enqueueSnackbar, useSnackbar } from "notistack";
+import { useSnackbar } from "notistack";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -77,7 +74,6 @@ const TaskWrapper = styled(Card)`
 
 const TaskWrapperContent = styled(CardContent)`
   position: relative;
-
   &:last-child {
     padding-bottom: ${(props) => props.theme.spacing(4)};
   }
@@ -85,6 +81,12 @@ const TaskWrapperContent = styled(CardContent)`
 
 const TaskAvatars = styled.div`
   margin-top: ${(props) => props.theme.spacing(1)};
+`;
+
+const TaskPriority = styled.div`
+  margin-left: ${(props) => props.theme.spacing(1)};
+  margin-top: ${(props) => props.theme.spacing(1)};
+  margin-bottom: ${(props) => props.theme.spacing(1)};
 `;
 
 const TaskStatusDateIcon = styled(CalendarDays)`
@@ -168,6 +170,9 @@ const TaskItem = ({
         >
           <Grid>
             <Grid container spacing={1}>
+              <Grid>
+                <PrimaryChip label={task?.priority} />
+              </Grid>
               <Grid>{getStatusChip(task)}</Grid>
               <Grid>
                 <SecondaryChip label={task?.category || "Maintenance"} />
@@ -260,12 +265,11 @@ const TaskItem = ({
 };
 
 export type TaskListProps = {
+  tasks: Task[];
   location: Property | null;
 };
 
-export default function TaskList({ location }: TaskListProps) {
-  const { user } = useAuth();
-  const { tasks, status } = useSelector((state: RootState) => state.task);
+export default function TaskList({ tasks, location }: TaskListProps) {
   const [error, setError] = useState<string | null>(null);
   const [openStartDialog, setOpenStartDialog] = useState<boolean>(false);
   const [openCompleteDialog, setOpenCompleteDialog] = useState<boolean>(false);
@@ -310,29 +314,7 @@ export default function TaskList({ location }: TaskListProps) {
       }
     };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (status === "idle") {
-        try {
-          const result = await dispatch(
-            fetchTasks({ alsrId: user?.uid, page: 1, limit: 20 })
-          ).unwrap();
-          console.log(result);
-        } catch (err: any) {
-          setError(err?.error || err?.message);
-        }
-      }
-    };
-
-    if (user) {
-      fetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  return status === "loading" ? (
-    <LinearLoading />
-  ) : (
+  return (
     <>
       <Card>
         <CardHeader

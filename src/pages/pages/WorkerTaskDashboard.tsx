@@ -6,20 +6,21 @@ import { Helmet } from "react-helmet-async";
 import {
   Link,
   Breadcrumbs as MuiBreadcrumbs,
-  Card as MuiCard,
   Divider as MuiDivider,
   Typography,
 } from "@mui/material";
 import { Container, spacing } from "@mui/system";
 import TaskHub from "@/components/task-hub/TaskHub";
-
-const Card = styled(MuiCard)(spacing);
+import useAuth from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const Divider = styled(MuiDivider)(spacing);
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
 function WorkerTaskDashboard() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
   return (
     <React.Fragment>
       <Helmet title="Worker Home">
@@ -38,6 +39,12 @@ function WorkerTaskDashboard() {
         </Link>
         <Typography>Task Dashboard</Typography>
       </Breadcrumbs>
+      <Typography variant="subtitle1">
+        {t("Welcome back")}, {user?.firstName} {t("We've missed you")}.{" "}
+        <span role="img" aria-label="Waving Hand Sign">
+          👋
+        </span>
+      </Typography>
       <Divider my={6} />
       <Container>
         <TaskHub />

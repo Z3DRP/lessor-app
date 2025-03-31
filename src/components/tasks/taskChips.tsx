@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
-import { Chip as MuiChip } from "@mui/material";
+import { Avatar, Chip as MuiChip } from "@mui/material";
 import { spacing, SpacingProps, Stack } from "@mui/system";
 import { TaskStatus } from "enums/enums";
 import { green, yellow, red, deepPurple } from "@mui/material/colors";
+import { TriangleAlert } from "lucide-react";
 
 interface ChipProps extends SpacingProps {
   component?: React.ElementType;
@@ -147,6 +148,23 @@ export const DefaultChip = styled(MuiChip)<{ color?: string; mx?: number }>`
   margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
 `;
+
+export type PriorityChipProps = {
+  priority: string;
+  handleClick?: () => void;
+};
+
+export function PriorityChip({ priority, handleClick }: PriorityChipProps) {
+  return (
+    <Chip
+      avatar={<Avatar>{<TriangleAlert />}</Avatar>}
+      label={priority}
+      color="primary"
+      {...(handleClick ? { onClick: handleClick } : {})}
+      variant="outlined"
+    />
+  );
+}
 
 export type TaskStatusChipProps = {
   status: TaskStatus;

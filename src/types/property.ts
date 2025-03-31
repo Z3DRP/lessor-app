@@ -6,6 +6,8 @@ export type Address = {
   state: string;
   country: string;
   zipcode: string;
+  lat: number;
+  lng: number;
 };
 
 export const NewAddress = (
@@ -13,7 +15,9 @@ export const NewAddress = (
   cty: string,
   sta: string,
   cntry: string,
-  zip: string
+  zip: string,
+  lat: number,
+  lng: number
 ): Address => {
   return {
     street: str,
@@ -21,6 +25,8 @@ export const NewAddress = (
     state: sta,
     country: cntry,
     zipcode: zip,
+    lat: lat,
+    lng: lng,
   };
 };
 
