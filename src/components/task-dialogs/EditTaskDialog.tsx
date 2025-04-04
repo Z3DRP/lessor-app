@@ -26,8 +26,6 @@ import { LinearLoading } from "../ui/Loaders";
 import * as Yup from "yup";
 import { PriorityLevel, TaskCategory } from "enums/enums";
 import { formattedAddress, Property } from "@/types/property";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 import { LucideDollarSign } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import InfoPopover from "../ui/InfoPopover";

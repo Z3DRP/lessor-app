@@ -1,26 +1,18 @@
 import { SidebarItemsType } from "@/types/sidebar";
 
-import {
-  User,
-  Calendar,
-  CheckSquare,
-  CreditCard,
-  Layout,
-  House,
-  Sliders,
-  Users,
-} from "lucide-react";
+import { CheckSquare, Layout, House, Sliders, Users } from "lucide-react";
 
 const pagesSection = [
   {
     href: "/dashboard",
     icon: Sliders,
     title: "Dashboard",
-    role: "lessor",
+    role: "alessor",
     children: [
       {
         href: "/dashboard",
         title: "Home",
+        role: "alessor",
       },
       {
         href: "/dashboard/analytics",
@@ -37,7 +29,7 @@ const pagesSection = [
     href: "/admin",
     icon: Layout,
     title: "Admin",
-    role: "lessor",
+    role: "alessor",
     children: [
       // {
       //   href: "/admin/company",
@@ -58,14 +50,14 @@ const pagesSection = [
     icon: House,
     title: "Properties",
     badge: "8",
-    role: "lessor",
+    role: "alessor",
   },
   {
     href: "/tasks",
     icon: CheckSquare,
     title: "Tasks",
     //badge: "View",
-    role: "lessor",
+    role: "alessor",
     children: [
       // {
       //   href: "/tasks",
@@ -88,7 +80,7 @@ const pagesSection = [
     href: "/worker",
     icon: Users,
     title: "Workers",
-    role: "lessor",
+    role: "alessor",
   },
   // {
   //   href: "/invoices",

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { Link as RouterLink } from "react-router-dom";
 import * as Yup from "yup";
+import { SignupRequest } from "@/types/user";
 import { Formik } from "formik";
 
 import {
@@ -67,15 +68,16 @@ function SignUp() {
       onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
         console.log("signing up");
         try {
-          signUp(
-            values.firstName,
-            values.lastName,
-            values.phone,
-            values.email,
-            values.username,
-            values.password,
-            "alessor"
-          );
+          const request: SignupRequest = {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+            phone: values.phone,
+            username: values.username,
+            password: values.password,
+            profileType: "alessor",
+          };
+          signUp(request);
           navigate("/");
         } catch (error: any) {
           const message = error.message || "Something went wrong";

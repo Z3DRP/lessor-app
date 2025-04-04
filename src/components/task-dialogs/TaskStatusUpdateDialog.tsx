@@ -118,7 +118,6 @@ export default function TaskStatusUpdateDialog({
               onClick={(e: any) => setPausedReason(e.target.value)}
             />
           )}
-
           {status === "fail" && (
             <TextField
               label="Failed Reason"

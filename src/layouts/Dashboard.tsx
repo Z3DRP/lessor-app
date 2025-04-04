@@ -7,6 +7,7 @@ import {
   CssBaseline,
   Paper as MuiPaper,
   Container as MuiContainer,
+  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -18,6 +19,7 @@ import dashboardItems from "@/components/sidebar/dashboardItems";
 import Sidebar from "@/components/sidebar/Sidebar";
 import Footer from "@/components/Footer";
 import Settings from "@/components/Settings";
+import useAuth from "@/hooks/useAuth";
 
 const drawerWidth = 258;
 
@@ -65,6 +67,7 @@ interface DashboardType {
 
 const Dashboard: React.FC<DashboardType> = ({ children }) => {
   const router = useLocation();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {

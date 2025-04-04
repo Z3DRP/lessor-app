@@ -2,7 +2,14 @@ import styled from "@emotion/styled";
 import { Avatar, Chip as MuiChip } from "@mui/material";
 import { spacing, SpacingProps, Stack } from "@mui/system";
 import { TaskStatus } from "enums/enums";
-import { green, yellow, red, deepPurple } from "@mui/material/colors";
+import {
+  green,
+  yellow,
+  red,
+  deepPurple,
+  brown,
+  blueGrey,
+} from "@mui/material/colors";
 import { TriangleAlert } from "lucide-react";
 
 interface ChipProps extends SpacingProps {
@@ -42,6 +49,36 @@ export const SecondaryChip = styled(MuiChip)<{
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
 `;
 
+export const BrownChip = styled(MuiChip)<{
+  color?: string;
+  mx?: number;
+  mb?: number;
+}>`
+  height: 20px;
+  padding: 4px 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: ${brown[500]};
+  margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
+`;
+
+export const BlueGreyChip = styled(MuiChip)<{
+  color?: string;
+  mx?: number;
+  mb?: number;
+}>`
+  height: 20px;
+  padding: 4px 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: ${blueGrey[500]};
+  margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
+  margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
+`;
+
 export const StartedChip = styled(MuiChip)<{
   color?: string;
   mx?: number;
@@ -51,7 +88,7 @@ export const StartedChip = styled(MuiChip)<{
   padding: 4px 0;
   font-size: 0.8rem;
   font-weight: bold;
-  background-color: ${({ theme }) => theme.palette.secondary.main};
+  background-color: ${({ theme }) => theme.palette.secondary.default};
   margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};
@@ -108,7 +145,7 @@ export const YellowChip = styled(MuiChip)<{
   padding: 4px 0;
   font-size: 0.8rem;
   font-weight: bold;
-  background-color: ${yellow[500]};
+  background-color: ${brown[500]};
   margin-left: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-right: ${({ mx }) => (mx !== undefined ? `${mx}px` : "0px")};
   margin-bottom: ${({ mb }) => (mb !== undefined ? "${mb}px" : "0px")};

@@ -114,7 +114,11 @@ export default function TaskHub() {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               {filteredTasks && (
-                <TaskList tasks={filteredTasks} location={selectedLocation} />
+                <TaskList
+                  userId={user?.uid}
+                  tasks={filteredTasks}
+                  location={selectedLocation}
+                />
               )}
             </Grid>
           </Grid>

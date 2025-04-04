@@ -18,30 +18,27 @@ import {
   CircleEqual,
   CircleOff,
   Eye,
-  TriangleAlert,
 } from "lucide-react";
 import { determineTaskStatus, Task, taskStatusDate } from "@/types/task";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { formattedAddress, Property } from "@/types/property";
 import { InitialAvatar } from "../ui/Avatars";
 import {
+  BlueGreyChip,
   CompletedStatusChip,
   FailedStatusChip,
   PausedStatusChip,
   PrimaryChip,
-  PriorityChip,
   ScheduledStatusChip,
   SecondaryChip,
   StartedStatusChip,
 } from "./taskChips";
 import { TaskStatus } from "enums/enums";
 import { ExpandMore } from "../ui/ExpandMore";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/redux/store";
-import useAuth from "@/hooks/useAuth";
-import { LinearLoading } from "../ui/Loaders";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
 import EmptyCard from "../ui/EmptyCard";
-import { fetchTasks, updateTask } from "@/redux/slices/tasksSlice";
+import { updateTask } from "@/redux/slices/tasksSlice";
 import { TransitionAlert } from "../ui/CustomAlerts";
 import TaskStatusUpdateDialog, {
   StatusConfirmation,
@@ -81,12 +78,6 @@ const TaskWrapperContent = styled(CardContent)`
 
 const TaskAvatars = styled.div`
   margin-top: ${(props) => props.theme.spacing(1)};
-`;
-
-const TaskPriority = styled.div`
-  margin-left: ${(props) => props.theme.spacing(1)};
-  margin-top: ${(props) => props.theme.spacing(1)};
-  margin-bottom: ${(props) => props.theme.spacing(1)};
 `;
 
 const TaskStatusDateIcon = styled(CalendarDays)`
@@ -175,7 +166,7 @@ const TaskItem = ({
               </Grid>
               <Grid>{getStatusChip(task)}</Grid>
               <Grid>
-                <SecondaryChip label={task?.category || "Maintenance"} />
+                <BlueGreyChip label={task?.category || "Maintenance"} />
               </Grid>
             </Grid>
           </Grid>
@@ -265,11 +256,12 @@ const TaskItem = ({
 };
 
 export type TaskListProps = {
+  userId: string;
   tasks: Task[];
   location: Property | null;
 };
 
-export default function TaskList({ tasks, location }: TaskListProps) {
+export default function TaskList({ userId, tasks, location }: TaskListProps) {
   const [error, setError] = useState<string | null>(null);
   const [openStartDialog, setOpenStartDialog] = useState<boolean>(false);
   const [openCompleteDialog, setOpenCompleteDialog] = useState<boolean>(false);
@@ -302,9 +294,26 @@ export default function TaskList({ tasks, location }: TaskListProps) {
   const handleUpdateTaskStatus =
     (status: TaskStatus) => async (confirmation: StatusConfirmation) => {
       try {
-        const res = await dispatch(
-          updateTask({ data: confirmation?.task })
-        ).unwrap();
+        const task = {
+          workerId: userId,
+          ...(status === TaskStatus.Paused || status === TaskStatus.Failed
+            ? { reason: confirmation?.reason }
+            : {}),
+          ...confirmation.task,
+          ...(status === TaskStatus.Started
+            ? { startedAt: new Date().toISOString() }
+            : {}),
+          ...(status === TaskStatus.Completed
+            ? { completedAt: new Date().toISOString() }
+            : {}),
+          ...(status === TaskStatus.Failed
+            ? { failedAt: new Date().toISOString() }
+            : {}),
+          ...(status === TaskStatus.Paused
+            ? { pausedAt: new Date().toISOString() }
+            : {}),
+        };
+        const res = await dispatch(updateTask({ data: task })).unwrap();
         if (res) {
           enqueueSnackbar(`task moved to ${status}`, { variant: "success" });
           return;
