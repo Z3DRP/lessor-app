@@ -45,7 +45,7 @@ const Chip = styled(MuiChip)`
   height: 20px;
   padding: 4px 0;
   font-size: 85%;
-  background-color: ${(props) => props.theme.palette.secondary.main};
+  background-color: ${(props) => props.theme.palette.secondary.default};
   color: ${(props) => props.theme.palette.common.white};
   margin-bottom: ${(props) => props.theme.spacing(4)};
 

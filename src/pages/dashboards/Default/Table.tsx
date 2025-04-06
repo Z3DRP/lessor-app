@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { MoreVertical } from "lucide-react";
 
@@ -15,6 +15,26 @@ import {
   TableRow,
 } from "@mui/material";
 import { spacing } from "@mui/system";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import {
+  determineTaskStatus,
+  displayDate,
+  formattedDate,
+  Task,
+} from "@/types/task";
+import { LinearLoading } from "@/components/ui/Loaders";
+import { fetchTasks } from "@/redux/slices/tasksSlice";
+import useAuth from "@/hooks/useAuth";
+import { TaskStatus } from "enums/enums";
+import {
+  CompletedStatusChip,
+  FailedStatusChip,
+  PausedStatusChip,
+  ScheduledStatusChip,
+  StartedStatusChip,
+} from "@/components/tasks/taskChips";
+import { TransitionAlert } from "@/components/ui/CustomAlerts";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -92,45 +112,104 @@ const rows = [
   ),
 ];
 
-const DashboardTable = () => (
-  <Card mb={6}>
-    <CardHeader
-      action={
-        <IconButton aria-label="settings" size="large">
-          <MoreVertical />
-        </IconButton>
+const getStatusChip = (task: Task) => {
+  const tStatus = determineTaskStatus(task);
+  switch (tStatus) {
+    case TaskStatus.Started:
+      return <StartedStatusChip />;
+    case TaskStatus.Completed:
+      return <CompletedStatusChip />;
+    case TaskStatus.Paused:
+      return <PausedStatusChip />;
+    case TaskStatus.Failed:
+      return <FailedStatusChip />;
+    default:
+      return <ScheduledStatusChip />;
+  }
+};
+
+const DashboardTable = () => {
+  const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const { tasks, status }: { tasks: Task[]; status: any } = useSelector(
+    (state: RootState) => state.task
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (status === "idle") {
+          console.log("status is ", status);
+          await dispatch(
+            fetchTasks({ alsrId: user?.uid, page: 1, limit: 6 })
+          ).unwrap();
+        }
+      } catch (err: any) {
+        console.error("ERR ", err);
       }
-      title="Latest projects"
-    />
-    <Paper>
-      <TableWrapper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Start Date</TableCell>
-              <TableCell>End Date</TableCell>
-              <TableCell>State</TableCell>
-              <TableCell>Assignee</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell component="th" scope="row">
-                  {row.name}
-                </TableCell>
-                <TableCell>{row.start}</TableCell>
-                <TableCell>{row.end}</TableCell>
-                <TableCell>{row.state}</TableCell>
-                <TableCell>{row.assignee}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableWrapper>
-    </Paper>
-  </Card>
-);
+    };
+
+    if (user) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
+
+  return (
+    <Card mb={6}>
+      <CardHeader
+        action={
+          <IconButton aria-label="settings" size="large">
+            <MoreVertical />
+          </IconButton>
+        }
+        title="Latest Tasks"
+      />
+      <Paper>
+        {status === "loading" ? (
+          <LinearLoading />
+        ) : (
+          <TableWrapper>
+            <TransitionAlert
+              variant="error"
+              message={error ?? ""}
+              isOpen={error != null}
+              closeHandler={() => setError(null)}
+            />
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Start Date</TableCell>
+                  <TableCell>End Date</TableCell>
+                  <TableCell>State</TableCell>
+                  <TableCell>Assignee</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tasks.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell component="th" scope="row">
+                      {row.name}
+                    </TableCell>
+                    <TableCell>{displayDate(row.startedAt)}</TableCell>
+                    <TableCell>{displayDate(row.completedAt)}</TableCell>
+                    <TableCell>{getStatusChip(row)}</TableCell>
+                    <TableCell>
+                      {row?.worker != null
+                        ? `${row.worker?.user?.firstName} ${row.worker?.user?.lastName}`
+                        : "--"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableWrapper>
+        )}
+      </Paper>
+    </Card>
+  );
+};
 
 export default DashboardTable;

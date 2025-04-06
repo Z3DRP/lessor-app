@@ -7,6 +7,7 @@ import {
   FilterList as FilterListIcon,
 } from "@mui/icons-material";
 import { spacing } from "@mui/system";
+import { useTheme } from "@emotion/react";
 
 const Button = styled(MuiButton)(spacing);
 
@@ -41,12 +42,16 @@ function Actions() {
       </SmallButton>
       <Button
         variant="contained"
-        color="secondary"
+        color="primary"
         aria-owns={anchorEl ? "simple-menu" : undefined}
         aria-haspopup="true"
         onClick={handleClick}
       >
-        Today: April 29
+        Today:{" "}
+        {new Date().toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "long",
+        })}
       </Button>
       <Menu
         id="simple-menu"

@@ -63,7 +63,7 @@ function LineChart({ theme }: ThemeProps) {
         ],
       },
       {
-        label: "Orders",
+        label: "Rent",
         fill: true,
         backgroundColor: "transparent",
         borderColor: theme.palette.grey[500],
@@ -106,7 +106,7 @@ function LineChart({ theme }: ThemeProps) {
             <MoreVertical />
           </IconButton>
         }
-        title="Total revenue"
+        title="Total Revenue"
       />
       <CardContent>
         <ChartWrapper>

@@ -47,7 +47,7 @@ export const workerApi = {
   },
 
   async createWorker(data: Partial<MaintenanceWorker>) {
-    const res = await axiosInstance.put(workerEp, data).catch((err) => {
+    const res = await axiosInstance.post(workerEp, data).catch((err) => {
       console.error("error creating worker ", err);
       throw err;
     });

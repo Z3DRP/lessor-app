@@ -434,11 +434,14 @@ export default function NewTaskDialog({
                                   }}
                                   variant="outlined"
                                 >
-                                  {workers.map((w) => (
-                                    <option key={w.uid} value={w.uid}>
-                                      {`${w?.user?.firstName} ${w?.user?.lastName}`}
-                                    </option>
-                                  ))}
+                                  {workers.map((w) => {
+                                    console.log("worker ", w);
+                                    return (
+                                      <option key={w.uid} value={w.uid}>
+                                        {`${w?.user?.firstName} ${w?.user?.lastName}`}
+                                      </option>
+                                    );
+                                  })}
                                 </Select>
                                 {touched.workerId &&
                                   Boolean(errors.workerId) && (

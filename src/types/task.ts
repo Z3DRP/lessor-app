@@ -66,22 +66,26 @@ export const taskStatusDate = (task: Task) => {
   return formattedDate(task?.scheduledAt);
 };
 
-export const displayDate = (dateArg: number) =>
-  new Date(dateArg).toLocaleString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    hour12: true,
-    minute: "2-digit",
-  });
+export const displayDate = (dateArg: string | null | undefined) =>
+  !isDefaultDate(dateArg) && dateArg != null
+    ? new Date(dateArg).toLocaleString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        hour12: true,
+        minute: "2-digit",
+      })
+    : "--";
 
-export const formattedDate = (dateArg: string) =>
-  new Date(dateArg).toLocaleString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    hour12: true,
-    minute: "2-digit",
-  });
+export const formattedDate = (dateArg: string | null | undefined) =>
+  dateArg != null
+    ? new Date(dateArg).toLocaleString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        hour12: true,
+        minute: "2-digit",
+      })
+    : "--";

@@ -7,7 +7,6 @@ import {
   CssBaseline,
   Paper as MuiPaper,
   Container as MuiContainer,
-  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -68,6 +67,7 @@ interface DashboardType {
 const Dashboard: React.FC<DashboardType> = ({ children }) => {
   const router = useLocation();
   const { user } = useAuth();
+  const [sideItems, setSideItems] = useState<any>();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -77,7 +77,35 @@ const Dashboard: React.FC<DashboardType> = ({ children }) => {
   // Close mobile menu when navigation occurs
   useEffect(() => {
     setMobileOpen(false);
-  }, [router.pathname]);
+    const sbItems = dashboardItems
+      .filter((item) => item.pages.filter((pg) => pg.role === user?.role))
+      .map((item) => ({
+        ...item,
+        pages: item.pages.map((pg) => ({
+          ...pg,
+          children:
+            pg.children?.filter((child) => child.role === user?.profileType) ??
+            [],
+        })),
+      }));
+    console.log("items ", dashboardItems);
+    console.log(
+      "items ",
+      dashboardItems
+        .filter((item) => item.pages.filter((pg) => pg.role === user?.role))
+        .map((item) => ({
+          ...item,
+          pages: item.pages.map((pg) => ({
+            ...pg,
+            children:
+              pg.children?.filter(
+                (child) => child.role === user?.profileType
+              ) ?? [],
+          })),
+        }))
+    );
+    setSideItems(sbItems);
+  }, [user, router.pathname]);
 
   const theme = useTheme();
   const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
@@ -93,13 +121,13 @@ const Dashboard: React.FC<DashboardType> = ({ children }) => {
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
-            items={dashboardItems}
+            items={sideItems}
           />
         </Box>
         <Box sx={{ display: { xs: "none", md: "block" } }}>
           <Sidebar
             PaperProps={{ style: { width: drawerWidth } }}
-            items={dashboardItems}
+            items={sideItems}
           />
         </Box>
       </Drawer>

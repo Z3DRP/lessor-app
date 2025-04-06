@@ -43,7 +43,7 @@ const BarChart = ({ theme }: ThemeProps) => {
     ],
     datasets: [
       {
-        label: "Mobile",
+        label: "Sales",
         backgroundColor: firstDatasetColor,
         borderColor: firstDatasetColor,
         hoverBackgroundColor: firstDatasetColor,
@@ -53,7 +53,7 @@ const BarChart = ({ theme }: ThemeProps) => {
         categoryPercentage: 0.5,
       },
       {
-        label: "Desktop",
+        label: "Rent",
         backgroundColor: secondDatasetColor,
         borderColor: secondDatasetColor,
         hoverBackgroundColor: secondDatasetColor,
@@ -101,7 +101,7 @@ const BarChart = ({ theme }: ThemeProps) => {
             <MoreVertical />
           </IconButton>
         }
-        title="Mobile / Desktop"
+        title="Rent / Sales"
       />
 
       <CardContent>

@@ -14,7 +14,6 @@ import {
 import { spacing } from "@mui/system";
 
 import useAuth from "@/hooks/useAuth";
-import { Profiles } from "enums/enums";
 import { SignupRequest } from "@/types/user";
 
 const Alert = styled(MuiAlert)(spacing);
@@ -99,6 +98,12 @@ function SignUpWorker() {
       })}
       onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
         console.log("signing up");
+        const dateTokens = values.startDate.split("/");
+        const startDate = new Date(
+          +dateTokens[2],
+          +dateTokens[0],
+          +dateTokens[1]
+        );
         try {
           const request: SignupRequest = {
             firstName: values.firstName,
@@ -109,6 +114,8 @@ function SignUpWorker() {
             password: values.password,
             profileType: "worker",
             lessorId: "acf09642-3bb3-4ee9-9b19-d5d63012caa2", //frnakDaTank
+            title: values.title,
+            startDate: startDate.toISOString(),
             payRate: 35.47,
             paymentMethod: "cash",
           };

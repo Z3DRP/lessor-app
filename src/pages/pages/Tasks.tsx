@@ -373,7 +373,7 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
             <strong>{task?.name}</strong>,
           </TaskTitle>
           <Typography variant="body1">{` ${formattedAddress(
-            task?.property
+            task.property
           )}`}</Typography>
         </Stack>
 

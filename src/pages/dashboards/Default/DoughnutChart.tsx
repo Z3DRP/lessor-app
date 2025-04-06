@@ -59,7 +59,7 @@ const RedText = styled.span`
 
 const DoughnutChart = ({ theme }: ThemeProps) => {
   const data = {
-    labels: ["Social", "Search Engines", "Direct", "Other"],
+    labels: ["Rent", "Property Sales", "Services", "Other"],
     datasets: [
       {
         data: [260, 125, 54, 146],
@@ -93,7 +93,7 @@ const DoughnutChart = ({ theme }: ThemeProps) => {
             <MoreVertical />
           </IconButton>
         }
-        title="Weekly sales"
+        title="Current Outlook"
       />
 
       <CardContent>
@@ -115,7 +115,7 @@ const DoughnutChart = ({ theme }: ThemeProps) => {
           <TableBody>
             <TableRow>
               <TableCell component="th" scope="row">
-                Social
+                Rent
               </TableCell>
               <TableCell align="right">260</TableCell>
               <TableCell align="right">
@@ -124,7 +124,7 @@ const DoughnutChart = ({ theme }: ThemeProps) => {
             </TableRow>
             <TableRow>
               <TableCell component="th" scope="row">
-                Search Engines
+                Sales
               </TableCell>
               <TableCell align="right">125</TableCell>
               <TableCell align="right">
@@ -133,7 +133,7 @@ const DoughnutChart = ({ theme }: ThemeProps) => {
             </TableRow>
             <TableRow>
               <TableCell component="th" scope="row">
-                Direct
+                Services
               </TableCell>
               <TableCell align="right">54</TableCell>
               <TableCell align="right">

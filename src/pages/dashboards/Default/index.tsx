@@ -33,7 +33,7 @@ function Default() {
       <Grid justifyContent="space-between" container spacing={6}>
         <Grid>
           <Typography variant="h3" gutterBottom>
-            Default Dashboard
+            Dashboard
           </Typography>
           <Typography variant="subtitle1">
             {t("Welcome back")}, {user?.firstName} {t("We've missed you")}.{" "}
@@ -59,7 +59,7 @@ function Default() {
           }}
         >
           <Stats
-            title="Sales Today"
+            title="Profit "
             amount="2.532"
             chip="Today"
             percentagetext="+26%"
@@ -76,7 +76,7 @@ function Default() {
           }}
         >
           <Stats
-            title="Visitors"
+            title="Maintenance Fees"
             amount="170.212"
             chip="Annual"
             percentagetext="-14%"
@@ -110,7 +110,7 @@ function Default() {
           }}
         >
           <Stats
-            title="Pending Orders"
+            title="Pending Rental Payments"
             amount="45"
             chip="Yearly"
             percentagetext="-9%"

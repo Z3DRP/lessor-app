@@ -1,9 +1,11 @@
 import { CommunicationPreference } from "enums/enums";
 import { PaymentSchedule } from "./paymentSchedule";
+import { User } from "./user";
 
 export interface Alessor {
   id?: number;
   uid?: number;
+  User?: User;
   bid?: string;
   totalProperties?: number;
   squareAccount?: string;

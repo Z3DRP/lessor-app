@@ -121,6 +121,7 @@ export const NewSaleProperty = (
   };
 };
 
-export const formattedAddress = (property: Property) => {
-  return `${property?.address?.street}, ${property?.address?.city}, ${property?.address?.state}`;
-};
+export const formattedAddress = (property: Property | undefined | null) =>
+  property == null
+    ? ""
+    : `${property?.address?.street}, ${property?.address?.city}, ${property?.address?.state}`;

@@ -17,10 +17,11 @@ const pagesSection = [
       {
         href: "/dashboard/analytics",
         title: "Analytics",
+        role: "alessor",
       },
       {
         href: "/dashboard/worker",
-        title: "Worker Home",
+        title: "Home",
         role: "worker",
       },
     ],
@@ -31,17 +32,15 @@ const pagesSection = [
     title: "Admin",
     role: "alessor",
     children: [
-      // {
-      //   href: "/admin/company",
-      //   title: "Company",
-      // },
       {
         href: "/admin/lease",
         title: "Leases",
+        role: "alessor",
       },
       {
         href: "/admin/settings",
         title: "Settings",
+        role: "alessor",
       },
     ],
   },
