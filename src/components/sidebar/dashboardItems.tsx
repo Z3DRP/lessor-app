@@ -7,7 +7,7 @@ const pagesSection = [
     href: "/dashboard",
     icon: Sliders,
     title: "Dashboard",
-    role: "alessor",
+    role: "all",
     children: [
       {
         href: "/dashboard",
@@ -21,8 +21,8 @@ const pagesSection = [
       },
       {
         href: "/dashboard/worker",
-        title: "Home",
-        role: "worker",
+        title: "Home Remove all from role",
+        role: "all",
       },
     ],
   },
@@ -30,7 +30,7 @@ const pagesSection = [
     href: "/admin",
     icon: Layout,
     title: "Admin",
-    role: "alessor",
+    role: "all",
     children: [
       {
         href: "/admin/lease",
@@ -67,6 +67,7 @@ const pagesSection = [
         href: "/tasks/view",
         title: "View",
         badge: "3",
+        role: "alessor",
       },
     ],
   },

@@ -78,32 +78,40 @@ const Dashboard: React.FC<DashboardType> = ({ children }) => {
   useEffect(() => {
     setMobileOpen(false);
     const sbItems = dashboardItems
-      .filter((item) => item.pages.filter((pg) => pg.role === user?.role))
-      .map((item) => ({
-        ...item,
-        pages: item.pages.map((pg) => ({
-          ...pg,
-          children:
-            pg.children?.filter((child) => child.role === user?.profileType) ??
-            [],
-        })),
-      }));
-    console.log("items ", dashboardItems);
-    console.log(
-      "items ",
-      dashboardItems
-        .filter((item) => item.pages.filter((pg) => pg.role === user?.role))
-        .map((item) => ({
+      .map((item) => {
+        const filteredPages = item.pages
+          .map((pg) => {
+            // If the page itself is allowed
+            const pageVisible =
+              pg.role === user?.profileType || pg.role === "all" || !pg.role;
+
+            // Filter children if they exist
+            const filteredChildren = (pg.children ?? []).filter(
+              (child) =>
+                child.role === user?.profileType ||
+                child.role === "all" ||
+                !child.role
+            );
+
+            // Return the page only if it or any children are visible
+            if (pageVisible || filteredChildren.length > 0) {
+              return {
+                ...pg,
+                children:
+                  filteredChildren.length > 0 ? filteredChildren : undefined,
+              };
+            }
+
+            return null; // Exclude page if neither it nor its children are visible
+          })
+          .filter(Boolean); // remove nulls
+
+        return {
           ...item,
-          pages: item.pages.map((pg) => ({
-            ...pg,
-            children:
-              pg.children?.filter(
-                (child) => child.role === user?.profileType
-              ) ?? [],
-          })),
-        }))
-    );
+          pages: filteredPages,
+        };
+      })
+      .filter((item) => item.pages.length > 0);
     setSideItems(sbItems);
   }, [user, router.pathname]);
 

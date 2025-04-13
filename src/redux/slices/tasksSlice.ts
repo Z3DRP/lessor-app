@@ -70,7 +70,7 @@ export const updateTask = createAsyncThunk(
   }
 );
 
-export const updateTaskPriorities = createAsyncThunk(
+export const updateTasksPriorities = createAsyncThunk(
   "tasks/update/priorities",
   async ({ data }: { data: Partial<Task>[] | Task[] }, { rejectWithValue }) => {
     try {
@@ -80,7 +80,22 @@ export const updateTaskPriorities = createAsyncThunk(
     } catch (err: any) {
       console.log("error updating task priorities: ", err);
       return rejectWithValue({
-        message: err?.message || err.error || err || "unknown error",
+        message: err?.message || err?.error || err || "unknown error",
+      });
+    }
+  }
+);
+
+export const updateTaskPriority = createAsyncThunk(
+  "tasks/update/priority",
+  async ({ data }: { data: Partial<Task> | Task }, { rejectWithValue }) => {
+    try {
+      const tsk = await taskApi.updatePriority(data);
+      return tsk;
+    } catch (err: any) {
+      console.log("error updating task priority: ", err);
+      return rejectWithValue({
+        message: err?.message || err?.error || err || "unknown error",
       });
     }
   }
@@ -130,6 +145,9 @@ export const taskSlice = createSlice({
       .addCase(createTask.rejected, (state, action) => {
         (state.status = "failed"), (state.error = action.payload as string);
       })
+      .addCase(updateTask.pending, (state) => {
+        state.status = "loading";
+      })
       .addCase(updateTask.fulfilled, (state, action) => {
         state.status = "idle";
         const index = state.tasks.findIndex(
@@ -140,11 +158,8 @@ export const taskSlice = createSlice({
           state.tasks[index] = action.payload;
         }
       })
-      .addCase(updateTask.pending, (state) => {
-        state.status = "loading";
-      })
       .addCase(updateTask.rejected, (state, action) => {
-        state.error = action.payload as string;
+        (state.status = "failed"), (state.error = action.payload as string);
       })
       .addCase(deleteTask.pending, (state) => {
         state.status = "loading";
@@ -155,17 +170,32 @@ export const taskSlice = createSlice({
       .addCase(deleteTask.rejected, (state, action) => {
         (state.status = "failed"), (state.error = action.payload as string);
       })
-      .addCase(updateTaskPriorities.pending, (state) => {
+      .addCase(updateTasksPriorities.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(updateTaskPriorities.rejected, (state, action) => {
-        state.error = action.payload as string;
-      })
-      .addCase(updateTaskPriorities.fulfilled, (state, action) => {
-        const indx = state.tasks.findIndex((t) => t.id === action.payload.tid);
+      // TODO: updateTaskPriorities will have to be updated this will not work it will only update one
+      .addCase(updateTasksPriorities.fulfilled, (state, action) => {
+        state.status = "idle";
+        const indx = state.tasks.findIndex((t) => t.tid === action.payload.tid);
         if (indx !== -1) {
           state.tasks[indx] = action.payload;
         }
+      })
+      .addCase(updateTasksPriorities.rejected, (state, action) => {
+        (state.status = "failed"), (state.error = action.payload as string);
+      })
+      .addCase(updateTaskPriority.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateTaskPriority.fulfilled, (state, action) => {
+        state.status = "idle";
+        const indx = state.tasks.findIndex((t) => t.tid === action.payload.tid);
+        if (indx !== -1) {
+          state.tasks[indx] = action.payload;
+        }
+      })
+      .addCase(updateTaskPriority.rejected, (state, action) => {
+        (state.status = "failed"), (state.error = action.payload as string);
       });
   },
 });

@@ -30,7 +30,6 @@ import {
   PausedStatusChip,
   PrimaryChip,
   ScheduledStatusChip,
-  SecondaryChip,
   StartedStatusChip,
 } from "./taskChips";
 import { TaskStatus } from "enums/enums";
@@ -44,6 +43,9 @@ import TaskStatusUpdateDialog, {
   StatusConfirmation,
 } from "../task-dialogs/TaskStatusUpdateDialog";
 import { useSnackbar } from "notistack";
+import { Icon } from "@iconify/react";
+import { useTheme } from "@emotion/react";
+import { ButtonSpan } from "../styled/StyledCmp";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -149,6 +151,7 @@ const TaskItem = ({
   onFail,
 }: TaskProps) => {
   const [expanded, setExpanded] = useState<boolean>(false);
+  const theme = useTheme();
 
   return (
     <TaskWrapper mb={4}>
@@ -178,7 +181,11 @@ const TaskItem = ({
               aria-expanded={expanded}
               aria-label="show more"
             >
-              <Eye size={18} />
+              <Icon
+                color={theme.palette.secondary.main}
+                icon="ic:twotone-remove-red-eye"
+                fontSize={26}
+              />
             </ExpandMore>
           </Grid>
         </Grid>
@@ -223,32 +230,27 @@ const TaskItem = ({
         </TaskHiddenFooter>
       </Collapse>
       <Stack direction="row" spacing={2} sx={{ ml: 3, mb: 3 }}>
-        <Button
-          onClick={() => onStart(task, "start")}
-          startIcon={<CircleDotDashed />}
-        >
-          Start
+        <Button onClick={() => onStart(task, "start")}>
+          <Icon
+            icon="material-symbols:line-start-circle-outline-rounded"
+            fontSize={28}
+          />
+          <ButtonSpan>Start</ButtonSpan>
         </Button>
-        <Button
-          onClick={() => onComplete(task, "complete")}
-          color="success"
-          startIcon={<CircleCheckBig />}
-        >
-          Complete
+        <Button onClick={() => onComplete(task, "complete")} color="success">
+          <Icon icon="ic:baseline-check-circle-outline" fontSize={28} />
+          <ButtonSpan>Complete</ButtonSpan>
         </Button>
-        <Button
-          onClick={() => onPause(task, "pause")}
-          color="warning"
-          startIcon={<CircleEqual />}
-        >
-          Pause
+        <Button onClick={() => onPause(task, "pause")} color="warning">
+          <Icon
+            icon="material-symbols:pause-circle-outline-rounded"
+            fontSize={28}
+          />
+          <ButtonSpan>Pause</ButtonSpan>
         </Button>
-        <Button
-          onClick={() => onFail(task, "fail")}
-          color="error"
-          startIcon={<CircleOff />}
-        >
-          Fail
+        <Button onClick={() => onFail(task, "fail")} color="error">
+          <Icon icon="ic:round-nearby-error" fontSize={28} />
+          <ButtonSpan>Fail</ButtonSpan>
         </Button>
       </Stack>
     </TaskWrapper>

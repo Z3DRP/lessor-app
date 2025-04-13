@@ -2,7 +2,6 @@ import React, { useState, useEffect, ReactNode } from "react";
 import styled from "@emotion/styled";
 import { NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { DollarSignIcon, Eye, Pencil, TrashIcon } from "lucide-react";
 import {
   DragDropContext,
   Draggable,
@@ -12,7 +11,6 @@ import {
 import { faker } from "@faker-js/faker";
 
 import {
-  Avatar,
   AvatarGroup as MuiAvatarGroup,
   Breadcrumbs as MuiBreadcrumbs,
   Button,
@@ -23,6 +21,7 @@ import {
   Link,
   Typography as MuiTypography,
   Collapse,
+  IconButton,
 } from "@mui/material";
 import { spacing, Stack, useTheme } from "@mui/system";
 import { Add as AddIcon, PersonOff } from "@mui/icons-material";
@@ -36,7 +35,7 @@ import {
   deleteTask,
   fetchTasks,
   updateTask,
-  updateTaskPriorities,
+  updateTaskPriority,
 } from "@/redux/slices/tasksSlice";
 import useAuth from "@/hooks/useAuth";
 import { LinearLoading } from "@/components/ui/Loaders";
@@ -53,6 +52,8 @@ import { ExpandMore } from "@/components/ui/ExpandMore";
 import { formattedAddress } from "@/types/property";
 import { fetchWorkers } from "@/redux/slices/workerSlice";
 import { fetchProperties } from "@/redux/slices/propertiesSlice";
+import { Icon, iconExists } from "@iconify/react";
+import { ButtonSpan } from "@/components/styled/StyledCmp";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -96,7 +97,7 @@ const TaskAvatars = styled.div`
   margin-top: ${(props) => props.theme.spacing(1)};
 `;
 
-const TaskAmountIcon = styled(DollarSignIcon)`
+const TaskAmountIcon = styled(Icon)`
   color: ${(props) => props.theme.palette.grey[500]};
   vertical-align: middle;
 `;
@@ -205,8 +206,8 @@ const onDragEnd = (
   result: DropResult,
   columns: any,
   setColumns: any,
-  updateItems: (
-    tasks: Task[] | Partial<Task>[],
+  updateItem: (
+    task: Task | Partial<Task>,
     priorityLevel: PriorityLevel
   ) => Promise<void>
 ) => {
@@ -232,7 +233,7 @@ const onDragEnd = (
       },
     });
 
-    updateItems(removed, destColumn?.level);
+    updateItem(removed, destColumn?.level);
   } else {
     const column = columns[source.droppableId];
     const copiedItems = [...column.items];
@@ -294,13 +295,15 @@ const Lane = ({ column, children, onAddTask }: LaneProps) => {
             color="primary"
             variant="contained"
             fullWidth
+            startIcon={
+              <Icon icon="ic:baseline-add-circle-outline" fontSize={22} />
+            }
             onClick={() => {
               console.log(column.level);
               onAddTask(column.level);
             }}
           >
-            <AddIcon />
-            Add new task
+            New Task
           </Button>
         </CardContent>
       </Card>
@@ -339,30 +342,40 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
               justifyItems="flex-end"
             >
               <Grid>
-                <Pencil
-                  size={18}
-                  color={theme.palette.secondary.main}
+                <IconButton
+                  size="small"
                   onClick={() => {
                     onEdit(task);
                   }}
-                />
+                >
+                  <Icon
+                    color={theme.palette.secondary.main}
+                    icon="ic:round-edit"
+                    fontSize={26}
+                  />
+                </IconButton>
               </Grid>
               <Grid>
-                <TrashIcon
-                  size={18}
-                  onClick={() => onDelete(task)}
-                  color={theme.palette.secondary.main}
-                />
+                <IconButton size="small" onClick={() => onDelete(task)}>
+                  <Icon
+                    icon="ic:baseline-delete-forever"
+                    color={theme.palette.secondary.main}
+                    fontSize={26}
+                  />
+                </IconButton>
               </Grid>
               <Grid>
                 <ExpandMore
                   expand={expanded}
                   onClick={() => setExpanded(!expanded)}
-                  color="secondary"
                   aria-expanded={expanded}
                   aria-label="show more"
                 >
-                  <Eye size={18} />
+                  <Icon
+                    color={theme.palette.secondary.main}
+                    icon="ic:twotone-remove-red-eye"
+                    fontSize={26}
+                  />
                 </ExpandMore>
               </Grid>
             </Grid>
@@ -388,22 +401,21 @@ const TaskItem = ({ task, onEdit, onDelete }: TaskProps) => {
         <TaskAvatars>
           <AvatarGroup max={4}>
             {task?.worker ? (
-              <>
-                <InitialAvatar
-                  firstName={task?.worker?.user?.firstName || null}
-                  lastName={task?.worker?.user?.lastName || null}
-                />
-                <Avatar src={`/static/img/avatars/avatar-1.jpg`} />
-              </>
+              <InitialAvatar
+                firstName={task?.worker?.user?.firstName || null}
+                lastName={task?.worker?.user?.lastName || null}
+              />
             ) : (
-              <EmptyUserAvatar icon={<PersonOff fontSize="large" />} />
+              <EmptyUserAvatar
+                icon={<Icon icon="ic:baseline-person-off" fontSize={28} />}
+              />
             )}
           </AvatarGroup>
         </TaskAvatars>
 
         {!!task.estimatedCost && task.estimatedCost >= 0 && (
           <TaskNotifications>
-            <TaskAmountIcon size={22} />
+            <TaskAmountIcon icon="ic:round-attach-money" fontSize={22} />
             <TaskNotificationsAmount>
               {task?.actualCost ? task?.actualCost : task?.estimatedCost}
             </TaskNotificationsAmount>
@@ -556,14 +568,6 @@ function Tasks() {
   const handleSave = async (task: Partial<Task>): Promise<RequestDto> => {
     try {
       const result = await dispatch(createTask({ data: task })).unwrap();
-      setColumns((prev) => ({
-        ...prev,
-        [task.priority!.toString()]: {
-          ...prev[task.priority!.toString()],
-          items: [...prev[task!.priority!].items, result],
-        },
-      }));
-
       return { success: true, msg: null, data: result };
     } catch (err: any) {
       return {
@@ -612,16 +616,19 @@ function Tasks() {
   };
 
   const handleChangePriorities = async (
-    updatedTasks: Task[] | Partial<Task>[],
+    task: Task | Partial<Task>,
     newPriority: PriorityLevel
   ) => {
-    updatedTasks.forEach(
-      (t: Task | Partial<Task>) => (t.priority = newPriority)
-    );
     try {
+      console.log("task being updated ", task);
+      const updatedTask = {
+        ...task,
+        priority: newPriority,
+      };
+      console.log("new generated task ", updatedTask);
       const result = await dispatch(
-        updateTaskPriorities({ data: updatedTasks })
-      );
+        updateTaskPriority({ data: updatedTask })
+      ).unwrap();
 
       if (result) {
         enqueueSnackbar("task priorities updated", { variant: "success" });

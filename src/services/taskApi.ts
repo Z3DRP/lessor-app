@@ -86,7 +86,7 @@ export const taskApi = {
 
   async updatePriority(taskData: Partial<Task> | Task) {
     const res = await axiosInstance
-      .put(`${taskEP}/${taskData.id}/priority`, taskData)
+      .put(`${taskEP}/${taskData?.tid}/priority`, taskData)
       .catch((err) => {
         console.error("error updating priority: ", err);
         throw err;

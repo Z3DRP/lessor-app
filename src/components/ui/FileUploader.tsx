@@ -4,6 +4,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Box } from "@mui/material";
+import { Icon } from "@iconify/react";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -139,7 +140,7 @@ export default function InputFileUploader({
         variant="contained"
         onClick={open}
         tabIndex={-1}
-        startIcon={<CloudUploadIcon />}
+        startIcon={<Icon icon="ic:baseline-cloud-upload" />}
         sx={{
           position: "absolute",
           bottom: 16,

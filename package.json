@@ -102,6 +102,7 @@
     "@babel/plugin-transform-react-jsx-self": "7.24.7",
     "@babel/plugin-transform-react-jsx-source": "7.24.7",
     "@babel/preset-env": "7.25.4",
+    "@iconify/react": "^5.2.1",
     "@types/dragula": "3.7.5",
     "@types/faker": "6.6.9",
     "@types/google-map-react": "2.1.10",

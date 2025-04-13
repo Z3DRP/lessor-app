@@ -31,8 +31,8 @@ import { countryData } from "../../data/countryData";
 import { LinearLoading } from "../ui/Loaders";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
-import { Percent } from "@mui/icons-material";
 import { LucideDollarSign, LucidePercent } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -549,7 +549,10 @@ export function EditPropertyDialog({
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
-                                    <LucidePercent size={18} />
+                                    <Icon
+                                      icon="ic:round-percent"
+                                      fontSize={22}
+                                    />
                                   </InputAdornment>
                                 ),
                               }}
@@ -574,7 +577,10 @@ export function EditPropertyDialog({
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <LucideDollarSign size={18} />
+                                    <Icon
+                                      icon="ic:round-attach-money"
+                                      fontSize={22}
+                                    />
                                   </InputAdornment>
                                 ),
                               }}

@@ -37,6 +37,7 @@ import { Task } from "@/types/task";
 import { RequestDto } from "@/types/requestResult";
 import InfoPopover from "../ui/InfoPopover";
 import { enqueueSnackbar } from "notistack";
+import { Icon } from "@iconify/react";
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
 interface ButtonProps extends SpacingProps {
@@ -514,7 +515,10 @@ export default function NewTaskDialog({
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <LucideDollarSign size={16} />
+                                      <Icon
+                                        icon="ic:round-attach-money"
+                                        fontSize={22}
+                                      />
                                     </InputAdornment>
                                   ),
                                 }}
@@ -540,7 +544,10 @@ export default function NewTaskDialog({
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <LucideDollarSign size={18} />
+                                      <Icon
+                                        icon="ic:round-attach-money"
+                                        fontSize={22}
+                                      />
                                     </InputAdornment>
                                   ),
                                 }}
@@ -561,7 +568,10 @@ export default function NewTaskDialog({
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <LucideDollarSign size={18} />
+                                      <Icon
+                                        icon="ic:round-attach-money"
+                                        fontSize={22}
+                                      />
                                     </InputAdornment>
                                   ),
                                 }}

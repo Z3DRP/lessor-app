@@ -75,15 +75,8 @@ export default function DeleteTaskDialog({
                 <strong>{task.name}</strong>
               </Typography>
             </Grid>
-            <Grid size={{ xs: 12, md: 8 }}>
-              <Typography color="textPrimary" gutterBottom>
-                {task.details}
-              </Typography>
-            </Grid>
           </Grid>
-          <Typography>
-            This data will be lostk, Do you wish to continue?
-          </Typography>
+          <Typography>This data will be lost permenantly</Typography>
         </DialogContentText>
         <TransitionAlert
           isOpen={error != null}

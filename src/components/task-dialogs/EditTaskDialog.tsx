@@ -26,10 +26,10 @@ import { LinearLoading } from "../ui/Loaders";
 import * as Yup from "yup";
 import { PriorityLevel, TaskCategory } from "enums/enums";
 import { formattedAddress, Property } from "@/types/property";
-import { LucideDollarSign } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import InfoPopover from "../ui/InfoPopover";
 import { MaintenanceWorker } from "@/types/worker";
+import { Icon } from "@iconify/react";
 
 const Card = styled(MuiCard)(spacing);
 const Box = styled(MuiBox)(spacing);
@@ -431,7 +431,10 @@ export default function EditTaskDialog({
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
-                                        <LucideDollarSign size={18} />
+                                        <Icon
+                                          icon="ic:round-attach-money"
+                                          fontSize={22}
+                                        />
                                       </InputAdornment>
                                     ),
                                   }}
@@ -453,7 +456,10 @@ export default function EditTaskDialog({
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
-                                        <LucideDollarSign size={18} />
+                                        <Icon
+                                          icon="ic:round-attach-money"
+                                          fontSize={22}
+                                        />
                                       </InputAdornment>
                                     ),
                                   }}
@@ -475,7 +481,10 @@ export default function EditTaskDialog({
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
-                                        <LucideDollarSign size={18} />
+                                        <Icon
+                                          icon="ic:round-attach-money"
+                                          fontSize={22}
+                                        />
                                       </InputAdornment>
                                     ),
                                   }}

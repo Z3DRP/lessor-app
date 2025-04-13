@@ -144,6 +144,7 @@ const routes = [
     element: <DashboardLayout />,
     children: [
       {
+        // this defaults to /tasks but not being used
         path: "",
         element: (
           <AuthGuard>

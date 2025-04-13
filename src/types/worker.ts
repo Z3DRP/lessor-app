@@ -7,8 +7,8 @@ export interface MaintenanceWorker {
   uid?: string;
   alessor: Alessor;
   user?: User;
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: string;
+  endDate?: string;
   title?: string;
   specilization?: string;
   payRate?: number;

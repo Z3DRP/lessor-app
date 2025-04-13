@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -36,6 +36,13 @@ import {
 import { spacing } from "@mui/system";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { enqueueSnackbar } from "notistack";
+import useAuth from "@/hooks/useAuth";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchWorkers } from "@/redux/slices/workerSlice";
+import { MaintenanceWorker } from "@/types/worker";
+import { formatDate, isDefaultDate } from "@/utils/shared";
+import { displayDate } from "@/types/task";
 
 const Divider = styled(MuiDivider)(spacing);
 
@@ -83,72 +90,75 @@ const RatingIcon = styled(StarIcon)`
 function createData(
   id: string,
   name: string,
-  variant: string,
-  price: string,
-  stock: number,
-  category: string,
-  rating: string,
-  reviews: number,
+  startDate: string,
+  endDate: string,
+  jobTitle: string,
+  payRate: number,
+  paymentMethod: string,
   image: string
 ) {
-  return { id, name, variant, price, stock, category, rating, reviews, image };
+  return {
+    id,
+    name,
+    startDate,
+    endDate,
+    jobTitle,
+    payRate,
+    paymentMethod,
+    image,
+  };
 }
 
 type RowType = {
   [key: string]: string | number;
   id: string;
   name: string;
-  variant: string;
-  price: string;
-  stock: number;
-  category: string;
-  rating: string;
-  reviews: number;
+  startDate: string;
+  endDate: string;
+  jobTitle: string;
+  payRate: number;
+  paymentMethod: string;
   image: string;
 };
 const rows: Array<RowType> = [
   createData(
     "1",
     "Apple iPad Pro",
-    "Silver",
     "$ 1,399.00",
-    48,
+    "48",
     "Tablets",
-    "4.6",
-    55,
+    4.6,
+    "55",
     "/static/img/products/product-9.png"
   ),
   createData(
     "2",
     "Apple iPad Pro",
-    "Space Gray",
     "$ 1,399.00",
-    48,
+    "48",
     "Tablets",
-    "4.3",
-    25,
+    4.3,
+    "25",
     "/static/img/products/product-8.png"
   ),
   createData(
     "3",
     "Apple iPhone 15 Pro Max",
-    "Blue Titanium",
     "$ 1499.00",
-    38,
+    "38",
     "Smartphones",
-    "4.6",
-    40,
+    4.6,
+    "40",
     "/static/img/products/product-4.png"
   ),
   createData(
     "4",
     "Apple iPhone 15 Pro Max",
-    "Natural Titanium",
     "$ 1499.00",
-    30,
+    "30",
     "Smartphones",
-    "4.8",
-    50,
+    3.3,
+    "50",
     "/static/img/products/product-3.png"
   ),
   createData(
@@ -156,10 +166,9 @@ const rows: Array<RowType> = [
     "Apple iPhone 15 Pro Max",
     "White Titanium",
     "$ 1499.00",
-    45,
+    "45",
+    3.0,
     "Smartphones",
-    "4.9",
-    60,
     "/static/img/products/product-5.png"
   ),
   createData(
@@ -167,21 +176,19 @@ const rows: Array<RowType> = [
     'Apple MacBook Pro 16"',
     "Silver",
     "$ 2,399.00",
-    55,
-    "Notebooks",
-    "4.7",
-    45,
+    "55",
+    5.4,
+    "45",
     "/static/img/products/product-7.png"
   ),
   createData(
     "7",
     'Apple MacBook Pro 16"',
-    "Space Black",
     "$ 2,399.00",
-    50,
+    "50",
     "Notebooks",
-    "4.4",
-    30,
+    4.4,
+    "30",
     "/static/img/products/product-6.png"
   ),
   createData(
@@ -189,21 +196,19 @@ const rows: Array<RowType> = [
     "Apple Watch SE",
     "Midnight",
     "$ 299.00",
-    49,
-    "Smartwatches",
-    "4.7",
-    40,
+    "49",
+    43.43,
+    "40",
     "/static/img/products/product-11.png"
   ),
   createData(
     "9",
     "Apple Watch SE",
-    "Silver",
     "$ 299.00",
-    30,
+    "30",
     "Smartwatches",
-    "4.7",
-    40,
+    4.3,
+    "40",
     "/static/img/products/product-12.png"
   ),
   createData(
@@ -211,10 +216,9 @@ const rows: Array<RowType> = [
     "Apple Watch SE",
     "Starlight",
     "$ 299.00",
-    54,
-    "Smartwatches",
-    "4.5",
-    35,
+    "54",
+    4.3,
+    "35",
     "/static/img/products/product-10.png"
   ),
   createData(
@@ -222,24 +226,37 @@ const rows: Array<RowType> = [
     "Apple Watch Series 9",
     "Midnight",
     "$ 349.00",
-    42,
     "Smartwatches",
-    "4.2",
-    20,
+    54.3,
+    "20",
     "/static/img/products/product-1.png"
   ),
   createData(
     "12",
     "Apple Watch Series 9",
-    "Starlight",
     "$ 349.00",
-    54,
+    "54",
     "Smartwatches",
-    "4.5",
-    35,
+    5.4,
+    "35",
     "/static/img/products/product-2.png"
   ),
 ];
+
+function createRows(workerList: MaintenanceWorker[]) {
+  return workerList.map((worker) =>
+    createData(
+      worker?.uid ?? "[invalid-uid]",
+      `${worker?.user?.firstName} ${worker?.user?.lastName}`,
+      formatDate(worker?.startDate),
+      formatDate(worker?.endDate),
+      worker?.title ?? "--",
+      worker?.payRate ?? 0,
+      worker?.paymentMethod ?? "--",
+      worker?.user?.avatar ?? "/static/img/avatars/default.png"
+    )
+  );
+}
 
 function descendingComparator(a: RowType, b: RowType, orderBy: string) {
   if (b[orderBy] < a[orderBy]) {
@@ -281,10 +298,10 @@ type HeadCell = {
 };
 const headCells: Array<HeadCell> = [
   { id: "name", alignment: "left", label: "Name" },
-  { id: "price", alignment: "right", label: "Hourly Rate" },
-  { id: "stock", alignment: "right", label: "Start Date" },
-  { id: "category", alignment: "left", label: "End Date" },
-  { id: "rating", alignment: "left", label: "Job Title" },
+  { id: "hourlyRate", alignment: "right", label: "Hourly Rate" },
+  { id: "startDate", alignment: "right", label: "Start Date" },
+  { id: "endDate", alignment: "left", label: "End Date" },
+  { id: "jobTitle", alignment: "left", label: "Job Title" },
   { id: "actions", alignment: "right", label: "Actions" },
 ];
 
@@ -379,11 +396,31 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 };
 
 function EnhancedTable() {
-  const [order, setOrder] = React.useState<"desc" | "asc">("asc");
-  const [orderBy, setOrderBy] = React.useState("customer");
-  const [selected, setSelected] = React.useState<Array<string>>([]);
-  const [page, setPage] = React.useState(0);
+  const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const { workers, status } = useSelector((state: RootState) => state.worker);
+  const [order, setOrder] = useState<"desc" | "asc">("asc");
+  const [orderBy, setOrderBy] = useState("customer");
+  const [selected, setSelected] = useState<Array<string>>([]);
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(6);
+  const [emptyRows, setEmptyRows] = useState(
+    rowsPerPage - Math.min(rowsPerPage, workers.length - page * rowsPerPage)
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await dispatch(
+        fetchWorkers({ alsrId: user?.uid, page: 1, limit: 6 })
+      ).unwrap();
+    };
+
+    if (user) {
+      fetchData();
+      createRows(workers);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleRequestSort = (event: any, property: string) => {
     const isAsc = orderBy === property && order === "asc";
@@ -439,8 +476,7 @@ function EnhancedTable() {
 
   const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
-  const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+  // const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
   return (
     <div>

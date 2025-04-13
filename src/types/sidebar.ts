@@ -4,5 +4,5 @@ export type SidebarItemsType = {
   icon?: React.FC<any>;
   children?: SidebarItemsType[];
   badge?: string;
-  role?: "alessor" | "worker" | "tenant";
+  role?: "alessor" | "worker" | "tenant" | "all";
 };

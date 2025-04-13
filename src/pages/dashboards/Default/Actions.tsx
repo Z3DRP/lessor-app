@@ -2,12 +2,8 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import { Button as MuiButton, Menu, MenuItem } from "@mui/material";
-import {
-  Loop as LoopIcon,
-  FilterList as FilterListIcon,
-} from "@mui/icons-material";
 import { spacing } from "@mui/system";
-import { useTheme } from "@emotion/react";
+import { Icon } from "@iconify/react";
 
 const Button = styled(MuiButton)(spacing);
 
@@ -16,8 +12,8 @@ const SmallButton = styled(Button)`
   min-width: 0;
 
   svg {
-    width: 0.9em;
-    height: 0.9em;
+    width: 1em;
+    height: 1em;
   }
 `;
 
@@ -34,11 +30,11 @@ function Actions() {
 
   return (
     <React.Fragment>
-      <SmallButton size="small" mr={2}>
-        <LoopIcon />
+      <SmallButton size="medium" mr={2}>
+        <Icon icon="ic:round-loop" fontSize={22} />
       </SmallButton>
-      <SmallButton size="small" mr={2}>
-        <FilterListIcon />
+      <SmallButton size="medium" mr={4}>
+        <Icon icon="ic:baseline-filter-list" fontSize={22} />
       </SmallButton>
       <Button
         variant="contained"

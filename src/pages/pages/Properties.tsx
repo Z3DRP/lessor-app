@@ -41,6 +41,8 @@ import { ExpandMore } from "@/components/ui/ExpandMore";
 import { Stack } from "@mui/system";
 import DeletePropertyDialog from "@/components/property-dialogs/DeletePropertyDialog";
 import { useTheme } from "@emotion/react";
+import { Icon } from "@iconify/react";
+import { ButtonSpan } from "@/components/styled/StyledCmp";
 
 const propertyStatusColors = new Map<
   PropertyStatus,
@@ -137,7 +139,11 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
             onEdit(property);
           }}
         >
-          <Pencil />
+          <Icon
+            color={theme.palette.secondary.main}
+            icon="ic:round-edit"
+            fontSize={26}
+          />
         </IconButton>
         <IconButton
           size="small"
@@ -146,7 +152,11 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
             onDelete(property);
           }}
         >
-          <TrashIcon />
+          <Icon
+            icon="ic:baseline-delete-forever"
+            color={theme.palette.secondary.main}
+            fontSize={26}
+          />
         </IconButton>
 
         <ExpandMore
@@ -156,7 +166,11 @@ const LessorProperty: React.FC<LessorPropertyProps> = ({
           aria-expanded={expanded}
           aria-label="show more"
         >
-          <Eye />
+          <Icon
+            color={theme.palette.secondary.main}
+            icon="ic:twotone-remove-red-eye"
+            fontSize={26}
+          />
         </ExpandMore>
       </CardActions>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -334,9 +348,11 @@ function Properties() {
             <Button
               variant="contained"
               color="primary"
+              startIcon={
+                <Icon icon="ic:baseline-add-circle-outline" fontSize={22} />
+              }
               onClick={handleOpenNewDialog}
             >
-              <AddIcon />
               New Property
             </Button>
           </div>

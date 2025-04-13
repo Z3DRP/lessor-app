@@ -59,7 +59,7 @@ function Default() {
           }}
         >
           <Stats
-            title="Profit "
+            title="Profit"
             amount="2.532"
             chip="Today"
             percentagetext="+26%"
