@@ -329,9 +329,7 @@ export default function TaskList({ userId, tasks, location }: TaskListProps) {
     <>
       <Card>
         <CardHeader
-          title={
-            location != null ? formattedAddress(location) : "Service Tasks"
-          }
+          title={location != null ? formattedAddress(location) : "All Tasks"}
         />
         <CardContent>
           <TransitionAlert

@@ -10,3 +10,11 @@ export type TaskCategory =
   | "client_service"
   | "client_installation"
   | "client_project";
+
+export type NotiTypes =
+  | "task"
+  | "user"
+  | "property"
+  | "general"
+  | "worker"
+  | "tenant";

@@ -3,6 +3,7 @@ import propertyReducer from "./slices/propertiesSlice";
 import taskReducer from "./slices/tasksSlice";
 import workerReducer from "./slices/workerSlice";
 import alessorReducer from "./slices/alessorSlice";
+import notificationReducer from "./slices/notificationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     task: taskReducer,
     worker: workerReducer,
     alessor: alessorReducer,
+    notification: notificationReducer,
   },
 });
 

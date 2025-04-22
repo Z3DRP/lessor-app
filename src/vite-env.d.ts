@@ -13,6 +13,7 @@ interface ImportMetaEnv {
   readonly VITE_TEMP_PROPERTIES_EP: string;
   readonly VITE_TASK_EP: string;
   readonly VITE_USER_EP: string;
+  readonly VITE_NOTIF_EP: string;
   readonly VITE_SIGN_IN: string;
   readonly VITE_SIGN_UP: string;
   readonly VITE_CLAIMS_EP: string;

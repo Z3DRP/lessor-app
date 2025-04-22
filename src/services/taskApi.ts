@@ -129,5 +129,7 @@ export const taskApi = {
       console.error("error deleting task");
       throw err;
     });
+
+    // TODO: add check for status 204 if is 204 success
   },
 };

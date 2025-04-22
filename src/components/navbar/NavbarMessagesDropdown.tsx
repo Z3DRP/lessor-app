@@ -17,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { MessageSquare } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 const Popover = styled(MuiPopover)`
   .MuiPaper-root {
@@ -85,7 +86,7 @@ function NavbarMessagesDropdown() {
       <Tooltip title="Messages">
         <IconButton color="inherit" ref={ref} onClick={handleOpen} size="large">
           <Indicator badgeContent={3}>
-            <MessageSquare />
+            <Icon icon="ic:outline-message" />
           </Indicator>
         </IconButton>
       </Tooltip>

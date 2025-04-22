@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 import { withTheme } from "@emotion/react";
 import { darken } from "polished";
-import { Search as SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -19,6 +18,14 @@ import NavbarNotificationsDropdown from "./NavbarNotificationsDropdown";
 import NavbarMessagesDropdown from "./NavbarMessagesDropdown";
 import NavbarLanguagesDropdown from "./NavbarLanguagesDropdown";
 import NavbarUserDropdown from "./NavbarUserDropdown";
+import { Icon } from "@iconify/react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import {
+  fetchNotifications,
+  markNotificationAsViewed,
+} from "@/redux/slices/notificationSlice";
+import useAuth from "@/hooks/useAuth";
 
 const AppBar = styled(MuiAppBar)`
   background: ${(props) => props.theme.header.background};
@@ -83,6 +90,39 @@ type NavbarProps = {
 
 const Navbar: React.FC<NavbarProps> = ({ onDrawerToggle }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useAuth();
+  const { notifications, status } = useSelector(
+    (state: RootState) => state.notification
+  );
+  const handleUpdate = async (id: number) => {
+    try {
+      const result = dispatch(
+        markNotificationAsViewed({ notificationId: id })
+      ).unwrap();
+    } catch (err: any) {
+      console.log("error marking notification as viewed ", err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await dispatch(
+          fetchNotifications({ alsrId: user?.uid })
+        ).unwrap();
+        console.log("notif result: ", result);
+      } catch (err: any) {
+        console.log(`error ${err?.error || err?.message || err}`);
+      }
+    };
+
+    if (user && (status === "idle" || status === "failed")) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
+
   return (
     <React.Fragment>
       <AppBar position="sticky" elevation={1}>
@@ -101,7 +141,7 @@ const Navbar: React.FC<NavbarProps> = ({ onDrawerToggle }) => {
             <Grid>
               <Search>
                 <SearchIconWrapper>
-                  <SearchIcon />
+                  <Icon icon="ic:outline-search" fontSize={96} />
                 </SearchIconWrapper>
                 {/* @ts-expect-error t can be null */}
                 <Input placeholder={t("Search")} />
@@ -110,7 +150,10 @@ const Navbar: React.FC<NavbarProps> = ({ onDrawerToggle }) => {
             <Grid size="grow" />
             <Grid>
               <NavbarMessagesDropdown />
-              <NavbarNotificationsDropdown />
+              <NavbarNotificationsDropdown
+                notifications={notifications}
+                updateHandler={handleUpdate}
+              />
               <NavbarLanguagesDropdown />
               <NavbarUserDropdown />
             </Grid>

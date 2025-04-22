@@ -18,6 +18,12 @@ import {
   Typography,
 } from "@mui/material";
 import { Bell, Home, UserPlus, Server } from "lucide-react";
+import {
+  Notification,
+  notificationIconFactory,
+  NotificationType,
+} from "@/types/notifications";
+import { RemoveCircleOutline } from "@mui/icons-material";
 
 const Popover = styled(MuiPopover)`
   .MuiPaper-root {
@@ -43,37 +49,55 @@ const NotificationHeader = styled(Box)`
   border-bottom: 1px solid ${(props) => props.theme.palette.divider};
 `;
 
-function Notification({
-  title,
-  description,
+function NotificationItem({
+  notification,
   Icon,
+  updateHandler,
 }: {
-  title: string;
-  description: string;
+  notification: Notification;
   Icon: React.ElementType;
+  updateHandler: (id: number) => void;
 }) {
   return (
-    <ListItem divider component={Link} to="#">
+    <ListItem
+      divider
+      component={Link}
+      to="#"
+      secondaryAction={
+        <IconButton
+          edge="end"
+          arai-label="remove"
+          onClick={() => updateHandler(notification?.id ?? -1)}
+        >
+          <RemoveCircleOutline color="primary" />
+        </IconButton>
+      }
+    >
       <ListItemAvatar>
         <Avatar>
-          <SvgIcon fontSize="small">
+          <SvgIcon fontSize="medium">
             <Icon />
           </SvgIcon>
         </Avatar>
       </ListItemAvatar>
       <ListItemText
-        primary={title}
+        primary={notification.title}
         primaryTypographyProps={{
           variant: "subtitle2",
           color: "textPrimary",
         }}
-        secondary={description}
+        secondary={notification.message}
       />
     </ListItem>
   );
 }
 
-function NavbarNotificationsDropdown() {
+type props = {
+  notifications: Notification[];
+  updateHandler: (id: number) => void;
+};
+
+function NavbarNotificationsDropdown({ notifications, updateHandler }: props) {
   const ref = useRef(null);
   const [isOpen, setOpen] = useState(false);
 
@@ -89,7 +113,7 @@ function NavbarNotificationsDropdown() {
     <React.Fragment>
       <Tooltip title="Notifications">
         <IconButton color="inherit" ref={ref} onClick={handleOpen} size="large">
-          <Indicator badgeContent={7}>
+          <Indicator badgeContent={notifications?.length}>
             <Bell />
           </Indicator>
         </IconButton>
@@ -105,37 +129,40 @@ function NavbarNotificationsDropdown() {
       >
         <NotificationHeader p={2}>
           <Typography variant="subtitle2" color="textPrimary">
-            7 New Notifications
+            {notifications && notifications?.length > 0
+              ? `${notifications?.length} New Notifications`
+              : `No Notifications`}
           </Typography>
         </NotificationHeader>
         <React.Fragment>
           <List disablePadding>
-            <Notification
-              title="Update complete"
-              description="Restart server to complete update."
-              Icon={Server}
-            />
-            <Notification
-              title="New connection"
-              description="Anna accepted your request."
-              Icon={UserPlus}
-            />
-            <Notification
-              title="Lorem ipsum"
-              description="Aliquam ex eros, imperdiet vulputate hendrerit et"
-              Icon={Bell}
-            />
-            <Notification
-              title="New login"
-              description="Login from 192.186.1.1."
-              Icon={Home}
+            {notifications?.map((ntf) => (
+              <NotificationItem
+                key={ntf?.id}
+                notification={ntf}
+                updateHandler={() => updateHandler(ntf.id!)}
+                Icon={notificationIconFactory(ntf?.category)}
+              />
+            ))}
+            <NotificationItem
+              notification={{
+                title: "Test",
+                message: "this is a test notification",
+                category: NotificationType.GENERAL,
+                viewed: false,
+                createdAt: "11/12/2025",
+              }}
+              updateHandler={() => updateHandler(-1)}
+              Icon={notificationIconFactory(NotificationType.GENERAL)}
             />
           </List>
-          <Box p={1} display="flex" justifyContent="center">
-            <Button size="small" component={Link} to="#">
-              Show all notifications
-            </Button>
-          </Box>
+          {notifications?.length > 5 && (
+            <Box p={1} display="flex" justifyContent="center">
+              <Button size="small" component={Link} to="#">
+                Show all notifications
+              </Button>
+            </Box>
+          )}
         </React.Fragment>
       </Popover>
     </React.Fragment>
