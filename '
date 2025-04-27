@@ -166,9 +166,8 @@ export const taskSlice = createSlice({
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
         // TODO: have to change from filtering for ids = to payload.id to !=
-        state.status = "idle";
-        state.tasks = state.tasks.filter((t) => t.tid !== action.payload);
         //state.tasks = state.tasks.filter((t) => t.tid === action.payload);
+        state.tasks = state.tasks.filter((t) => t.id !== action.payload.tid);
       })
       .addCase(deleteTask.rejected, (state, action) => {
         (state.status = "failed"), (state.error = action.payload as string);

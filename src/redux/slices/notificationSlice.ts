@@ -73,7 +73,7 @@ export const markNotificationAsViewed = createAsyncThunk(
 export const deleteNotification = createAsyncThunk(
   "notif/delete",
   async (
-    { notificationId }: { notificationId: string },
+    { notificationId }: { notificationId: number },
     { rejectWithValue }
   ) => {
     try {
@@ -120,22 +120,29 @@ export const notificationSlice = createSlice({
       })
       .addCase(markNotificationAsViewed.fulfilled, (state, action) => {
         state.status = "idle";
-        const indx = state.notifications.findIndex(
-          (n) => n.id === action.payload.id
-        );
-        if (indx !== -1) {
-          state.notifications[indx] = action.payload;
+        if (action.payload.viewed) {
+          state.notifications = state.notifications.filter(
+            (n) => n.id !== action.payload.id
+          );
+        } else {
+          const indx = state.notifications.findIndex(
+            (n) => n.id === action.payload.id
+          );
+          if (indx !== -1) {
+            state.notifications[indx] = action.payload;
+          }
         }
       })
       .addCase(markNotificationAsViewed.rejected, (state, action) => {
         (state.status = "failed"), (state.error = action.payload as string);
       })
       .addCase(deleteNotification.pending, (state) => {
-        state.status = "idle";
+        state.status = "loading";
       })
       .addCase(deleteNotification.fulfilled, (state, action) => {
+        state.status = "idle";
         state.notifications = state.notifications.filter(
-          (n) => n.id === action.payload
+          (n) => n?.id !== action.payload
         );
       })
       .addCase(deleteNotification.rejected, (state, action) => {

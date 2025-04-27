@@ -148,10 +148,9 @@ export const propertySlice = createSlice({
       .addCase(
         createProperty.fulfilled,
         (state, action: PayloadAction<Property>) => {
-          // (state.status = "idle"), state.properties.push(action.payload);
-          console.log("created w/ property redux ", action.payload);
-          state.status = "idle";
-          state.properties.push(action.payload);
+          (state.status = "idle"), state.properties.push(action.payload);
+          // state.status = "idle";
+          // state.properties.push(action.payload);
         }
       )
       .addCase(createProperty.rejected, (state, action) => {
@@ -166,10 +165,17 @@ export const propertySlice = createSlice({
           state.properties[index] = action.payload;
         }
       })
+      .addCase(updateProperty.pending, (state) => {
+        state.status = "loading";
+      })
       .addCase(updateProperty.rejected, (state, action) => {
-        state.error = action.payload as string;
+        (state.status = "failed"), (state.error = action.payload as string);
+      })
+      .addCase(deleteProperty.pending, (state) => {
+        state.status = "loading";
       })
       .addCase(deleteProperty.fulfilled, (state, action) => {
+        state.status = "idle";
         state.properties = state.properties.filter(
           (p) => p.pid !== action.payload
         );

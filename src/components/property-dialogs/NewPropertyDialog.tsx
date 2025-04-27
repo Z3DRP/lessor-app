@@ -34,8 +34,6 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import InputFileUploader from "../ui/FileUploader";
 import { nanoid } from "nanoid";
-import { Percent } from "@mui/icons-material";
-import { LucideDollarSign, LucidePercent } from "lucide-react";
 import { Icon } from "@iconify/react";
 
 const Card = styled(MuiCard)(spacing);

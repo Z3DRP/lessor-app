@@ -71,7 +71,7 @@ export const notificationApi = {
     return notification;
   },
 
-  deleteNotification: async (notificationId: string) => {
+  deleteNotification: async (notificationId: number) => {
     const res = await axiosInstance
       .delete(`${notifEp}/${notificationId}`)
       .catch((err) => {

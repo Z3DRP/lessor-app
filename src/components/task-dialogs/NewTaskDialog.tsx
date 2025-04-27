@@ -213,396 +213,417 @@ export default function NewTaskDialog({
         setFieldValue,
         touched,
         values,
-      }) => (
-        <Dialog
-          open={open}
-          onClose={() => openHandler(false)}
-          aria-label="form-dialog-title"
-          fullWidth
-          maxWidth="md"
-        >
-          <DialogTitle id="form-dialog-title">
-            <Typography variant="h3">Create</Typography>
-          </DialogTitle>
-          <Form onSubmit={handleSubmit}>
-            <DialogContent>
-              <Card mb={6}>
-                <CardContent>
-                  {isSubmitting ? (
-                    <Box display="flex" justifyContent="center" my={6}>
-                      <LinearLoading />
-                    </Box>
-                  ) : (
-                    <>
-                      <TransitionAlert
-                        isOpen={error != null}
-                        variant="error"
-                        message={error ?? ""}
-                        my={2}
-                        closeHandler={() => setError(null)}
-                      />
-                      <Grid container spacing={1}>
-                        <Grid size={{ xs: 12 }}>
-                          <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <Grid
-                                container
-                                direction="row"
-                                alignItems="center"
-                                spacing={0.5}
-                              >
-                                <Grid>
-                                  <FormControl
-                                    variant="outlined"
-                                    sx={{ my: 2 }}
-                                    fullWidth
-                                  >
-                                    <FormControlLabel
-                                      label="Take Precedence"
-                                      control={
-                                        <Switch
-                                          name="takePrecedence"
-                                          onChange={(e) =>
-                                            setFieldValue(
-                                              "takePrecedence",
-                                              e.target.checked
-                                            )
-                                          }
-                                        />
-                                      }
+      }) =>
+        isSubmitting ? (
+          <LinearLoading />
+        ) : (
+          <Dialog
+            open={open}
+            onClose={() => openHandler(false)}
+            aria-label="form-dialog-title"
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogTitle id="form-dialog-title">
+              <Typography variant="h3">Create</Typography>
+            </DialogTitle>
+            <Form onSubmit={handleSubmit}>
+              <DialogContent>
+                <Card mb={6}>
+                  <CardContent>
+                    {isSubmitting ? (
+                      <Box display="flex" justifyContent="center" my={6}>
+                        <LinearLoading />
+                      </Box>
+                    ) : (
+                      <>
+                        <TransitionAlert
+                          isOpen={error != null}
+                          variant="error"
+                          message={error ?? ""}
+                          my={2}
+                          closeHandler={() => setError(null)}
+                        />
+                        <Grid container spacing={1}>
+                          <Grid size={{ xs: 12 }}>
+                            <Grid container direction="row" spacing={2}>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <Grid
+                                  container
+                                  direction="row"
+                                  alignItems="center"
+                                  spacing={0.5}
+                                >
+                                  <Grid>
+                                    <FormControl
+                                      variant="outlined"
+                                      sx={{ my: 2 }}
+                                      fullWidth
+                                    >
+                                      <FormControlLabel
+                                        label="Take Precedence"
+                                        control={
+                                          <Switch
+                                            name="takePrecedence"
+                                            onChange={(e) =>
+                                              setFieldValue(
+                                                "takePrecedence",
+                                                e.target.checked
+                                              )
+                                            }
+                                          />
+                                        }
+                                      />
+                                      {touched.takePrecedence &&
+                                        Boolean(errors.takePrecedence) && (
+                                          <FormHelperText error>
+                                            {errors.takePrecedence}
+                                          </FormHelperText>
+                                        )}
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid>
+                                    <InfoPopover
+                                      title="Take Precedence"
+                                      message="execute this task next before others in bucket"
                                     />
-                                    {touched.takePrecedence &&
-                                      Boolean(errors.takePrecedence) && (
-                                        <FormHelperText error>
-                                          {errors.takePrecedence}
-                                        </FormHelperText>
-                                      )}
-                                  </FormControl>
-                                </Grid>
-                                <Grid>
-                                  <InfoPopover
-                                    title="Take Precedence"
-                                    message="execute this task next before others in bucket"
-                                  />
+                                  </Grid>
                                 </Grid>
                               </Grid>
-                            </Grid>
 
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <FormControl
-                                variant="outlined"
-                                sx={{ my: 2 }}
-                                fullWidth
-                                disabled
-                              >
-                                <InputLabel id="priority">Priority</InputLabel>
-                                <Select
-                                  disabled
-                                  name="priority"
-                                  fullWidth
-                                  labelId="priority"
-                                  label="Priority"
-                                  native
-                                  onBlur={handleBlur}
-                                  value={values.priority}
-                                  onChange={(e: any) => {
-                                    setFieldValue("priority", e.target.value);
-                                  }}
-                                >
-                                  {Object.values(PriorityLevel).map((pl) => (
-                                    <option key={pl} value={pl}>
-                                      {pl}
-                                    </option>
-                                  ))}
-                                </Select>
-                                {touched.priority &&
-                                  Boolean(errors.priority) && (
-                                    <FormHelperText error>
-                                      {errors.priority}
-                                    </FormHelperText>
-                                  )}
-                              </FormControl>
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <FormControl
-                                variant="outlined"
-                                sx={{ my: 2 }}
-                                fullWidth
-                              >
-                                <InputLabel id="category">Category</InputLabel>
-                                <Select
-                                  name="category"
-                                  fullWidth
-                                  labelId="category"
-                                  native
-                                  onBlur={handleBlur}
-                                  value={values.category}
-                                  onChange={(e: any) =>
-                                    setFieldValue("category", e.target.value)
-                                  }
-                                >
-                                  {Object.values(TaskCategory).map((tc) => (
-                                    <option key={tc} value={tc}>
-                                      {tc}
-                                    </option>
-                                  ))}
-                                </Select>
-                                {touched.category &&
-                                  Boolean(errors.category) && (
-                                    <FormHelperText error>
-                                      {errors.category}
-                                    </FormHelperText>
-                                  )}
-                              </FormControl>
-                            </Grid>
-                          </Grid>
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                          <TextField
-                            name="name"
-                            label="Name"
-                            value={values.name}
-                            error={touched.name && Boolean(errors.name)}
-                            fullWidth
-                            helperText={touched.name && errors.name}
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            variant="outlined"
-                            my={2}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                          <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl
-                                variant="outlined"
-                                sx={{ my: 2 }}
-                                fullWidth
-                              >
-                                <InputLabel id="property">Property</InputLabel>
-                                <Select
-                                  name="propertyId"
-                                  native
-                                  fullWidth
-                                  defaultValue="default-op"
-                                  labelId="property"
-                                  label="Property"
-                                  onBlur={handleBlur}
-                                  error={
-                                    touched.propertyId &&
-                                    Boolean(errors.propertyId)
-                                  }
-                                  onChange={(e: any) =>
-                                    setFieldValue("propertyId", e.target.value)
-                                  }
-                                >
-                                  <option value="default-op">
-                                    Select Property
-                                  </option>
-                                  {properties.map((p: Property) => (
-                                    <option
-                                      key={p.pid}
-                                      value={p.pid}
-                                    >{`${formattedAddress(p)}`}</option>
-                                  ))}
-                                </Select>
-                                {touched.propertyId &&
-                                  Boolean(errors.propertyId) && (
-                                    <FormHelperText error>
-                                      {errors.propertyId}
-                                    </FormHelperText>
-                                  )}
-                              </FormControl>
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl
-                                id="woker-id"
-                                variant="outlined"
-                                fullWidth
-                                sx={{ my: 2 }}
-                              >
-                                <InputLabel id="worker-id">Worker</InputLabel>
-                                <Select
-                                  name="workerId"
-                                  label="Worker"
-                                  value={values.workerId}
-                                  error={
-                                    touched.workerId && Boolean(errors.workerId)
-                                  }
-                                  onBlur={handleBlur}
-                                  onChange={(e: any) => {
-                                    setFieldValue("workerId", e.target.value);
-                                  }}
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <FormControl
                                   variant="outlined"
+                                  sx={{ my: 2 }}
+                                  fullWidth
+                                  disabled
                                 >
-                                  {workers.map((w) => {
-                                    console.log("worker ", w);
-                                    return (
-                                      <option key={w.uid} value={w.uid}>
-                                        {`${w?.user?.firstName} ${w?.user?.lastName}`}
+                                  <InputLabel id="priority">
+                                    Priority
+                                  </InputLabel>
+                                  <Select
+                                    disabled
+                                    name="priority"
+                                    fullWidth
+                                    labelId="priority"
+                                    label="Priority"
+                                    native
+                                    onBlur={handleBlur}
+                                    value={values.priority}
+                                    onChange={(e: any) => {
+                                      setFieldValue("priority", e.target.value);
+                                    }}
+                                  >
+                                    {Object.values(PriorityLevel).map((pl) => (
+                                      <option key={pl} value={pl}>
+                                        {pl}
                                       </option>
-                                    );
-                                  })}
-                                </Select>
-                                {touched.workerId &&
-                                  Boolean(errors.workerId) && (
-                                    <FormHelperText error>
-                                      {errors.workerId}
-                                    </FormHelperText>
-                                  )}
-                              </FormControl>
+                                    ))}
+                                  </Select>
+                                  {touched.priority &&
+                                    Boolean(errors.priority) && (
+                                      <FormHelperText error>
+                                        {errors.priority}
+                                      </FormHelperText>
+                                    )}
+                                </FormControl>
+                              </Grid>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <FormControl
+                                  variant="outlined"
+                                  sx={{ my: 2 }}
+                                  fullWidth
+                                >
+                                  <InputLabel id="category">
+                                    Category
+                                  </InputLabel>
+                                  <Select
+                                    name="category"
+                                    fullWidth
+                                    labelId="category"
+                                    native
+                                    onBlur={handleBlur}
+                                    value={values.category}
+                                    onChange={(e: any) =>
+                                      setFieldValue("category", e.target.value)
+                                    }
+                                  >
+                                    {Object.values(TaskCategory).map((tc) => (
+                                      <option key={tc} value={tc}>
+                                        {tc}
+                                      </option>
+                                    ))}
+                                  </Select>
+                                  {touched.category &&
+                                    Boolean(errors.category) && (
+                                      <FormHelperText error>
+                                        {errors.category}
+                                      </FormHelperText>
+                                    )}
+                                </FormControl>
+                              </Grid>
                             </Grid>
                           </Grid>
-                        </Grid>
+                          <Grid size={{ xs: 12 }}>
+                            <TextField
+                              name="name"
+                              label="Name"
+                              value={values.name}
+                              error={touched.name && Boolean(errors.name)}
+                              fullWidth
+                              helperText={touched.name && errors.name}
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 12 }}>
+                            <Grid container direction="row" spacing={2}>
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <FormControl
+                                  variant="outlined"
+                                  sx={{ my: 2 }}
+                                  fullWidth
+                                >
+                                  <InputLabel id="property">
+                                    Property
+                                  </InputLabel>
+                                  <Select
+                                    name="propertyId"
+                                    native
+                                    fullWidth
+                                    defaultValue="default-op"
+                                    labelId="property"
+                                    label="Property"
+                                    onBlur={handleBlur}
+                                    error={
+                                      touched.propertyId &&
+                                      Boolean(errors.propertyId)
+                                    }
+                                    onChange={(e: any) =>
+                                      setFieldValue(
+                                        "propertyId",
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    <option value="default-op">
+                                      Select Property
+                                    </option>
+                                    {properties.map((p: Property) => (
+                                      <option
+                                        key={p.pid}
+                                        value={p.pid}
+                                      >{`${formattedAddress(p)}`}</option>
+                                    ))}
+                                  </Select>
+                                  {touched.propertyId &&
+                                    Boolean(errors.propertyId) && (
+                                      <FormHelperText error>
+                                        {errors.propertyId}
+                                      </FormHelperText>
+                                    )}
+                                </FormControl>
+                              </Grid>
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <FormControl
+                                  id="woker-id"
+                                  variant="outlined"
+                                  fullWidth
+                                  sx={{ my: 2 }}
+                                >
+                                  <InputLabel id="worker-id">Worker</InputLabel>
+                                  <Select
+                                    name="workerId"
+                                    label="Worker"
+                                    value={values.workerId}
+                                    error={
+                                      touched.workerId &&
+                                      Boolean(errors.workerId)
+                                    }
+                                    onBlur={handleBlur}
+                                    onChange={(e: any) => {
+                                      setFieldValue("workerId", e.target.value);
+                                    }}
+                                    variant="outlined"
+                                  >
+                                    {workers.map((w) => {
+                                      console.log("worker ", w);
+                                      return (
+                                        <option key={w.uid} value={w.uid}>
+                                          {`${w?.user?.firstName} ${w?.user?.lastName}`}
+                                        </option>
+                                      );
+                                    })}
+                                  </Select>
+                                  {touched.workerId &&
+                                    Boolean(errors.workerId) && (
+                                      <FormHelperText error>
+                                        {errors.workerId}
+                                      </FormHelperText>
+                                    )}
+                                </FormControl>
+                              </Grid>
+                            </Grid>
+                          </Grid>
 
-                        <Grid size={{ xs: 12 }}>
-                          <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <TextField
-                                name="details"
-                                label="Details"
-                                value={values.details}
-                                error={
-                                  touched.details && Boolean(errors.details)
-                                }
-                                helperText={touched.details && errors.details}
-                                fullWidth
-                                multiline
-                                minRows={5}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                variant="outlined"
-                                my={2}
-                              />
+                          <Grid size={{ xs: 12 }}>
+                            <Grid container direction="row" spacing={2}>
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                  name="details"
+                                  label="Details"
+                                  value={values.details}
+                                  error={
+                                    touched.details && Boolean(errors.details)
+                                  }
+                                  helperText={touched.details && errors.details}
+                                  fullWidth
+                                  multiline
+                                  minRows={5}
+                                  onBlur={handleBlur}
+                                  onChange={handleChange}
+                                  variant="outlined"
+                                  my={2}
+                                />
+                              </Grid>
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                  name="notes"
+                                  label="Notes"
+                                  value={values.notes}
+                                  error={touched.notes && Boolean(errors.notes)}
+                                  helperText={touched.notes && errors.notes}
+                                  fullWidth
+                                  multiline
+                                  minRows={5}
+                                  onBlur={handleBlur}
+                                  onChange={handleChange}
+                                  variant="outlined"
+                                  my={2}
+                                />
+                              </Grid>
                             </Grid>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <TextField
-                                name="notes"
-                                label="Notes"
-                                value={values.notes}
-                                error={touched.notes && Boolean(errors.notes)}
-                                helperText={touched.notes && errors.notes}
-                                fullWidth
-                                multiline
-                                minRows={5}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                variant="outlined"
-                                my={2}
-                              />
+                          </Grid>
+                          <Grid size={{ xs: 12 }}>
+                            <Grid container direction="row" spacing={2}>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <TextField
+                                  fullWidth
+                                  name="estimatedCost"
+                                  label="Estimated cost"
+                                  value={values.estimatedCost}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  error={
+                                    touched.estimatedCost &&
+                                    Boolean(errors.estimatedCost)
+                                  }
+                                  helperText={
+                                    touched.estimatedCost &&
+                                    errors.estimatedCost
+                                  }
+                                  variant="outlined"
+                                  my={2}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Icon
+                                          icon="ic:round-attach-money"
+                                          fontSize={22}
+                                        />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <TextField
+                                  fullWidth
+                                  name="actualCost"
+                                  label="Actual cost"
+                                  value={values.actualCost}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  error={
+                                    touched.actualCost &&
+                                    Boolean(errors.actualCost)
+                                  }
+                                  helperText={
+                                    touched.actualCost && errors.actualCost
+                                  }
+                                  variant="outlined"
+                                  my={2}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Icon
+                                          icon="ic:round-attach-money"
+                                          fontSize={22}
+                                        />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <TextField
+                                  fullWidth
+                                  name="profit"
+                                  label="Profit"
+                                  value={values.profit}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  error={
+                                    touched.profit && Boolean(errors.profit)
+                                  }
+                                  helperText={touched.profit && errors.profit}
+                                  variant="outlined"
+                                  my={2}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Icon
+                                          icon="ic:round-attach-money"
+                                          fontSize={22}
+                                        />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />{" "}
+                              </Grid>
                             </Grid>
                           </Grid>
                         </Grid>
-                        <Grid size={{ xs: 12 }}>
-                          <Grid container direction="row" spacing={2}>
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <TextField
-                                fullWidth
-                                name="estimatedCost"
-                                label="Estimated cost"
-                                value={values.estimatedCost}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                error={
-                                  touched.estimatedCost &&
-                                  Boolean(errors.estimatedCost)
-                                }
-                                helperText={
-                                  touched.estimatedCost && errors.estimatedCost
-                                }
-                                variant="outlined"
-                                my={2}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <Icon
-                                        icon="ic:round-attach-money"
-                                        fontSize={22}
-                                      />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <TextField
-                                fullWidth
-                                name="actualCost"
-                                label="Actual cost"
-                                value={values.actualCost}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                error={
-                                  touched.actualCost &&
-                                  Boolean(errors.actualCost)
-                                }
-                                helperText={
-                                  touched.actualCost && errors.actualCost
-                                }
-                                variant="outlined"
-                                my={2}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <Icon
-                                        icon="ic:round-attach-money"
-                                        fontSize={22}
-                                      />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <TextField
-                                fullWidth
-                                name="profit"
-                                label="Profit"
-                                value={values.profit}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                error={touched.profit && Boolean(errors.profit)}
-                                helperText={touched.profit && errors.profit}
-                                variant="outlined"
-                                my={2}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <Icon
-                                        icon="ic:round-attach-money"
-                                        fontSize={22}
-                                      />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />{" "}
-                            </Grid>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </DialogContent>
-            <DialogActions sx={{ mb: 2, mr: 2 }}>
-              <Button
-                onClick={() => {
-                  resetForm();
-                  openHandler(false);
-                }}
-                color="secondary"
-                variant="outlined"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained" disabled={isSubmitting}>
-                Save
-              </Button>
-            </DialogActions>
-          </Form>
-        </Dialog>
-      )}
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </DialogContent>
+              <DialogActions sx={{ mb: 2, mr: 2 }}>
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    openHandler(false);
+                  }}
+                  color="secondary"
+                  variant="outlined"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={isSubmitting}
+                >
+                  Save
+                </Button>
+              </DialogActions>
+            </Form>
+          </Dialog>
+        )
+      }
     </Formik>
   );
 }

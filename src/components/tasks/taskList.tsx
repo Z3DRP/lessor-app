@@ -230,25 +230,40 @@ const TaskItem = ({
         </TaskHiddenFooter>
       </Collapse>
       <Stack direction="row" spacing={2} sx={{ ml: 3, mb: 3 }}>
-        <Button onClick={() => onStart(task, "start")}>
+        <Button
+          onClick={() => onStart(task, "start")}
+          disabled={determineTaskStatus(task) !== TaskStatus.Scheduled}
+        >
           <Icon
             icon="material-symbols:line-start-circle-outline-rounded"
             fontSize={28}
           />
           <ButtonSpan>Start</ButtonSpan>
         </Button>
-        <Button onClick={() => onComplete(task, "complete")} color="success">
+        <Button
+          onClick={() => onComplete(task, "complete")}
+          color="success"
+          disabled={determineTaskStatus(task) === TaskStatus.Scheduled}
+        >
           <Icon icon="ic:baseline-check-circle-outline" fontSize={28} />
           <ButtonSpan>Complete</ButtonSpan>
         </Button>
-        <Button onClick={() => onPause(task, "pause")} color="warning">
+        <Button
+          onClick={() => onPause(task, "pause")}
+          color="warning"
+          disabled={determineTaskStatus(task) === TaskStatus.Scheduled}
+        >
           <Icon
             icon="material-symbols:pause-circle-outline-rounded"
             fontSize={28}
           />
           <ButtonSpan>Pause</ButtonSpan>
         </Button>
-        <Button onClick={() => onFail(task, "fail")} color="error">
+        <Button
+          onClick={() => onFail(task, "fail")}
+          color="error"
+          disabled={determineTaskStatus(task) === TaskStatus.Scheduled}
+        >
           <Icon icon="ic:round-nearby-error" fontSize={28} />
           <ButtonSpan>Fail</ButtonSpan>
         </Button>
@@ -275,7 +290,7 @@ export default function TaskList({ userId, tasks, location }: TaskListProps) {
 
   const setTask = (task: Task) => setSelectedTask(task);
 
-  const handleStatusChange = (task: Task, status: statuses) => {
+  const handleStatusChange = (status: statuses) => (task: Task) => {
     setTask(task);
     switch (status) {
       case "start":
@@ -297,7 +312,8 @@ export default function TaskList({ userId, tasks, location }: TaskListProps) {
     (status: TaskStatus) => async (confirmation: StatusConfirmation) => {
       try {
         const task = {
-          workerId: userId,
+          // only add worker id if task is being started
+          ...(status === TaskStatus.Started ? { workerId: userId } : {}),
           ...(status === TaskStatus.Paused || status === TaskStatus.Failed
             ? { reason: confirmation?.reason }
             : {}),
@@ -329,7 +345,20 @@ export default function TaskList({ userId, tasks, location }: TaskListProps) {
     <>
       <Card>
         <CardHeader
-          title={location != null ? formattedAddress(location) : "All Tasks"}
+          title={
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="h6">
+                {location != null
+                  ? `${formattedAddress(location)}`
+                  : `All Tasks`}
+              </Typography>
+              <Typography variant="subtitle1">
+                {location != null
+                  ? ` - ${tasks?.length} tasks`
+                  : ` - (${tasks?.length ?? 0})`}
+              </Typography>
+            </Stack>
+          }
         />
         <CardContent>
           <TransitionAlert
@@ -343,10 +372,10 @@ export default function TaskList({ userId, tasks, location }: TaskListProps) {
               <TaskItem
                 key={t.tid}
                 task={t}
-                onStart={handleStatusChange}
-                onComplete={handleStatusChange}
-                onPause={handleStatusChange}
-                onFail={handleStatusChange}
+                onStart={handleStatusChange("start")}
+                onComplete={handleStatusChange("complete")}
+                onPause={handleStatusChange("pause")}
+                onFail={handleStatusChange("fail")}
               />
             ))
           ) : (

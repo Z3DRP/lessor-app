@@ -139,6 +139,7 @@ export const workerSlice = createSlice({
         }
       })
       .addCase(updateWorker.rejected, (state, action) => {
+        state.status = "failed";
         state.error = action.payload as string;
       })
       .addCase(deleteWorker.pending, (state) => {

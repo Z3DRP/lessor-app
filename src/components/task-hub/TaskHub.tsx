@@ -5,6 +5,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { Property } from "@/types/property";
 import { Task } from "@/types/task";
 import { Grid2 as Grid } from "@mui/material";
+import { useSnackbar } from "notistack";
 import { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PropertyMap, { Coordinates } from "../property-map/PropertyMap";
@@ -15,6 +16,11 @@ import { LinearLoading } from "../ui/Loaders";
 const defaultCoordinates: Coordinates = {
   lat: 38.8933369324047,
   lng: -90.14417349276893,
+};
+
+type zError = {
+  msg: string;
+  type: "general" | "geolocation";
 };
 
 export default function TaskHub() {
@@ -32,8 +38,14 @@ export default function TaskHub() {
     null
   );
   const [filteredTasks, setFilteredTasks] = useState<Task[] | null>();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const handleSelectLocation = async (loc: Property) => {
+  const handleSelectLocation = async (loc: Property | null) => {
+    if (loc == null) {
+      setSelectedLocation(null);
+      setFilteredTasks(tasks);
+      return;
+    }
     setSelectedLocation(loc);
     setFilteredTasks(tasks.filter((t) => t.propertyId === loc.pid));
   };
@@ -44,9 +56,10 @@ export default function TaskHub() {
       console.log(
         "your brower does not support geolocation, could not get your location to center map"
       );
-      setError(
-        "your brower does not support geolocation, could not get your location to center map"
-      );
+      // setError(
+      //   "your brower does not support geolocation, could not get your location to center map"
+      // );
+      console.log("user's browser does not support geolocation api");
       return;
     }
 
@@ -57,7 +70,9 @@ export default function TaskHub() {
           lng: pos.coords.longitude,
         }),
       (err) => {
-        setError(`geolocation error ${err?.message}`);
+        //setError(`geolocation error ${err?.message}`);
+        //enqueueSnackbar(`Geolocation api error: ${err}`, { variant: "error" });
+        console.error("error with geolocation api: ", err);
       }
     );
   });

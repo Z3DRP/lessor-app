@@ -1,11 +1,13 @@
 import { Task } from "@/types/task";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -43,11 +45,11 @@ const contents: ContentMap = {
   },
   pause: {
     title: "Pause",
-    body: "You are about to pause this task. This means it is not completed or failed but temporarily set asside. In order to pause the task you must specify a reason.",
+    body: "You are about to pause this task. This means it is not completed or failed but temporarily set asside.",
   },
   fail: {
     title: "Fail",
-    body: "You are about to update this task to failed, there must be a blocking condition for you to fail the task. Furthermore, you must also enter a reason for the failure.",
+    body: "You are about to update this task to failed, there must be a blocking condition for you to fail the task.",
   },
   complete: {
     title: "Complete",
@@ -111,26 +113,31 @@ export default function TaskStatusUpdateDialog({
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="status0dialog-description">
-          <Typography gutterBottom>{dContents.body}</Typography>
-          {status === "pause" && (
-            <TextField
-              label="Paused Reason"
-              onClick={(e: any) => setPausedReason(e.target.value)}
+          <Stack spacing={3}>
+            <Typography variant="subtitle1" gutterBottom>
+              {dContents.body}
+            </Typography>
+            {status === "pause" && (
+              <TextField
+                label="Paused Reason"
+                onClick={(e: any) => setPausedReason(e.target.value)}
+              />
+            )}
+            {status === "fail" && (
+              <TextField
+                label="Failed Reason"
+                fullWidth
+                onClick={(e: any) => setFailedReason(e.target.value)}
+              />
+            )}
+            <TransitionAlert
+              isOpen={error != null}
+              variant="error"
+              message={error ?? ""}
+              closeHandler={() => setError(null)}
             />
-          )}
-          {status === "fail" && (
-            <TextField
-              label="Failed Reason"
-              onClick={(e: any) => setFailedReason(e.target.value)}
-            />
-          )}
+          </Stack>
         </DialogContentText>
-        <TransitionAlert
-          isOpen={error != null}
-          variant="error"
-          message={error ?? ""}
-          closeHandler={() => setError(null)}
-        />
       </DialogContent>
       <DialogActions sx={{ m: 2 }}>
         <Button

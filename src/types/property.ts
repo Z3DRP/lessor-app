@@ -6,8 +6,8 @@ export type Address = {
   state: string;
   country: string;
   zipcode: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
 };
 
 export const NewAddress = (
