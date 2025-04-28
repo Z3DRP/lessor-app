@@ -343,7 +343,7 @@ export default function TaskList({ userId, tasks, location }: TaskListProps) {
 
   return (
     <>
-      <Card>
+      <Card sx={{ maxHeight: 800, overflow: "auto" }}>
         <CardHeader
           title={
             <Stack direction="row" spacing={1} alignItems="center">

@@ -44,6 +44,29 @@ export const taskApi = {
     return tasks;
   },
 
+  async getWorkerTasks(workerId: string, page: number, limit: number) {
+    const res = await axiosInstance
+      .get(`${taskEP}/${workerId}`, {
+        params: { page: page, limit: limit },
+      })
+      .catch((err: any) => {
+        console.log("error fetch tasks ", err);
+        throw err;
+      });
+
+    if (res?.data == null) {
+      throw new Error("task resposne was undefined");
+    }
+
+    const { tasks, status } = res.data;
+
+    if (status != 200) {
+      throw new Error("failed to fetch tasks");
+    }
+
+    return tasks;
+  },
+
   async createTask(taskData: Partial<Task>) {
     const res = await axiosInstance.post(taskEP, taskData).catch((err) => {
       console.error("error saving task ", err);

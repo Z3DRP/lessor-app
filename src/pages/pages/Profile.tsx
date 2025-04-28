@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { withTheme } from "@emotion/react";
 import { NavLink } from "react-router-dom";
@@ -37,8 +37,15 @@ import {
   Typography as MuiTypography,
 } from "@mui/material";
 import { spacing, SpacingProps } from "@mui/system";
+import HourglassFullTwoToneIcon from "@mui/icons-material/HourglassFullTwoTone";
 
 import { ThemeProps } from "@/types/theme";
+import useAuth from "@/hooks/useAuth";
+import { AuthUser } from "@/types/auth";
+import { User } from "@/types/user";
+import { AppDispatch, RootState } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { fetchTasks } from "@/redux/slices/tasksSlice";
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
@@ -112,7 +119,11 @@ const TableWrapper = styled.div`
   max-width: calc(100vw - ${(props) => props.theme.spacing(12)});
 `;
 
-function Details() {
+type detailProps = {
+  usr: AuthUser | null;
+};
+
+function Details({ usr }: detailProps) {
   return (
     <Card mb={6}>
       <CardContent>
@@ -123,14 +134,17 @@ function Details() {
         <Spacer mb={4} />
 
         <Centered>
-          <Avatar alt="Lucy Lavender" src="/static/img/avatars/avatar-1.jpg" />
+          <Avatar
+            alt={`${usr?.firstName} ${usr?.lastName}`}
+            src={usr?.avatar ? usr.avatar : "/static/img/avatars/user5.png"}
+          />
           <Typography variant="body2" component="div" gutterBottom>
-            <Box fontWeight="fontWeightMedium">Lucy Lavender</Box>
+            <Box fontWeight="fontWeightMedium">{`${usr?.firstName} ${usr?.lastName}`}</Box>
             <Box fontWeight="fontWeightRegular">Lead Developer</Box>
           </Typography>
 
           <Button mr={2} variant="contained" color="primary" size="small">
-            Follow
+            Edit
           </Button>
           <Button mr={2} variant="contained" color="primary" size="small">
             Message
@@ -167,7 +181,10 @@ function Skills() {
   );
 }
 
-function About() {
+type aboutProps = {
+  usr: AuthUser | null;
+};
+function About({ usr }: aboutProps) {
   return (
     <Card mb={6}>
       <CardContent>
@@ -184,8 +201,10 @@ function About() {
             </AboutIcon>
           </Grid>
           <Grid>
-            Lives in{" "}
-            <Link href="https://mira.bootlab.io/">San Fransisco, SA</Link>
+            Lives in
+            {usr?.address?.city != null && usr?.address?.state != null
+              ? `${usr.address.city}, ${usr.address.state}`
+              : " unknown"}
           </Grid>
         </Grid>
         <Grid container direction="row" alignItems="center" mb={2}>
@@ -194,26 +213,17 @@ function About() {
               <Briefcase />
             </AboutIcon>
           </Grid>
-          <Grid>
-            Works at <Link href="https://mira.bootlab.io/">Material UI</Link>
-          </Grid>
-        </Grid>
-        <Grid container direction="row" alignItems="center">
-          <Grid>
-            <AboutIcon>
-              <MapPin />
-            </AboutIcon>
-          </Grid>
-          <Grid>
-            Lives in <Link href="https://mira.bootlab.io/">Boston</Link>
-          </Grid>
+          <Grid>Works at unknown</Grid>
         </Grid>
       </CardContent>
     </Card>
   );
 }
 
-function Elsewhere() {
+type elsewhereProps = {
+  email: string;
+};
+function Elsewhere({ email }: elsewhereProps) {
   return (
     <Card mb={6}>
       <CardContent>
@@ -230,7 +240,7 @@ function Elsewhere() {
             </AboutIcon>
           </Grid>
           <Grid>
-            <Link href="https://mira.bootlab.io/">lucylavender.io</Link>
+            <Link href="#">{email}</Link>
           </Grid>
         </Grid>
         <Grid container direction="row" alignItems="center" mb={2}>
@@ -240,7 +250,7 @@ function Elsewhere() {
             </AboutIcon>
           </Grid>
           <Grid>
-            <Link href="https://mira.bootlab.io/">Facebook</Link>
+            <Link href="#">Facebook</Link>
           </Grid>
         </Grid>
         <Grid container direction="row" alignItems="center">
@@ -250,7 +260,7 @@ function Elsewhere() {
             </AboutIcon>
           </Grid>
           <Grid>
-            <Link href="https://mira.bootlab.io/">Instagram</Link>
+            <Link href="#">Instagram</Link>
           </Grid>
         </Grid>
       </CardContent>
@@ -264,7 +274,7 @@ function Earnings() {
       <Card mb={6} pt={2}>
         <CardContent>
           <Typography variant="h2" gutterBottom>
-            <Box fontWeight="fontWeightRegular">$ 2.405</Box>
+            <Box fontWeight="fontWeightRegular">$ 47,973.32</Box>
           </Typography>
           <Typography variant="body2" gutterBottom mt={3} mb={0}>
             Total Earnings
@@ -291,10 +301,10 @@ function Orders() {
       <Card mb={6} pt={2}>
         <CardContent>
           <Typography variant="h2" gutterBottom>
-            <Box fontWeight="fontWeightRegular">30</Box>
+            <Box fontWeight="fontWeightRegular">7</Box>
           </Typography>
           <Typography variant="body2" gutterBottom mt={3} mb={0}>
-            Orders Today
+            Tasks Today
           </Typography>
 
           <StatsIcon>
@@ -312,20 +322,20 @@ function Orders() {
   );
 }
 
-function Revenue() {
+function Pto() {
   return (
     <Box position="relative">
       <Card mb={6} pt={2}>
         <CardContent>
           <Typography variant="h2" gutterBottom>
-            <Box fontWeight="fontWeightRegular">$ 1.224</Box>
+            <Box fontWeight="fontWeightRegular">12.24</Box>
           </Typography>
           <Typography variant="body2" gutterBottom mt={3} mb={0}>
-            Total Revenue
+            PTO Hours
           </Typography>
 
           <StatsIcon>
-            <DollarSign />
+            <HourglassFullTwoToneIcon />
           </StatsIcon>
           <LinearProgress
             variant="determinate"
@@ -344,16 +354,16 @@ function Products() {
     <Card mb={6}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Products
+          Tasks
         </Typography>
         <TableWrapper>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell>Tech</TableCell>
-                <TableCell>License</TableCell>
-                <TableCell>Sales</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Started</TableCell>
+                <TableCell>Completed</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -433,7 +443,7 @@ const SalesRevenue = withTheme(({ theme }: ThemeProps) => {
     ],
     datasets: [
       {
-        label: "Sales",
+        label: "Tasks",
         backgroundColor: theme.palette.secondary.main,
         borderColor: theme.palette.secondary.main,
         hoverBackgroundColor: theme.palette.secondary.main,
@@ -443,7 +453,7 @@ const SalesRevenue = withTheme(({ theme }: ThemeProps) => {
         categoryPercentage: 0.5,
       },
       {
-        label: "Revenue",
+        label: "Earnings",
         backgroundColor: theme.palette.grey[200],
         borderColor: theme.palette.grey[200],
         hoverBackgroundColor: theme.palette.grey[200],
@@ -483,7 +493,7 @@ const SalesRevenue = withTheme(({ theme }: ThemeProps) => {
     <Card mb={6}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Sales / Revenue
+          Tasks / Earnings
         </Typography>
 
         <Spacer mb={6} />
@@ -497,6 +507,16 @@ const SalesRevenue = withTheme(({ theme }: ThemeProps) => {
 });
 
 function Profile() {
+  const { user } = useAuth();
+  // const dispatch = useDispatch<AppDispatch>();
+  // const { tasks, status } = useState((state: RootState) => state.task);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const result = dispatch(fetchTasks({ alsrId: user?.lessorId }));
+  //   };
+  // });
+
   return (
     <React.Fragment>
       <Helmet title="Profile" />
@@ -519,10 +539,10 @@ function Profile() {
 
       <Grid container spacing={6}>
         <Grid size={{ xs: 12, lg: 4, xl: 3 }}>
-          <Details />
+          <Details usr={user} />
           <Skills />
-          <About />
-          <Elsewhere />
+          <About usr={user} />
+          <Elsewhere email={user?.email} />
         </Grid>
         <Grid size={{ xs: 12, lg: 8, xl: 9 }}>
           <SalesRevenue />
@@ -534,7 +554,7 @@ function Profile() {
               <Orders />
             </Grid>
             <Grid size={{ xs: 12, lg: 4 }}>
-              <Revenue />
+              <Pto />
             </Grid>
           </Grid>
           <Products />

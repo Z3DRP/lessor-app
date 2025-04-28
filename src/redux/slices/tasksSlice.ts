@@ -40,6 +40,26 @@ export const fetchTasks = createAsyncThunk(
   }
 );
 
+export const fetchWorkerTasks = createAsyncThunk(
+  "tasks/worker",
+  async (
+    { wid, page = 1, limit = 10 }: { wid: string; page: number; limit: number },
+    { rejectWithValue }
+  ) => {
+    try {
+      const tasks = await taskApi.getWorkerTasks(wid, page, limit);
+      if (tasks == null || tasks?.length === 0) {
+        return [];
+      }
+      return tasks;
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message || err?.error || err || "unknown error",
+      });
+    }
+  }
+);
+
 export const createTask = createAsyncThunk(
   "tasks/create",
   async ({ data }: { data: Partial<Task> }, { rejectWithValue }) => {
@@ -136,6 +156,19 @@ export const taskSlice = createSlice({
       .addCase(fetchTasks.rejected, (state, action) => {
         (state.status = "failed"), (state.error = action.payload as string);
       })
+      .addCase(fetchWorkerTasks.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(
+        fetchWorkerTasks.fulfilled,
+        (state, action: PayloadAction<Task[]>) => {
+          (state.status = "idle"), (state.tasks = action.payload);
+        }
+      )
+      .addCase(fetchWorkerTasks.rejected, (state, action) => {
+        (state.status = "failed"), (state.error = action.payload as string);
+      })
+
       .addCase(createTask.pending, (state) => {
         state.status = "loading";
       })

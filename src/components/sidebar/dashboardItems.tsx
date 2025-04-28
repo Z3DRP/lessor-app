@@ -21,8 +21,8 @@ const pagesSection = [
       },
       {
         href: "/dashboard/worker",
-        title: "Home Remove all from role",
-        role: "all",
+        title: "Task Hub",
+        role: "worker",
       },
     ],
   },

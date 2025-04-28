@@ -1,6 +1,5 @@
 import firebase from "firebase/app";
-import { ProfileType } from "unions/unions";
-import { SignupRequest } from "./user";
+import { SignupRequest, User } from "./user";
 
 export type ActionMap<M extends { [index: string]: any }> = {
   [Key in keyof M]: M[Key] extends undefined
@@ -13,7 +12,7 @@ export type ActionMap<M extends { [index: string]: any }> = {
       };
 };
 
-export type AuthUser = null | Record<string, any>;
+export type AuthUser = null | Record<string, any> | User;
 
 export type AuthState = {
   isAuthenticated: boolean;

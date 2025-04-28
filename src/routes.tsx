@@ -1,6 +1,3 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-
 import async from "@/components/Async";
 
 // All pages that rely on 3rd party components (other than MUI) are
@@ -35,12 +32,14 @@ import ProtectedPage from "@/pages/protected/ProtectedPage";
 import AuthCover from "@/layouts/AuthCover";
 import Properties from "./pages/pages/Properties";
 import Default from "./pages/dashboards/Default";
-import WorkerTaskDashboard from "./pages/pages/WorkerTaskDashboard";
+import UserGuard from "./components/guards/UserGuard";
 const Analytics = async(() => import("@/pages/dashboards/Analytics"));
-const SaaS = async(() => import("@/pages/dashboards/SaaS"));
 const Profile = async(() => import("@/pages/pages/Profile"));
 const Tasks = async(() => import("@/pages/pages/Tasks"));
 const Calendar = async(() => import("@/pages/pages/Calendar"));
+const WorkerTaskDashboard = async(
+  () => import("./pages/pages/WorkerTaskDashboard")
+);
 
 const routes = [
   {
@@ -61,7 +60,9 @@ const routes = [
         path: "",
         element: (
           <AuthGuard>
-            <Default />
+            <UserGuard>
+              <Default />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -69,7 +70,9 @@ const routes = [
         path: "analytics",
         element: (
           <AuthGuard>
-            <Analytics />
+            <UserGuard>
+              <Analytics />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -103,7 +106,9 @@ const routes = [
         path: "company",
         element: (
           <AuthGuard>
-            <Profile />
+            <UserGuard>
+              <Profile />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -119,7 +124,9 @@ const routes = [
         path: "lease",
         element: (
           <AuthGuard>
-            <Blank />
+            <UserGuard>
+              <Blank />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -133,7 +140,9 @@ const routes = [
         path: "",
         element: (
           <AuthGuard>
-            <Properties />
+            <UserGuard>
+              <Properties />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -148,7 +157,9 @@ const routes = [
         path: "",
         element: (
           <AuthGuard>
-            <Projects />
+            <UserGuard>
+              <Projects />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -156,7 +167,9 @@ const routes = [
         path: "view",
         element: (
           <AuthGuard>
-            <Tasks />
+            <UserGuard>
+              <Tasks />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -170,7 +183,9 @@ const routes = [
         path: "",
         element: (
           <AuthGuard>
-            <Workers />
+            <UserGuard>
+              <Workers />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -184,7 +199,9 @@ const routes = [
         path: "",
         element: (
           <AuthGuard>
-            <Workers />
+            <UserGuard>
+              <Workers />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -198,7 +215,9 @@ const routes = [
         path: "",
         element: (
           <AuthGuard>
-            <InvoiceList />
+            <UserGuard>
+              <InvoiceList />
+            </UserGuard>
           </AuthGuard>
         ),
       },
@@ -206,7 +225,9 @@ const routes = [
         path: "detail",
         element: (
           <AuthGuard>
-            <InvoiceDetails />
+            <UserGuard>
+              <InvoiceDetails />
+            </UserGuard>
           </AuthGuard>
         ),
       },

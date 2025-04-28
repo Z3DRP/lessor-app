@@ -17,12 +17,7 @@ import {
 import { spacing } from "@mui/system";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import {
-  determineTaskStatus,
-  displayDate,
-  formattedDate,
-  Task,
-} from "@/types/task";
+import { determineTaskStatus, displayDate, Task } from "@/types/task";
 import { LinearLoading } from "@/components/ui/Loaders";
 import { fetchTasks } from "@/redux/slices/tasksSlice";
 import useAuth from "@/hooks/useAuth";

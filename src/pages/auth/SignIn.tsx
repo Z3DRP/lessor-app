@@ -5,7 +5,6 @@ import { Helmet } from "react-helmet-async";
 import { Avatar, Typography } from "@mui/material";
 
 import SignInComponent from "@/components/auth/SignIn";
-import { ReactComponent as Logo } from "@/vendor/orangeA.svg";
 
 const BigAvatar = styled(Avatar)`
   width: 92px;
