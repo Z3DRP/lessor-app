@@ -114,7 +114,9 @@ export const deleteProperty = createAsyncThunk(
       return id;
     } catch (err: any) {
       console.log("error deleting property state: ", err);
-      return rejectWithValue(`state error: ${err ?? err.error ?? err.message}`);
+      return rejectWithValue({
+        message: err?.message || err?.error || err || "unknown error",
+      });
     }
   }
 );
@@ -181,7 +183,7 @@ export const propertySlice = createSlice({
         );
       })
       .addCase(deleteProperty.rejected, (state, action) => {
-        state.error = action.payload as string;
+        (state.status = "failed"), (state.error = action.payload as string);
       });
   },
 });

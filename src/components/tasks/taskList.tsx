@@ -232,7 +232,10 @@ const TaskItem = ({
       <Stack direction="row" spacing={2} sx={{ ml: 3, mb: 3 }}>
         <Button
           onClick={() => onStart(task, "start")}
-          disabled={determineTaskStatus(task) !== TaskStatus.Scheduled}
+          disabled={
+            determineTaskStatus(task) === TaskStatus.Completed ||
+            determineTaskStatus(task) === TaskStatus.Failed
+          }
         >
           <Icon
             icon="material-symbols:line-start-circle-outline-rounded"
@@ -243,7 +246,10 @@ const TaskItem = ({
         <Button
           onClick={() => onComplete(task, "complete")}
           color="success"
-          disabled={determineTaskStatus(task) === TaskStatus.Scheduled}
+          disabled={
+            determineTaskStatus(task) === TaskStatus.Scheduled ||
+            determineTaskStatus(task) === TaskStatus.Failed
+          }
         >
           <Icon icon="ic:baseline-check-circle-outline" fontSize={28} />
           <ButtonSpan>Complete</ButtonSpan>
@@ -251,7 +257,11 @@ const TaskItem = ({
         <Button
           onClick={() => onPause(task, "pause")}
           color="warning"
-          disabled={determineTaskStatus(task) === TaskStatus.Scheduled}
+          disabled={
+            determineTaskStatus(task) === TaskStatus.Scheduled ||
+            determineTaskStatus(task) === TaskStatus.Failed ||
+            determineTaskStatus(task) === TaskStatus.Completed
+          }
         >
           <Icon
             icon="material-symbols:pause-circle-outline-rounded"
@@ -262,7 +272,11 @@ const TaskItem = ({
         <Button
           onClick={() => onFail(task, "fail")}
           color="error"
-          disabled={determineTaskStatus(task) === TaskStatus.Scheduled}
+          disabled={
+            determineTaskStatus(task) === TaskStatus.Scheduled ||
+            determineTaskStatus(task) === TaskStatus.Completed ||
+            determineTaskStatus(task) === TaskStatus.Scheduled
+          }
         >
           <Icon icon="ic:round-nearby-error" fontSize={28} />
           <ButtonSpan>Fail</ButtonSpan>

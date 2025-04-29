@@ -279,7 +279,7 @@ function Properties() {
 
   const handleDelete = async (propertyId: string) => {
     try {
-      await dispatch(deleteProperty({ id: propertyId }));
+      await dispatch(deleteProperty({ id: propertyId })).unwrap();
       return { success: true, msg: "" };
     } catch (err: any) {
       return {

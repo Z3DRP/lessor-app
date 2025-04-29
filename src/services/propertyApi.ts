@@ -169,13 +169,12 @@ export const propertyApi = {
   },
 
   async deleteProeprty(pid: string) {
-    const res = await axiosInstance
-      .delete(`${propertyEp}/${pid}`)
-      .catch((err) => {
-        console.log("error deleting property: ", err);
-        throw err;
-      });
-
-    return res?.data;
+    try {
+      const res = await axiosInstance.delete(`${propertyEp}/${pid}`);
+      return res?.data;
+    } catch (err: any) {
+      console.log("error deleting property ", err);
+      throw new Error(err?.error || err?.message);
+    }
   },
 };

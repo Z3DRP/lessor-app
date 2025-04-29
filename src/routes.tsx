@@ -271,7 +271,11 @@ const routes = [
     children: [
       {
         path: "",
-        element: <ProtectedPage />,
+        element: (
+          <UserGuard>
+            <ProtectedPage />,
+          </UserGuard>
+        ),
       },
     ],
   },

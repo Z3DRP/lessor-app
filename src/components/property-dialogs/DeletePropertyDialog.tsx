@@ -40,7 +40,10 @@ export default function DeletePropertyDialog({
       const { success, msg } = await handleDelete(property.pid);
       if (!success) {
         setError(msg ?? "something went wrong");
-        enqueueSnackbar("an error occurred while deleting property");
+        enqueueSnackbar(msg, {
+          variant: "error",
+        });
+        return;
       }
       enqueueSnackbar("property deleted successfully", { variant: "success" });
     } catch (err: any) {
